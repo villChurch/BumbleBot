@@ -148,12 +148,24 @@
     <Compile Include="Commands\Game\GameCommands.cs" />
     <Compile Include="Utilities\DBUtils.cs" />
     <Compile Include="Utilities\RandomLevel.cs" />
+    <Compile Include="Commands\QuizCommands\Quiz.cs" />
+    <Compile Include="Commands\GifsAndPhotos\GifCommand.cs" />
+    <Compile Include="Attributes\OwnerOrPermission.cs" />
+    <Compile Include="Commands\GifsAndPhotos\KidPhotos.cs" />
+    <Compile Include="Commands\GifsAndPhotos\Minx.cs" />
+    <Compile Include="Commands\GifsAndPhotos\Zteam.cs" />
+    <Compile Include="Commands\GifsAndPhotos\pony.cs" />
+    <Compile Include="Commands\GifsAndPhotos\Bumble.cs" />
+    <Compile Include="Commands\GifsAndPhotos\Ana.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
     <Folder Include="Commands\" />
     <Folder Include="Commands\Game\" />
     <Folder Include="Utilities\" />
+    <Folder Include="Commands\QuizCommands\" />
+    <Folder Include="Commands\GifsAndPhotos\" />
+    <Folder Include="Attributes\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -9,52 +9,61 @@ namespace BumbleBot.Utilities
 {
     public class DBUtils
     {
-        private string configFilePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-        public async Task<MySqlConnection> GetDbConnectionAsync()
+        private readonly string configFilePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        public string ReturnPopulatedConnectionStringAsync()
         {
-            DBConnection dbCon = DBConnection.Instance();
-            var json = string.Empty;
+            string json = string.Empty;
 
-            using (var fs =
+            using (FileStream fs =
                 File.OpenRead(configFilePath + "/config.json")
             )
-            using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
-                json = await sr.ReadToEndAsync().ConfigureAwait(false);
+            using (StreamReader sr = new StreamReader(fs, new UTF8Encoding(false)))
+            {
+                json = sr.ReadToEnd();
+            }
 
-            var configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
-            dbCon.DatabaseName = configJson.databaseName;
-            dbCon.Password = configJson.databasePassword;
-            dbCon.databaseUser = configJson.databaseUser;
-            dbCon.databasePort = configJson.databasePort;
-            return new MySqlConnection(dbCon.connectionString);
-        }
-    }
+            ConfigJson configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
-    public sealed class DBConnection
-    {
-        private string databaseName = string.Empty;
-        public string DatabaseName
-        {
-            get { return databaseName; }
-            set { databaseName = value; }
-        }
 
-        public string databaseUser { get; set; }
-        public string Password { get; set; }
+            MySqlConnectionStringBuilder mcsb = new MySqlConnectionStringBuilder
+            {
+                Database = configJson.databaseName,
+                Password = configJson.databasePassword,
+                UserID = configJson.databaseUser,
+                Port = configJson.databasePort,
+                Server = configJson.databaseServer,
+                MaximumPoolSize = 300
+            };
 
-        private static DBConnection _instance = null;
-        public static DBConnection Instance()
-        {
-            if (_instance == null)
-                _instance = new DBConnection();
-            return _instance;
+            return mcsb.ToString();
         }
 
-        public string databasePort { get; set; }
-        public string connectionString
+        public static string ReturnPopulatedConnectionStringStatic()
         {
-            get { return $"Server=williamspires.co.uk; Port={databasePort}; database={databaseName}; UID={databaseUser}; password={Password}"; }
+            string json = string.Empty;
+
+            using (FileStream fs =
+                File.OpenRead(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "/config.json")
+            )
+            using (StreamReader sr = new StreamReader(fs, new UTF8Encoding(false)))
+            {
+                json = sr.ReadToEnd();
+            }
+
+            ConfigJson configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
+
+
+            MySqlConnectionStringBuilder mcsb = new MySqlConnectionStringBuilder
+            {
+                Database = configJson.databaseName,
+                Password = configJson.databasePassword,
+                UserID = configJson.databaseUser,
+                Port = configJson.databasePort,
+                Server = configJson.databaseServer,
+                MaximumPoolSize = 300
+            };
+
+            return mcsb.ToString();
         }
     }
 }

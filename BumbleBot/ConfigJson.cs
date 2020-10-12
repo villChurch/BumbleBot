@@ -18,6 +18,6 @@ namespace BumbleBot
         [JsonProperty("databaseUser")]
         public string databaseUser { get; private set; }
         [JsonProperty("databasePort")]
-        public string databasePort { get; private set; }
+        public uint databasePort { get; private set; }
     }
 }

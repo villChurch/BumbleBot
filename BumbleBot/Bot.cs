@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
@@ -23,11 +24,12 @@ namespace BumbleBot
         private Timer timer;
         private int messageCount;
         private int gpm = 0; // goats per minute
-        private ulong guildId = 416378985107161089;
-        private ulong goatSpawnChannelId = 746852898465644544;
+        private ulong guildId = 761698823726039120;
+        private ulong goatSpawnChannelId = 762230405784272916;
         private DiscordClient Client { get; set; }
         private CommandsNextExtension Commands { get; set; }
         public InteractivityConfiguration Interactivity { get; private set; }
+        DBUtils dbUtils = new DBUtils();
 
         public Bot()
         {
@@ -68,7 +70,7 @@ namespace BumbleBot
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
                 LogLevel = LogLevel.Debug,
-                UseInternalLogHandler = true,
+                UseInternalLogHandler = true
             };
 
             // var shardClient = new DiscordShardedClient(config);
@@ -96,7 +98,7 @@ namespace BumbleBot
                 StringPrefixes = new string[] { configJson.Prefix },
                 EnableMentionPrefix = true,
                 EnableDms = false,
-                DmHelp = true
+                DmHelp = false
             };
 
             Commands = Client.UseCommandsNext(commandsConfig);
@@ -104,9 +106,7 @@ namespace BumbleBot
             Commands.CommandExecuted += this.Commands_CommandExecuted;
             Commands.CommandErrored += this.Commands_CommandErrored;
 
-            Commands.RegisterCommands<GameCommands>();
-            //Commands.RegisterCommands<MainPathCommands>();
-            // Commands.RegisterCommands<FunCommands>();
+            Commands.RegisterCommands(Assembly.GetExecutingAssembly());
 
             await Client.ConnectAsync();
 
@@ -172,31 +172,34 @@ namespace BumbleBot
             }
             else
             {
-                DBUtils dbUtils = new DBUtils();
-                MySqlConnection connection = await dbUtils.GetDbConnectionAsync();
-                if (!DoesUserHaveCharacter(msg.Result.Author.Id, connection))
+                if (!DoesUserHaveCharacter(msg.Result.Author.Id))
                 {
-                    string query = "INSERT INTO farmers (DiscordID) VALUES (?discordID)";
-                    var command = new MySqlCommand(query, connection);
-                    command.Parameters.Add("?discordID", MySqlDbType.VarChar, 40).Value = msg.Result.Author.Id;
-                    connection.Open();
-                    command.ExecuteNonQuery();
-                    connection.Close();
+                    using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                    {
+                        string query = "INSERT INTO farmers (DiscordID) VALUES (?discordID)";
+                        var command = new MySqlCommand(query, connection);
+                        command.Parameters.Add("?discordID", MySqlDbType.VarChar, 40).Value = msg.Result.Author.Id;
+                        connection.Open();
+                        command.ExecuteNonQuery();
+                    }
                 }
                 await msg.Result.DeleteAsync();
                 try
                 {
-                    string query = "INSERT INTO goats (level, name, type, breed, baseColour, ownerID) " +
-                        "VALUES (?level, ?name, ?type, ?breed, ?baseColour, ?ownerID)";
-                    var command = new MySqlCommand(query, connection);
-                    command.Parameters.Add("?level", MySqlDbType.Int32).Value = randomGoat.level;
-                    command.Parameters.Add("?name", MySqlDbType.VarChar, 255).Value = randomGoat.name;
-                    command.Parameters.Add("?type", MySqlDbType.VarChar).Value = "Kid";
-                    command.Parameters.Add("?breed", MySqlDbType.VarChar).Value = Enum.GetName(typeof(Breed), randomGoat.breed);
-                    command.Parameters.Add("?baseColour", MySqlDbType.VarChar).Value = Enum.GetName(typeof(BaseColour), randomGoat.baseColour);
-                    command.Parameters.Add("?ownerID", MySqlDbType.VarChar).Value = msg.Result.Author.Id;
-                    connection.Open();
-                    command.ExecuteNonQuery();
+                    using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                    {
+                        string query = "INSERT INTO goats (level, name, type, breed, baseColour, ownerID) " +
+                            "VALUES (?level, ?name, ?type, ?breed, ?baseColour, ?ownerID)";
+                        var command = new MySqlCommand(query, connection);
+                        command.Parameters.Add("?level", MySqlDbType.Int32).Value = randomGoat.level;
+                        command.Parameters.Add("?name", MySqlDbType.VarChar, 255).Value = randomGoat.name;
+                        command.Parameters.Add("?type", MySqlDbType.VarChar).Value = "Kid";
+                        command.Parameters.Add("?breed", MySqlDbType.VarChar).Value = Enum.GetName(typeof(Breed), randomGoat.breed);
+                        command.Parameters.Add("?baseColour", MySqlDbType.VarChar).Value = Enum.GetName(typeof(BaseColour), randomGoat.baseColour);
+                        command.Parameters.Add("?ownerID", MySqlDbType.VarChar).Value = msg.Result.Author.Id;
+                        connection.Open();
+                        command.ExecuteNonQuery();
+                    }
                     await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"Congrats " +
                         $"{e.Guild.GetMemberAsync(msg.Result.Author.Id).Result.DisplayName} you caught " +
                         $"{randomGoat.name}").ConfigureAwait(false);
@@ -206,23 +209,22 @@ namespace BumbleBot
                     Console.Out.WriteLine(ex.Message);
                     Console.Out.WriteLine(ex.StackTrace);
                 }
-                finally
-                {
-                    connection.Close();
-                }
             }
         }
 
-        private bool DoesUserHaveCharacter(ulong discordID, MySqlConnection connection)
+        private bool DoesUserHaveCharacter(ulong discordID)
         {
-            string query = "select * from farmers where DiscordID = ?discordID";
-            var command = new MySqlCommand(query, connection);
-            command.Parameters.Add("?discordID", MySqlDbType.VarChar, 40).Value = discordID;
-            connection.Open();
-            var reader = command.ExecuteReader();
-            bool hasCharacter = reader.HasRows;
-            reader.Close();
-            connection.Close();
+            bool hasCharacter = false;
+            using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from farmers where DiscordID = ?discordID";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?discordID", MySqlDbType.VarChar, 40).Value = discordID;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                hasCharacter = reader.HasRows;
+                reader.Close();
+            }
             return hasCharacter;
         }
 
