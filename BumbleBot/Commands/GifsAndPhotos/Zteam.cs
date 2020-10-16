@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BumbleBot.Attributes;
+using BumbleBot.Services;
 using BumbleBot.Utilities;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -18,12 +19,41 @@ namespace BumbleBot.Commands.GifsAndPhotos
     public class Zteam : BaseCommandModule
     {
         private readonly DBUtils dBUtils = new DBUtils();
+        private AssholeService assholeService { get; }
+
+        public Zteam(AssholeService assholeService)
+        {
+            this.assholeService = assholeService;
+        }
 
         [GroupCommand]
         public async Task ShowRandomZteamPhoto(CommandContext ctx)
         {
             try
             {
+                this.assholeService.SetAhConfig();
+                bool isAssholeMode = false;
+                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    string query = "Select boolValue from config where paramName = ?paramName";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?paramName", MySqlDbType.VarChar, 2550).Value = "assholeMode";
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            isAssholeMode = reader.GetBoolean("boolValue");
+                        }
+                    }
+                    reader.Close();
+                }
+                if (isAssholeMode)
+                {
+                    await ctx.Channel.SendMessageAsync("Don't feel like it right now").ConfigureAwait(false);
+                    return;
+                }
                 List<string> zteamLinks = new List<string>();
                 using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {

@@ -11,6 +11,7 @@ using System.Linq;
 using BumbleBot.Attributes;
 using System.Text;
 using DSharpPlus.Entities;
+using BumbleBot.Services;
 
 namespace BumbleBot.Commands.GifsAndPhotos
 {
@@ -20,12 +21,41 @@ namespace BumbleBot.Commands.GifsAndPhotos
     {
 
         private readonly DBUtils dBUtils = new DBUtils();
+        private AssholeService assholeService { get; }
+
+        public KidPhotos(AssholeService assholeService)
+        {
+            this.assholeService = assholeService;
+        }
 
         [GroupCommand]
         public async Task RandomKid(CommandContext ctx)
         {
             try
             {
+                this.assholeService.SetAhConfig();
+                bool isAssholeMode = false;
+                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    string query = "Select boolValue from config where paramName = ?paramName";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?paramName", MySqlDbType.VarChar, 2550).Value = "assholeMode";
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            isAssholeMode = reader.GetBoolean("boolValue");
+                        }
+                    }
+                    reader.Close();
+                }
+                if (isAssholeMode)
+                {
+                    await ctx.Channel.SendMessageAsync("Don't feel like it right now").ConfigureAwait(false);
+                    return;
+                }
                 List<string> gifLinks = new List<string>();
                 using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {

@@ -4,7 +4,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
-using BumbleBot.Commands.Game;
 using BumbleBot.Models;
 using BumbleBot.Utilities;
 using DSharpPlus;
@@ -16,6 +15,8 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
+using Microsoft.Extensions.DependencyInjection;
+using BumbleBot.Services;
 
 namespace BumbleBot
 {
@@ -30,6 +31,7 @@ namespace BumbleBot
         private CommandsNextExtension Commands { get; set; }
         public InteractivityConfiguration Interactivity { get; private set; }
         DBUtils dbUtils = new DBUtils();
+        private IServiceProvider Services { get; set; }
 
         public Bot()
         {
@@ -81,6 +83,12 @@ namespace BumbleBot
             Client.ClientErrored += this.Client_ClientError;
             Client.MessageCreated += this.Client_MessageCreated;
 
+#pragma warning disable CS1702 // Assuming assembly reference matches identity
+            Services = new ServiceCollection()
+                .AddSingleton<AssholeService>()
+                .BuildServiceProvider(true);
+#pragma warning restore CS1702 // Assuming assembly reference matches identity
+
             // let's enable interactivity, and set default options
 #pragma warning disable IDE0058 // Expression value is never used
             Client.UseInteractivity(new InteractivityConfiguration
@@ -88,8 +96,8 @@ namespace BumbleBot
                 // default pagination behaviour to just ignore the reactions
                 PaginationBehaviour = PaginationBehaviour.WrapAround,
 
-                // default timeout for other actions to 2 minutes
-                Timeout = TimeSpan.FromMinutes(2)
+                // default timeout for other actions to 5 minutes
+                Timeout = TimeSpan.FromMinutes(5)
             });
 #pragma warning restore IDE0058 // Expression value is never used
 
@@ -98,7 +106,8 @@ namespace BumbleBot
                 StringPrefixes = new string[] { configJson.Prefix },
                 EnableMentionPrefix = true,
                 EnableDms = false,
-                DmHelp = false
+                DmHelp = false,
+                Services = Services
             };
 
             Commands = Client.UseCommandsNext(commandsConfig);
@@ -132,6 +141,69 @@ namespace BumbleBot
                     messageCount = 0;
                     gpm++;
                 }
+            }
+            try
+            {
+                bool assholeMode = false;
+                using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    string query = "Select boolValue from config where paramName = ?paramName";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?paramName", MySqlDbType.VarChar, 2550).Value = "assholeMode";
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            assholeMode = reader.GetBoolean("boolValue");
+                        }
+                    }
+                    reader.Close();
+                }
+                DiscordEmoji mrStick = DiscordEmoji.FromName(e.Client, ":mrstick:");
+                if (assholeMode && e.Message.Content.Equals(mrStick))
+                {
+                    using(MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                    {
+                        string query = "Update config SET boolValue = ?boolValue where paramName = ?paramName";
+                        var command = new MySqlCommand(query, connection);
+                        command.Parameters.Add("?boolValue", MySqlDbType.Int16).Value = 0;
+                        command.Parameters.Add("?paramName", MySqlDbType.VarChar).Value = "assholeMode";
+                        connection.Open();
+                        command.ExecuteNonQuery();
+                    }
+                    string currentResponse = "";
+                    using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                    {
+                        string query = "Select stringResponse from config where paramName = ?paramName";
+                        var command = new MySqlCommand(query, connection);
+                        command.Parameters.Add("?paramName", MySqlDbType.VarChar).Value = "assholeResponse";
+                        connection.Open();
+                        var reader = command.ExecuteReader();
+                        if (reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                currentResponse = reader.GetString("stringResponse");
+                            }
+                        }
+                        reader.Close();
+                    }
+                    if (!currentResponse.Equals("empty"))
+                    {
+                        Task.Run(async () =>
+                        {
+                            _ = await e.Channel.SendMessageAsync($"{currentResponse}").ConfigureAwait(false);
+                        });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Out.WriteLine(ex.Message);
+                Console.Out.WriteLine(ex.StackTrace);
+                return Task.CompletedTask;
             }
             return Task.CompletedTask;
         }
@@ -273,7 +345,7 @@ namespace BumbleBot
                 var embed = new DiscordEmbedBuilder
                 {
                     Title = "Command not found",
-                    Description = $"I do not know this command. See ?help for a list of commands I know.",
+                    Description = $"I do not know this command. See g?help for a list of commands I know.",
                     Color = new DiscordColor(0xFF0000) // red
                 };
                 await e.Context.RespondAsync("", embed: embed);

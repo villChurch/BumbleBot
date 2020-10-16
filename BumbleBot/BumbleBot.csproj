@@ -157,6 +157,8 @@
     <Compile Include="Commands\GifsAndPhotos\pony.cs" />
     <Compile Include="Commands\GifsAndPhotos\Bumble.cs" />
     <Compile Include="Commands\GifsAndPhotos\Ana.cs" />
+    <Compile Include="Commands\AdminCommands\ConfigCommands.cs" />
+    <Compile Include="Services\AssholeService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
@@ -166,6 +168,8 @@
     <Folder Include="Commands\QuizCommands\" />
     <Folder Include="Commands\GifsAndPhotos\" />
     <Folder Include="Attributes\" />
+    <Folder Include="Commands\AdminCommands\" />
+    <Folder Include="Services\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
