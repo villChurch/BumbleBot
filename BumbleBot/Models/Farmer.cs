@@ -3,9 +3,10 @@ namespace BumbleBot.Models
 {
     public class Farmer
     {
-        private ulong discordID { get; set; }
-        private Barn barn { get; set; }
-        private int credits { get; set; }
+        public ulong discordID { get; set; }
+        public int credits { get; set; }
+        public int barnspace { get; set; }
+        public int grazingspace { get; set; }
         public Farmer()
         {
         }

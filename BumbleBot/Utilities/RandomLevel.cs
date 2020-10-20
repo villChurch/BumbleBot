@@ -6,10 +6,10 @@ namespace BumbleBot.Utilities
         public RandomLevel()
         {
         }
-        public static readonly int RATIO_CHANCE_A = 10;
-        public static readonly int RATIO_CHANCE_B = 30;
+        public static readonly int RATIO_CHANCE_A = 75;
+        public static readonly int RATIO_CHANCE_B = 15;
         //                         ...
-        public static readonly int RATIO_CHANCE_N = 60;
+        public static readonly int RATIO_CHANCE_N = 10;
 
         public static readonly int RATIO_TOTAL = RATIO_CHANCE_A
                                                + RATIO_CHANCE_B

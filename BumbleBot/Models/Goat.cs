@@ -32,12 +32,17 @@ namespace BumbleBot.Models
         public string name { get; set; }
         public decimal levelMulitplier { get; set; }
         public int id { get; set; }
+
         [JsonConverter(typeof(StringEnumConverter))]
         public Type type { get; set; }
+
         [JsonConverter(typeof(StringEnumConverter))]
         public Breed breed { get; set; }
+
         [JsonConverter(typeof(StringEnumConverter))]
         public BaseColour baseColour { get; set; }
+        public bool equiped { get; set; }
+        public decimal experience { get; set; }
         public Goat()
         {
         }

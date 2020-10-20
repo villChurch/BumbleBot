@@ -17,6 +17,8 @@ using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 using Microsoft.Extensions.DependencyInjection;
 using BumbleBot.Services;
+using Microsoft.Extensions.Logging;
+using DSharpPlus.Interactivity.Extensions;
 
 namespace BumbleBot
 {
@@ -71,25 +73,22 @@ namespace BumbleBot
                 Token = configJson.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
-                LogLevel = LogLevel.Debug,
-                UseInternalLogHandler = true
+                MinimumLogLevel = LogLevel.Debug
             };
 
             // var shardClient = new DiscordShardedClient(config);
             Client = new DiscordClient(config);
-
             Client.Ready += OnClientReady;
             Client.GuildAvailable += this.Client_GuildAvailable;
             Client.ClientErrored += this.Client_ClientError;
             Client.MessageCreated += this.Client_MessageCreated;
 
-#pragma warning disable CS1702 // Assuming assembly reference matches identity
             Services = new ServiceCollection()
                 .AddSingleton<AssholeService>()
+                .AddTransient<GoatService>()
+                .AddTransient<FarmerService>()
                 .BuildServiceProvider(true);
-#pragma warning restore CS1702 // Assuming assembly reference matches identity
 
-            // let's enable interactivity, and set default options
 #pragma warning disable IDE0058 // Expression value is never used
             Client.UseInteractivity(new InteractivityConfiguration
             {
@@ -122,15 +121,14 @@ namespace BumbleBot
             await Task.Delay(-1);
         }
 
-        private Task OnClientReady(ReadyEventArgs e)
+        private Task OnClientReady(DiscordClient Client, ReadyEventArgs e)
         {
-            // let's log the fact that this event occured
-            e.Client.DebugLogger.LogMessage(LogLevel.Info, "BumbleBot", "Client is ready to process events.", DateTime.Now);
+            Client.Logger.Log(LogLevel.Information, "BumbleBot", "Client is ready to process events.", DateTime.Now);
             StartTimer(); // start timer
             return Task.CompletedTask;
         }
 
-        private Task Client_MessageCreated(MessageCreateEventArgs e)
+        private Task Client_MessageCreated(DiscordClient Client, MessageCreateEventArgs e)
         {
             if (e.Guild.Id == guildId && !e.Author.IsBot)
             {
@@ -144,6 +142,17 @@ namespace BumbleBot
             }
             try
             {
+                GoatService goatService = new GoatService();
+                bool hasGoatLevelled = goatService.CheckExpAgainstNextLevel(e.Message.Author.Id, (decimal)0.5);
+                if (hasGoatLevelled)
+                {
+                    Task.Run(async () =>
+                    {
+                        _ = await e.Channel.SendMessageAsync($"Congrats {e.Author.Mention} your current goat has just levelled up").ConfigureAwait(false);
+                    }
+                    );
+                }
+
                 bool assholeMode = false;
                 using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                 {
@@ -161,7 +170,7 @@ namespace BumbleBot
                     }
                     reader.Close();
                 }
-                DiscordEmoji mrStick = DiscordEmoji.FromName(e.Client, ":mrstick:");
+                DiscordEmoji mrStick = DiscordEmoji.FromName(Client, ":mrstick:");
                 if (assholeMode && e.Message.Content.Equals(mrStick))
                 {
                     using(MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
@@ -231,7 +240,7 @@ namespace BumbleBot
             embed.AddField("Breed", Enum.GetName(typeof(Breed), randomGoat.breed).Replace("_", " "), true);
             embed.AddField("Level", randomGoat.level.ToString(), true);
 
-            var interactivtiy = e.Client.GetInteractivity();
+            var interactivtiy = Client.GetInteractivity();
 
             var goatMsg = await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync(embed: embed).ConfigureAwait(false);
             var msg = await interactivtiy.WaitForMessageAsync(x => x.Channel == e.Guild.GetChannel(goatSpawnChannelId)
@@ -260,8 +269,8 @@ namespace BumbleBot
                 {
                     using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                     {
-                        string query = "INSERT INTO goats (level, name, type, breed, baseColour, ownerID) " +
-                            "VALUES (?level, ?name, ?type, ?breed, ?baseColour, ?ownerID)";
+                        string query = "INSERT INTO goats (level, name, type, breed, baseColour, ownerID, experience) " +
+                            "VALUES (?level, ?name, ?type, ?breed, ?baseColour, ?ownerID, ?exp)";
                         var command = new MySqlCommand(query, connection);
                         command.Parameters.Add("?level", MySqlDbType.Int32).Value = randomGoat.level;
                         command.Parameters.Add("?name", MySqlDbType.VarChar, 255).Value = randomGoat.name;
@@ -269,6 +278,8 @@ namespace BumbleBot
                         command.Parameters.Add("?breed", MySqlDbType.VarChar).Value = Enum.GetName(typeof(Breed), randomGoat.breed);
                         command.Parameters.Add("?baseColour", MySqlDbType.VarChar).Value = Enum.GetName(typeof(BaseColour), randomGoat.baseColour);
                         command.Parameters.Add("?ownerID", MySqlDbType.VarChar).Value = msg.Result.Author.Id;
+                        command.Parameters.Add("?exp", MySqlDbType.Decimal).Value =
+                            (int) Math.Ceiling(10 * Math.Pow(1.05, (randomGoat.level - 1)));
                         connection.Open();
                         command.ExecuteNonQuery();
                     }
@@ -300,29 +311,29 @@ namespace BumbleBot
             return hasCharacter;
         }
 
-        private Task Client_GuildAvailable(GuildCreateEventArgs e)
+        private Task Client_GuildAvailable(DiscordClient Client, GuildCreateEventArgs e)
         {
-            e.Client.DebugLogger.LogMessage(LogLevel.Info, "BumbleBot", $"Guild available: {e.Guild.Name}", DateTime.Now);
+            Client.Logger.Log(LogLevel.Information, "BumbleBot", $"Guild available: {e.Guild.Name}", DateTime.Now);
             return Task.CompletedTask;
         }
 
-        private Task Client_ClientError(ClientErrorEventArgs e)
+        private Task Client_ClientError(DiscordClient Client, ClientErrorEventArgs e)
         {
-            e.Client.DebugLogger.LogMessage(LogLevel.Error, "BumbleBot", $"Exception occured: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
-
-            return Task.CompletedTask;
-        }
-
-        private Task Commands_CommandExecuted(CommandExecutionEventArgs e)
-        {
-            e.Context.Client.DebugLogger.LogMessage(LogLevel.Info, "BumbleBot", $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
+            Client.Logger.Log(LogLevel.Error, "BumbleBot", $"Exception occured: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
 
             return Task.CompletedTask;
         }
 
-        private async Task Commands_CommandErrored(CommandErrorEventArgs e)
+        private Task Commands_CommandExecuted(CommandsNextExtension sender, CommandExecutionEventArgs e)
         {
-            e.Context.Client.DebugLogger.LogMessage(LogLevel.Error, "BumbleBot", $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
+            e.Context.Client.Logger.Log(LogLevel.Information, "BumbleBot", $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
+
+            return Task.CompletedTask;
+        }
+
+        private async Task Commands_CommandErrored(CommandsNextExtension sender, CommandErrorEventArgs e)
+        {
+            e.Context.Client.Logger.Log(LogLevel.Error, "BumbleBot", $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}", DateTime.Now);
 
             if (e.Exception is ChecksFailedException ex)
             {

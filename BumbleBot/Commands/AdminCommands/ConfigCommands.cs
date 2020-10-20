@@ -6,7 +6,8 @@ using DSharpPlus.CommandsNext.Attributes;
 using MySql.Data.MySqlClient;
 using BumbleBot.Attributes;
 using DSharpPlus;
-using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.Entities;
 
 namespace BumbleBot.Commands.AdminCommands
 {
@@ -15,6 +16,33 @@ namespace BumbleBot.Commands.AdminCommands
     public class ConfigCommands : BaseCommandModule
     {
         private readonly DBUtils dbUtils = new DBUtils();
+
+        [Command("goatspawns")]
+        [Aliases("gs", "gsc")]
+        [Description("Sets the channel for goats to spawn in")]
+        [OwnerOrPermission(Permissions.KickMembers)]
+        public async Task SetGoatSpawnChannel(CommandContext ctx, DiscordChannel discordChannel)
+        {
+            try
+            {
+                using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    string query = "Update config SET stringResponse = ?spawnChannel where paramName = ?paramName";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?spawnChannel", MySqlDbType.VarChar).Value = discordChannel.Id;
+                    command.Parameters.Add("?paramName", MySqlDbType.VarChar).Value = "spawnChannel";
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+                await ctx.Channel.SendMessageAsync($"Goats will spawn in {discordChannel.Mention}").ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.Out.WriteLine(ex.Message);
+                Console.Out.WriteLine(ex.StackTrace);
+            }
+        }
+
         [Command("asshole")]
         [Hidden]
         [OwnerOrPermission(Permissions.Administrator)]

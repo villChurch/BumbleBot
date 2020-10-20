@@ -5,13 +5,14 @@ using BumbleBot.Utilities;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using MySql.Data.MySqlClient;
 using System.Linq;
 using BumbleBot.Attributes;
 using System.Text;
 using DSharpPlus.Entities;
 using BumbleBot.Services;
+using DSharpPlus.Interactivity.Enums;
 
 namespace BumbleBot.Commands.GifsAndPhotos
 {
