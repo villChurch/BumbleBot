@@ -88,6 +88,8 @@ namespace BumbleBot.Commands.Game
                 {
                     await ctx.Channel.SendMessageAsync("Either the upgrade price you entered is not enough or you do not have enough credits")
                         .ConfigureAwait(false);
+
+
                 }
             }
         } 

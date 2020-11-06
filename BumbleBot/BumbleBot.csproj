@@ -177,6 +177,7 @@
     <Compile Include="Commands\Game\FarmShop.cs" />
     <Compile Include="Services\FarmerService.cs" />
     <Compile Include="Commands\Game\Purchase.cs" />
+    <Compile Include="Commands\Game\MilkCommands.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />

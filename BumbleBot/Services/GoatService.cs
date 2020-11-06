@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using BumbleBot.Models;
 using BumbleBot.Utilities;
 using MySql.Data.MySqlClient;
 
@@ -15,22 +17,17 @@ namespace BumbleBot.Services
 
         public bool CheckExpAgainstNextLevel(ulong userId, decimal expToAdd)
         {
+            //n =  ln(FV / PV)ln(1 + r)
             // exp = 10 * 1.05^level
             (int, decimal) goatsLevelAndExp = GetCurrentLevelAndExpOfGoat(userId);
+            int startingLevel = goatsLevelAndExp.Item1;
             if (goatsLevelAndExp.Item1 != 0)
             {
-                int expNeeded = (int) Math.Ceiling(10 * Math.Pow(1.05, goatsLevelAndExp.Item1));
-
+                goatsLevelAndExp.Item1 = (int)Math.Floor((Math.Log((double)(goatsLevelAndExp.Item2 / 10)) / Math.Log(1.05)));
                 decimal newExp = goatsLevelAndExp.Item2 + expToAdd;
-                if (expNeeded <= newExp)
-                {
-                    goatsLevelAndExp.Item1 += 1;
-                    UpdateGoatLevelAndExperience(goatsLevelAndExp.Item1, newExp, userId);
-                    return true;
-                }
                 UpdateGoatLevelAndExperience(goatsLevelAndExp.Item1, newExp, userId);
             }
-            return false;
+            return startingLevel != goatsLevelAndExp.Item1;
         }
 
         private (int, decimal) GetCurrentLevelAndExpOfGoat(ulong userId)
@@ -59,15 +56,33 @@ namespace BumbleBot.Services
 
         private void UpdateGoatLevelAndExperience(int level, decimal experience, ulong userId)
         {
-            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            if (level >= 100)
             {
-                string query = "Update goats Set level = ?level, experience = ?experience where ownerID = ?ownerId and equipped = 1";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?level", MySqlDbType.Int32).Value = level;
-                command.Parameters.Add("?experience", MySqlDbType.Decimal).Value = experience;
-                command.Parameters.Add("?ownerId", MySqlDbType.VarChar, 40).Value = userId;
-                connection.Open();
-                command.ExecuteNonQuery();
+                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    string query = "Update goats Set level = ?level, experience = ?experience, type = ?type " +
+                        "where ownerID = ?ownerId and equipped = 1";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?level", MySqlDbType.Int32).Value = level;
+                    command.Parameters.Add("?experience", MySqlDbType.Decimal).Value = experience;
+                    command.Parameters.Add("?ownerId", MySqlDbType.VarChar, 40).Value = userId;
+                    command.Parameters.Add("?type", MySqlDbType.VarChar).Value = "Adult";
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            else
+            {
+                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    string query = "Update goats Set level = ?level, experience = ?experience where ownerID = ?ownerId and equipped = 1";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?level", MySqlDbType.Int32).Value = level;
+                    command.Parameters.Add("?experience", MySqlDbType.Decimal).Value = experience;
+                    command.Parameters.Add("?ownerId", MySqlDbType.VarChar, 40).Value = userId;
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
             }
         }
 
@@ -108,6 +123,33 @@ namespace BumbleBot.Services
                 reader.Close();
             }
             return barnSize != numberOfGoats;
+        }
+
+        public List<Goat> ReturnUsersGoats(ulong userId)
+        {
+            List<Goat> goats = new List<Goat>();
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from goats where ownerID = ?ownerId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?ownerId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while(reader.Read())
+                    {
+                        Goat goat = new Goat();
+                        goat.name = reader.GetString("name");
+                        goat.id = reader.GetInt32("id");
+                        goat.level = reader.GetInt32("level");
+                        goat.levelMulitplier = reader.GetDecimal("levelMultiplier");
+                        goat.experience = reader.GetDecimal("experience");
+                        goats.Add(goat);
+                    }
+                }
+            }
+            return goats;
         }
     }
 }

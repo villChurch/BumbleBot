@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using BumbleBot.Services;
 using Microsoft.Extensions.Logging;
 using DSharpPlus.Interactivity.Extensions;
+using System.Linq;
 
 namespace BumbleBot
 {
@@ -130,7 +131,22 @@ namespace BumbleBot
 
         private Task Client_MessageCreated(DiscordClient Client, MessageCreateEventArgs e)
         {
-            if (e.Guild.Id == guildId && !e.Author.IsBot)
+            using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select stringResponse from config where paramName = ?paramName";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?paramName", MySqlDbType.VarChar).Value = "spawnChannel";
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while(reader.Read())
+                    {
+                        goatSpawnChannelId = reader.GetUInt64("stringResponse");
+                    }
+                }
+            }
+            if (!e.Author.IsBot) //e.Guild.Id == guildId && 
             {
                 messageCount++;
                 if (messageCount > 10 && gpm <= 5)
@@ -219,78 +235,83 @@ namespace BumbleBot
 
         private async void SpawnGoat(MessageCreateEventArgs e)
         {
-            Random rnd = new Random();
-            int breed = rnd.Next(0, 2);
-            int baseColour = rnd.Next(0, 4);
-            var randomGoat = new Goat();
-            randomGoat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), Enum.GetName(typeof(BaseColour), baseColour));
-            randomGoat.breed = (Breed)Enum.Parse(typeof(Breed), Enum.GetName(typeof(Breed), breed));
-            randomGoat.type = Models.Type.Kid;
-            randomGoat.level = RandomLevel.GetRandomLevel();
-            randomGoat.levelMulitplier = 1;
-            randomGoat.name = "Goaty McGoatFace";
-            randomGoat.special = false;
-
-            var embed = new DiscordEmbedBuilder
+            var channelList = await e.Guild.GetChannelsAsync();
+            var result = channelList.FirstOrDefault(x => x.Id == goatSpawnChannelId);
+            if (result != null)
             {
-                Title = $"{randomGoat.name} has spawned, type capture to capture her",
-                Color = DiscordColor.Aquamarine
-            };
-            embed.AddField("Colour", Enum.GetName(typeof(BaseColour), randomGoat.baseColour), false);
-            embed.AddField("Breed", Enum.GetName(typeof(Breed), randomGoat.breed).Replace("_", " "), true);
-            embed.AddField("Level", randomGoat.level.ToString(), true);
+                Random rnd = new Random();
+                int breed = rnd.Next(0, 2);
+                int baseColour = rnd.Next(0, 4);
+                var randomGoat = new Goat();
+                randomGoat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), Enum.GetName(typeof(BaseColour), baseColour));
+                randomGoat.breed = (Breed)Enum.Parse(typeof(Breed), Enum.GetName(typeof(Breed), breed));
+                randomGoat.type = Models.Type.Kid;
+                randomGoat.level = RandomLevel.GetRandomLevel();
+                randomGoat.levelMulitplier = 1;
+                randomGoat.name = "Goaty McGoatFace";
+                randomGoat.special = false;
 
-            var interactivtiy = Client.GetInteractivity();
-
-            var goatMsg = await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync(embed: embed).ConfigureAwait(false);
-            var msg = await interactivtiy.WaitForMessageAsync(x => x.Channel == e.Guild.GetChannel(goatSpawnChannelId)
-            && x.Content.ToLower().Trim() == "capture", TimeSpan.FromSeconds(10)).ConfigureAwait(false);
-            await goatMsg.DeleteAsync();
-            if (msg.TimedOut)
-            {
-                await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"No one managed to catch {randomGoat.name}").ConfigureAwait(false);
-                return;
-            }
-            else
-            {
-                if (!DoesUserHaveCharacter(msg.Result.Author.Id))
+                var embed = new DiscordEmbedBuilder
                 {
-                    using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
-                    {
-                        string query = "INSERT INTO farmers (DiscordID) VALUES (?discordID)";
-                        var command = new MySqlCommand(query, connection);
-                        command.Parameters.Add("?discordID", MySqlDbType.VarChar, 40).Value = msg.Result.Author.Id;
-                        connection.Open();
-                        command.ExecuteNonQuery();
-                    }
+                    Title = $"{randomGoat.name} has spawned, type capture to capture her",
+                    Color = DiscordColor.Aquamarine
+                };
+                embed.AddField("Colour", Enum.GetName(typeof(BaseColour), randomGoat.baseColour), false);
+                embed.AddField("Breed", Enum.GetName(typeof(Breed), randomGoat.breed).Replace("_", " "), true);
+                embed.AddField("Level", randomGoat.level.ToString(), true);
+
+                var interactivtiy = Client.GetInteractivity();
+
+                var goatMsg = await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync(embed: embed).ConfigureAwait(false);
+                var msg = await interactivtiy.WaitForMessageAsync(x => x.Channel == e.Guild.GetChannel(goatSpawnChannelId)
+                && x.Content.ToLower().Trim() == "capture", TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                await goatMsg.DeleteAsync();
+                if (msg.TimedOut)
+                {
+                    await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"No one managed to catch {randomGoat.name}").ConfigureAwait(false);
+                    return;
                 }
-                await msg.Result.DeleteAsync();
-                try
+                else
                 {
-                    using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                    if (!DoesUserHaveCharacter(msg.Result.Author.Id))
                     {
-                        string query = "INSERT INTO goats (level, name, type, breed, baseColour, ownerID, experience) " +
-                            "VALUES (?level, ?name, ?type, ?breed, ?baseColour, ?ownerID, ?exp)";
-                        var command = new MySqlCommand(query, connection);
-                        command.Parameters.Add("?level", MySqlDbType.Int32).Value = randomGoat.level;
-                        command.Parameters.Add("?name", MySqlDbType.VarChar, 255).Value = randomGoat.name;
-                        command.Parameters.Add("?type", MySqlDbType.VarChar).Value = "Kid";
-                        command.Parameters.Add("?breed", MySqlDbType.VarChar).Value = Enum.GetName(typeof(Breed), randomGoat.breed);
-                        command.Parameters.Add("?baseColour", MySqlDbType.VarChar).Value = Enum.GetName(typeof(BaseColour), randomGoat.baseColour);
-                        command.Parameters.Add("?ownerID", MySqlDbType.VarChar).Value = msg.Result.Author.Id;
-                        command.Parameters.Add("?exp", MySqlDbType.Decimal).Value =
-                            (int) Math.Ceiling(10 * Math.Pow(1.05, (randomGoat.level - 1)));
-                        connection.Open();
-                        command.ExecuteNonQuery();
+                        using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                        {
+                            string query = "INSERT INTO farmers (DiscordID) VALUES (?discordID)";
+                            var command = new MySqlCommand(query, connection);
+                            command.Parameters.Add("?discordID", MySqlDbType.VarChar, 40).Value = msg.Result.Author.Id;
+                            connection.Open();
+                            command.ExecuteNonQuery();
+                        }
                     }
-                    await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"Congrats " +
-                        $"{e.Guild.GetMemberAsync(msg.Result.Author.Id).Result.DisplayName} you caught " +
-                        $"{randomGoat.name}").ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Console.Out.WriteLine(ex.Message);
-                    Console.Out.WriteLine(ex.StackTrace);
+                    await msg.Result.DeleteAsync();
+                    try
+                    {
+                        using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                        {
+                            string query = "INSERT INTO goats (level, name, type, breed, baseColour, ownerID, experience) " +
+                                "VALUES (?level, ?name, ?type, ?breed, ?baseColour, ?ownerID, ?exp)";
+                            var command = new MySqlCommand(query, connection);
+                            command.Parameters.Add("?level", MySqlDbType.Int32).Value = randomGoat.level;
+                            command.Parameters.Add("?name", MySqlDbType.VarChar, 255).Value = randomGoat.name;
+                            command.Parameters.Add("?type", MySqlDbType.VarChar).Value = "Kid";
+                            command.Parameters.Add("?breed", MySqlDbType.VarChar).Value = Enum.GetName(typeof(Breed), randomGoat.breed);
+                            command.Parameters.Add("?baseColour", MySqlDbType.VarChar).Value = Enum.GetName(typeof(BaseColour), randomGoat.baseColour);
+                            command.Parameters.Add("?ownerID", MySqlDbType.VarChar).Value = msg.Result.Author.Id;
+                            command.Parameters.Add("?exp", MySqlDbType.Decimal).Value =
+                                (int)Math.Ceiling(10 * Math.Pow(1.05, (randomGoat.level - 1)));
+                            connection.Open();
+                            command.ExecuteNonQuery();
+                        }
+                        await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"Congrats " +
+                            $"{e.Guild.GetMemberAsync(msg.Result.Author.Id).Result.DisplayName} you caught " +
+                            $"{randomGoat.name}").ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Out.WriteLine(ex.Message);
+                        Console.Out.WriteLine(ex.StackTrace);
+                    }
                 }
             }
         }

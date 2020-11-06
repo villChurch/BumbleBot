@@ -89,6 +89,7 @@ namespace BumbleBot.Commands.Game
                 int credits = 10;
                 int barnSize = 10;
                 int grazingSize = 0;
+                decimal milkAmount = 0;
                 using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                 {
                     string query = "select * from farmers where DiscordID = ?discordID";
@@ -101,6 +102,7 @@ namespace BumbleBot.Commands.Game
                         credits = reader.GetInt32("credits");
                         barnSize = reader.GetInt32("barnsize");
                         grazingSize = reader.GetInt32("grazesize");
+                        milkAmount = reader.GetDecimal("milk");
                     }
                     reader.Close();
                 }
@@ -133,6 +135,7 @@ namespace BumbleBot.Commands.Game
                 embed.AddField("Total number of Goats in Barn", numberOfGoats.ToString(), false);
                 embed.AddField("Barn Size", barnSize.ToString(), true);
                 embed.AddField("Grazing space", $"Space for {grazingSize} goats", true);
+                embed.AddField("Amount of Milk in storage", $"{milkAmount} lbs", true);
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
             catch (Exception ex)
