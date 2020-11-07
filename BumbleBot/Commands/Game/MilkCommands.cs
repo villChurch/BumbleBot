@@ -8,6 +8,9 @@ using DSharpPlus.CommandsNext.Attributes;
 using System.Linq;
 using BumbleBot.Utilities;
 using MySql.Data.MySqlClient;
+using System.Net;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace BumbleBot.Commands.Game
 {
@@ -29,45 +32,19 @@ namespace BumbleBot.Commands.Game
         {
             try
             {
-                List<Goat> milkableGoats = goatService.ReturnUsersGoats(ctx.User.Id).Where(x => x.level >= 100).ToList();
+                String uri = $"http://localhost:8080/milk/{ctx.User.Id}";
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+                request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 
-                if (milkableGoats.Count <= 0)
+                using(HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync())
+                using(Stream stream = response.GetResponseStream())
+                using(StreamReader reader = new StreamReader(stream))
                 {
-                    await ctx.Channel.SendMessageAsync("You currently don't have any adult goats that can be milked").ConfigureAwait(false);
-                }
-                else
-                {
-                    double milkGained = 0;
-                    decimal currentMilk = 0;
-                    milkableGoats.ForEach(x => milkGained += ((x.level - 100) * 0.3));
-                    using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
-                    {
-                        string query = "select milk from farmers where DiscordID = ?discordId";
-                        var command = new MySqlCommand(query, connection);
-                        command.Parameters.Add("?discordId", MySqlDbType.VarChar).Value = ctx.User.Id;
-                        connection.Open();
-                        var reader = command.ExecuteReader();
-                        if (reader.HasRows)
-                        {
-                            while (reader.Read())
-                            {
-                                currentMilk = reader.GetDecimal("milk");
-                            }
-                        }
-                        reader.Close();
-                    }
-                    currentMilk += Convert.ToDecimal(milkGained);
-                    using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
-                    {
-                        string query = "Update farmers SET milk = ?milk where DiscordID = ?discordId";
-                        var command = new MySqlCommand(query, connection);
-                        command.Parameters.Add("?milk", MySqlDbType.Decimal).Value = currentMilk;
-                        command.Parameters.Add("?discordId", MySqlDbType.VarChar).Value = ctx.User.Id;
-                        connection.Open();
-                        command.ExecuteNonQuery();
-                    }
-                    await ctx.Channel.SendMessageAsync($"You have successfully milked {milkableGoats.Count} goats and " +
-                        $"gained {milkGained} lbs of milk").ConfigureAwait(false);
+                    var jsonReader = new JsonTextReader(reader);
+                    JsonSerializer serializer = new JsonSerializer();
+                    MilkingResponse milkingResponse = serializer.Deserialize<MilkingResponse>(jsonReader);
+
+                    await ctx.Channel.SendMessageAsync(milkingResponse.message).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
