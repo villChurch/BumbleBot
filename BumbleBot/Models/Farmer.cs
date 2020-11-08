@@ -7,6 +7,7 @@ namespace BumbleBot.Models
         public int credits { get; set; }
         public int barnspace { get; set; }
         public int grazingspace { get; set; }
+        public decimal milk { get; set; }
         public Farmer()
         {
         }

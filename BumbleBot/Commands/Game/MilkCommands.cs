@@ -95,5 +95,61 @@ namespace BumbleBot.Commands.Game
                 Console.Out.WriteLine(ex.StackTrace);
             }
         }
+
+        [Command("sell")]
+        public async Task SellMilk(CommandContext ctx)
+        {
+            try
+            {
+                Farmer farmer = new Farmer();
+                using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    string query = "Select * from farmers where DiscordID = ?discordID";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?discordID", MySqlDbType.VarChar, 40).Value = ctx.User.Id;
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            farmer.credits = reader.GetInt32("credits");
+                            farmer.milk = reader.GetDecimal("milk");
+                            farmer.discordID = reader.GetUInt64("DiscordID");
+                        }
+                    }
+                    reader.Close();
+                }
+                if (farmer == null)
+                {
+                    await ctx.Channel.SendMessageAsync("You do not have a character setup yet").ConfigureAwait(false);
+                }
+                else if (farmer.milk <=0)
+                {
+                    await ctx.Channel.SendMessageAsync("You do not have any milk you can sell").ConfigureAwait(false);
+                }
+                else
+                {
+                    farmer.credits +=  (int)Math.Ceiling(farmer.milk * 5);
+                    using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                    {
+                        string query = "Update farmers set milk = ?milk, credits = ?credits where DiscordID = ?discordId";
+                        var command = new MySqlCommand(query, connection);
+                        command.Parameters.Add("?milk", MySqlDbType.Decimal).Value = 0;
+                        command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.credits;
+                        command.Parameters.Add("?discordId", MySqlDbType.VarChar, 40).Value = ctx.User.Id;
+                        connection.Open();
+                        command.ExecuteNonQuery();
+                    }
+                    await ctx.Channel.SendMessageAsync($"Congratulations {ctx.User.Mention} you have sold {farmer.milk} for " +
+                        $"{Math.Ceiling(farmer.milk * 5)} credits.").ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Out.WriteLine(ex.Message);
+                Console.Out.WriteLine(ex.StackTrace);
+            }
+        }
     }
 }
