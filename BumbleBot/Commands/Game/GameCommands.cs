@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using System.Timers;
 using BumbleBot.Attributes;
@@ -145,19 +146,9 @@ namespace BumbleBot.Commands.Game
             }
         }
 
-        [Command("spawngoat")]
-        [OwnerOrPermission(DSharpPlus.Permissions.KickMembers)]
-        [Hidden]
-        public async Task SpawnGoat(CommandContext ctx)
-        {
-            await ctx.Channel.DeleteMessageAsync(ctx.Message).ConfigureAwait(false);
-            await SpawnRandomGoat(ctx);
-        }
-
         [Command("equip")]
         [Description("Equip a goat as your current goat")]
         [Hidden]
-        [OwnerOrPermission(DSharpPlus.Permissions.KickMembers)]
         public async Task EquipGoat(CommandContext ctx)
         {
             try
@@ -184,6 +175,7 @@ namespace BumbleBot.Commands.Game
                             goat.levelMulitplier = reader.GetDecimal("levelMultiplier");
                             goat.equiped = reader.GetBoolean("equipped");
                             goat.experience = reader.GetDecimal("experience");
+                            goat.filePath = reader.GetString("imageLink");
                             goats.Add(goat);
                         }
                     }
@@ -195,17 +187,18 @@ namespace BumbleBot.Commands.Game
                 }
                 else
                 {
+                    var url = "http://williamspires.com/";
                     List<Page> pages = new List<Page>();
                     var interactivity = ctx.Client.GetInteractivity();
                     DiscordEmoji backward = DiscordEmoji.FromName(ctx.Client, ":arrow_backward:");
                     DiscordEmoji forward = DiscordEmoji.FromName(ctx.Client, ":arrow_forward:");
                     DiscordEmoji equipBarn = DiscordEmoji.FromName(ctx.Client, ":1barn:");
-
                     foreach (var goat in goats)
                     {
                         var embed = new DiscordEmbedBuilder
                         {
-                            Title = goat.id.ToString(),
+                            Title = $"{goat.id}",
+                            ImageUrl = url + goat.filePath.Replace(" ", "%20")
                         };
                         embed.AddField("Name", goat.name, true);
                         embed.AddField("Level", goat.level.ToString(), true);
@@ -217,6 +210,8 @@ namespace BumbleBot.Commands.Game
                         pages.Add(page);
                     }
                     int pageCounter = 0;
+                    Console.Out.WriteLine(url + goats[0].filePath);
+                    //var msg = await ctx.Channel.SendMessageAsync(embed: discordEmbed);
                     var msg = await ctx.Channel.SendMessageAsync(embed: pages[pageCounter].Embed).ConfigureAwait(false);
                     SetEquipTimer();
                     while (equipTimerrunning)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using BumbleBot.Models;
 using BumbleBot.Utilities;
@@ -25,7 +26,7 @@ namespace BumbleBot.Services
             {
                 goatsLevelAndExp.Item1 = (int)Math.Floor((Math.Log((double)(goatsLevelAndExp.Item2 / 10)) / Math.Log(1.05)));
                 decimal newExp = goatsLevelAndExp.Item2 + expToAdd;
-                UpdateGoatLevelAndExperience(goatsLevelAndExp.Item1, newExp, userId);
+                UpdateGoatLevelAndExperience(startingLevel, goatsLevelAndExp.Item1, newExp, userId);
             }
             return startingLevel != goatsLevelAndExp.Item1;
         }
@@ -54,19 +55,20 @@ namespace BumbleBot.Services
             return (goatsLevel, goatsExperience);
         }
 
-        private void UpdateGoatLevelAndExperience(int level, decimal experience, ulong userId)
+        private void UpdateGoatLevelAndExperience(int oldLevel, int level, decimal experience, ulong userId)
         {
-            if (level >= 100)
+            if (level >= 100 && oldLevel < 100)
             {
                 using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    string query = "Update goats Set level = ?level, experience = ?experience, type = ?type " +
-                        "where ownerID = ?ownerId and equipped = 1";
+                    string query = "Update goats Set level = ?level, experience = ?experience, type = ?type, " +
+                        "imageLink = ?imageLink where ownerID = ?ownerId and equipped = 1";
                     var command = new MySqlCommand(query, connection);
                     command.Parameters.Add("?level", MySqlDbType.Int32).Value = level;
                     command.Parameters.Add("?experience", MySqlDbType.Decimal).Value = experience;
                     command.Parameters.Add("?ownerId", MySqlDbType.VarChar, 40).Value = userId;
                     command.Parameters.Add("?type", MySqlDbType.VarChar).Value = "Adult";
+                    command.Parameters.Add("?imageLink", MySqlDbType.VarChar).Value = $"Goat_Images/{GetAdultGoatImageUrl(userId)}";
                     connection.Open();
                     command.ExecuteNonQuery();
                 }
@@ -83,6 +85,87 @@ namespace BumbleBot.Services
                     connection.Open();
                     command.ExecuteNonQuery();
                 }
+            }
+        }
+
+        private string GetAdultGoatImageUrl(ulong userId)
+        {
+            Goat goat = new Goat();
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "Select * from goats where equipped = 1 and ownerID = ?discordId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?discordId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        Enum.TryParse(reader.GetString("baseColour"), out BaseColour colour);
+                        Enum.TryParse(reader.GetString("breed"), out Breed breed);
+                        goat.baseColour = colour;
+                        goat.breed = breed;
+                    }
+                }
+            }
+            string imageUrl = "";
+            string goatName = "";
+            string goatColour = "";
+
+            if (goat.breed.Equals(Breed.La_Mancha))
+            {
+                goatName = "LM";
+            }
+            else if (goat.breed.Equals(Breed.Nigerian_Dwarf))
+            {
+                goatName = "ND";
+            }
+            else
+            {
+                goatName = "NB";
+            }
+
+            if (goat.baseColour.Equals(BaseColour.Black))
+            {
+                goatColour = "black";
+            }
+            else if (goat.baseColour.Equals(BaseColour.Chocolate))
+            {
+                goatColour = "chocolate";
+            }
+            else if (goat.baseColour.Equals(BaseColour.Gold))
+            {
+                goatColour = "gold";
+            }
+            else if (goat.baseColour.Equals(BaseColour.Red))
+            {
+                goatColour = "red";
+            }
+            else if (goat.baseColour.Equals(BaseColour.White))
+            {
+                goatColour = "white";
+            }
+            Random random = new Random();
+            int randomNumber = random.Next(9);
+            if (randomNumber == 0)
+            {
+                return $"{goatName} {FirstCharToUpper(goatColour)}/{goatName}adult{goatColour}.png";
+            }
+            else
+            {
+                return $"{goatName} {FirstCharToUpper(goatColour)}/{goatName}adult{goatColour}{randomNumber}.png";
+            }
+        }
+
+
+        public string FirstCharToUpper(string input)
+        {
+            switch (input)
+            {
+                case null: throw new ArgumentNullException(nameof(input));
+                case "": throw new ArgumentException($"{nameof(input)} cannot be empty", nameof(input));
+                default: return input.First().ToString().ToUpper() + input.Substring(1);
             }
         }
 

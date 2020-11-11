@@ -43,6 +43,7 @@ namespace BumbleBot.Models
         public BaseColour baseColour { get; set; }
         public bool equiped { get; set; }
         public decimal experience { get; set; }
+        public string filePath { get; set; }
         public Goat()
         {
         }
