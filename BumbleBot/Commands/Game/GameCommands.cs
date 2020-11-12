@@ -146,7 +146,7 @@ namespace BumbleBot.Commands.Game
             }
         }
 
-        [Command("equip")]
+        [Command("handle")]
         [Description("Select a Goat to Handle")]
         [Hidden]
         public async Task EquipGoat(CommandContext ctx)
