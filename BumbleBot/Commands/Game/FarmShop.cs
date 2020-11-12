@@ -24,8 +24,8 @@ namespace BumbleBot.Commands.Game
         {
             var embed = new DiscordEmbedBuilder
             {
-                Title = "Welcome to the shop",
-                Description = "Here you will find a list of purchaseable items. To purchase them run `purchase {itemName}`.",
+                Title = "Welcome to the Shop",
+                Description = "Here you will find a list of purchaseable items. To obtain them use `purchase {itemName}`.",
                 Color = DiscordColor.Aquamarine
             };
 
@@ -33,7 +33,7 @@ namespace BumbleBot.Commands.Game
 
             if (String.IsNullOrEmpty(currentFarmer.barnspace.ToString()) || currentFarmer.barnspace == 0)
             {
-                await ctx.Channel.SendMessageAsync("Looks like you don't have a character yet, use the `create` command to make one")
+                await ctx.Channel.SendMessageAsync("Looks like you don't have a character yet, use the `create` command to start.")
                     .ConfigureAwait(false);
             }
             else
@@ -41,8 +41,8 @@ namespace BumbleBot.Commands.Game
                 int barnCost = (currentFarmer.barnspace + 10) * 100;
                 int grazeCost = (currentFarmer.grazingspace + 10) * 100;
 
-                embed.AddField("Barn", $"Cost {barnCost} - Will give 10 extra space");
-                embed.AddField("Graze", $"Cost {grazeCost} - Will give 10 extra grazing space");
+                embed.AddField("Barn", $"Cost {barnCost} - Will provide 10 extra stalls");
+                embed.AddField("Graze", $"Cost {grazeCost} - Will provide 10 extra pasture space");
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
         }
