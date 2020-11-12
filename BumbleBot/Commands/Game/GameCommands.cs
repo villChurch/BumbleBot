@@ -46,7 +46,7 @@ namespace BumbleBot.Commands.Game
         }
 
         [Command("create")]
-        [Description("Create your character")]
+        [Description("Create Your Character")]
         [Hidden, OwnerOrPermission(DSharpPlus.Permissions.KickMembers)]
         public async Task CreateCharacter(CommandContext ctx)
         {
@@ -75,7 +75,7 @@ namespace BumbleBot.Commands.Game
         }
 
         [Command("profile")]
-        [Description("shows your game profile")]
+        [Description("Shows your game profile")]
         [Hidden, OwnerOrPermission(DSharpPlus.Permissions.KickMembers)]
         public async Task ShowProfile(CommandContext ctx)
         {
@@ -133,10 +133,10 @@ namespace BumbleBot.Commands.Game
                     Color = DiscordColor.Aquamarine
                 };
                 embed.AddField("Credits", credits.ToString(), false);
-                embed.AddField("Total number of Goats in Barn", numberOfGoats.ToString(), false);
-                embed.AddField("Barn Size", barnSize.ToString(), true);
-                embed.AddField("Grazing space", $"Space for {grazingSize} goats", true);
-                embed.AddField("Amount of Milk in storage", $"{milkAmount} lbs", true);
+                embed.AddField("Herd Size", numberOfGoats.ToString(), false);
+                embed.AddField("Barn Space", barnSize.ToString(), true);
+                embed.AddField("Pasture Available", $"Space For {grazingSize} Goats", true);
+                embed.AddField("Milk in Storage", $"{milkAmount} lbs", true);
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -146,8 +146,8 @@ namespace BumbleBot.Commands.Game
             }
         }
 
-        [Command("equip")]
-        [Description("Equip a goat as your current goat")]
+        [Command("handle")]
+        [Description("Select a Goat to Handle")]
         [Hidden]
         public async Task EquipGoat(CommandContext ctx)
         {
@@ -183,7 +183,7 @@ namespace BumbleBot.Commands.Game
                 }
                 if (goats.Count < 1)
                 {
-                    await ctx.Channel.SendMessageAsync("You currently don't own any goats that can be equipped").ConfigureAwait(false);
+                    await ctx.Channel.SendMessageAsync("You don't currently own any goats that can be handled").ConfigureAwait(false);
                 }
                 else
                 {
@@ -257,7 +257,7 @@ namespace BumbleBot.Commands.Game
                         {
                             if (!int.TryParse(pages[pageCounter].Embed.Title, out int id))
                             {
-                                await ctx.Channel.SendMessageAsync("Something went wrong while trying to equip this goat").ConfigureAwait(false);
+                                await ctx.Channel.SendMessageAsync("Something went wrong while trying to handle this goat.").ConfigureAwait(false);
                                 return;
                             }
                             using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
@@ -277,7 +277,7 @@ namespace BumbleBot.Commands.Game
                                 connection.Open();
                                 command.ExecuteNonQuery();
                             }
-                            await ctx.Channel.SendMessageAsync("Goat is now equipped").ConfigureAwait(false);
+                            await ctx.Channel.SendMessageAsync("Goat is now in hand.").ConfigureAwait(false);
                             //pages.RemoveAt(pageCounter);
                             await msg.DeleteAllReactionsAsync().ConfigureAwait(false);
                             equipTimerrunning = false;
@@ -302,12 +302,12 @@ namespace BumbleBot.Commands.Game
             randomGoat.type = Models.Type.Kid;
             randomGoat.level = RandomLevel.GetRandomLevel();
             randomGoat.levelMulitplier = 1;
-            randomGoat.name = "Goaty McGoatFace";
+            randomGoat.name = "Unregistered Goat";
             randomGoat.special = false;
 
             var embed = new DiscordEmbedBuilder
             {
-                Title = $"{randomGoat.name} has spawned, type purchase to purchase her",
+                Title = $"{randomGoat.name} has spawned, type purchase to obtain her.",
                 Color = DiscordColor.Aquamarine
             };
             embed.AddField("Colour", Enum.GetName(typeof(BaseColour), randomGoat.baseColour), false);
@@ -322,13 +322,13 @@ namespace BumbleBot.Commands.Game
             await goatMsg.DeleteAsync();
             if (msg.TimedOut)
             {
-                await ctx.Channel.SendMessageAsync($"No one managed to purchase {randomGoat.name}").ConfigureAwait(false);
+                await ctx.Channel.SendMessageAsync($"No one decided to purchase {randomGoat.name}").ConfigureAwait(false);
                 return;
             }
             else if (!goatService.CanGoatFitInBarn(msg.Result.Author.Id))
             {
                 DiscordMember member = await ctx.Guild.GetMemberAsync(msg.Result.Author.Id);
-                await ctx.Channel.SendMessageAsync($"Unfortunately {member.DisplayName} your barn is full and the goat has now escaped!")
+                await ctx.Channel.SendMessageAsync($"Unfortunately {member.DisplayName} your barn is full and the goat has gone back to market!")
                     .ConfigureAwait(false);
             }
             else
@@ -363,8 +363,8 @@ namespace BumbleBot.Commands.Game
                         connection.Open();
                         command.ExecuteNonQuery();
                     }
-                    await ctx.Channel.SendMessageAsync($"Congrats " +
-                        $"{ctx.Guild.GetMemberAsync(msg.Result.Author.Id).Result.DisplayName} you caught " +
+                    await ctx.Channel.SendMessageAsync($"Congratulations " +
+                        $"{ctx.Guild.GetMemberAsync(msg.Result.Author.Id).Result.DisplayName} you purchased " +
                         $"{randomGoat.name}").ConfigureAwait(false);
                 }
                 catch (Exception ex)
