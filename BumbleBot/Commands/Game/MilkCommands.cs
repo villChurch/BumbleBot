@@ -19,7 +19,6 @@ using DSharpPlus.Entities;
 namespace BumbleBot.Commands.Game
 {
     [Group("Milk")]
-    [Hidden]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class MilkCommands : BaseCommandModule
     {

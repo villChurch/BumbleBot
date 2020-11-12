@@ -43,7 +43,7 @@ namespace BumbleBot
         private void StartTimer()
         {
             timer = new Timer();
-            timer.Interval = 60000; // One Minute
+            timer.Interval = 60000 * 5; // One Minute
             timer.Elapsed += ResetMPM;
             timer.AutoReset = true;
             timer.Enabled = true;
@@ -149,7 +149,7 @@ namespace BumbleBot
             if (!e.Author.IsBot) //e.Guild.Id == guildId && 
             {
                 messageCount++;
-                if (messageCount > 10 && gpm <= 5)
+                if (messageCount > 10 && gpm <= 0)
                 {
                     SpawnGoat(e);
                     messageCount = 0;
@@ -253,13 +253,13 @@ namespace BumbleBot
                 randomGoat.type = Models.Type.Kid;
                 randomGoat.level = RandomLevel.GetRandomLevel();
                 randomGoat.levelMulitplier = 1;
-                randomGoat.name = "Goaty McGoatFace";
+                randomGoat.name = "Unregistered Goat";
                 randomGoat.special = false;
 
                 string goatImageUrl = GetKidImage(randomGoat.breed, randomGoat.baseColour);
                 var embed = new DiscordEmbedBuilder
                 {
-                    Title = $"{randomGoat.name} has spawned, type capture to capture her",
+                    Title = $"{randomGoat.name} has spawned, type purchase to obtain her.",
                     Color = DiscordColor.Aquamarine,
                     ImageUrl = $"attachment://{goatImageUrl}"
                 };
@@ -273,12 +273,19 @@ namespace BumbleBot
                     $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/Kids/{goatImageUrl}", embed: embed)
                     .ConfigureAwait(false);
                 var msg = await interactivtiy.WaitForMessageAsync(x => x.Channel == e.Guild.GetChannel(goatSpawnChannelId)
-                && x.Content.ToLower().Trim() == "capture", TimeSpan.FromSeconds(10)).ConfigureAwait(false);
+                && x.Content.ToLower().Trim() == "capture", TimeSpan.FromSeconds(45)).ConfigureAwait(false);
                 await goatMsg.DeleteAsync();
+                GoatService goatService = new GoatService();
                 if (msg.TimedOut)
                 {
-                    await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"No one managed to catch {randomGoat.name}").ConfigureAwait(false);
+                    await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"No one decided to purchase {randomGoat.name}").ConfigureAwait(false);
                     return;
+                }
+                else if (!goatService.CanGoatFitInBarn(msg.Result.Author.Id))
+                {
+                    DiscordMember member = await e.Guild.GetMemberAsync(msg.Result.Author.Id);
+                    await e.Channel.SendMessageAsync($"Unfortunately {member.DisplayName} your barn is full and the goat has gone back to market!")
+                        .ConfigureAwait(false);
                 }
                 else
                 {

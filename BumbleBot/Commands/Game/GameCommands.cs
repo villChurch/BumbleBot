@@ -47,7 +47,6 @@ namespace BumbleBot.Commands.Game
 
         [Command("create")]
         [Description("Create Your Character")]
-        [Hidden, OwnerOrPermission(DSharpPlus.Permissions.KickMembers)]
         public async Task CreateCharacter(CommandContext ctx)
         {
             if (DoesUserHaveCharacter(ctx.Member.Id))
@@ -76,7 +75,6 @@ namespace BumbleBot.Commands.Game
 
         [Command("profile")]
         [Description("Shows your game profile")]
-        [Hidden, OwnerOrPermission(DSharpPlus.Permissions.KickMembers)]
         public async Task ShowProfile(CommandContext ctx)
         {
             try
@@ -148,7 +146,6 @@ namespace BumbleBot.Commands.Game
 
         [Command("handle")]
         [Description("Select a Goat to Handle")]
-        [Hidden]
         public async Task EquipGoat(CommandContext ctx)
         {
             try
@@ -210,8 +207,6 @@ namespace BumbleBot.Commands.Game
                         pages.Add(page);
                     }
                     int pageCounter = 0;
-                    Console.Out.WriteLine(url + goats[0].filePath);
-                    //var msg = await ctx.Channel.SendMessageAsync(embed: discordEmbed);
                     var msg = await ctx.Channel.SendMessageAsync(embed: pages[pageCounter].Embed).ConfigureAwait(false);
                     SetEquipTimer();
                     while (equipTimerrunning)
@@ -390,20 +385,5 @@ namespace BumbleBot.Commands.Game
             }
             return hasCharacter;
         }
-
-        //if (reader.HasRows)
-        //{
-        //    while(reader.Read())
-        //    {
-        //        Goat newGoat = new Goat();
-        //        newGoat.id = reader.GetInt32("id");
-        //        newGoat.level = reader.GetInt32("level");
-        //        newGoat.levelMulitplier = reader.GetDecimal("levelMultiplier");
-        //        newGoat.name = reader.GetString("name");
-        //        newGoat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"), true);
-        //        newGoat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"), true);
-        //        newGoat.type = (Models.Type)Enum.Parse(typeof(Models.Type), reader.GetString("type"), true);
-        //    }
-        //}
     }
 }

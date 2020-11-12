@@ -10,7 +10,6 @@ using MySql.Data.MySqlClient;
 namespace BumbleBot.Commands.Game
 {
     [Group("purchase")]
-    [Hidden]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class Purchase : BaseCommandModule
     {
@@ -22,7 +21,6 @@ namespace BumbleBot.Commands.Game
         }
 
         [Command ("barn")]
-        [Hidden]
         public async Task UpgradeBarn(CommandContext ctx, int upgradePrice)
         {
             Farmer farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
@@ -58,7 +56,6 @@ namespace BumbleBot.Commands.Game
         }
 
         [Command ("graze")]
-        [Hidden]
         public async Task UpgradeGrazing(CommandContext ctx, int upgradePrice)
         {
             Farmer farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
