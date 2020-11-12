@@ -29,7 +29,7 @@ namespace BumbleBot.Commands.Game
 
             if (farmer.barnspace == 0)
             {
-                await ctx.Channel.SendMessageAsync("Looks like you don't have a character yet. Use `create` to make one")
+                await ctx.Channel.SendMessageAsync("Looks like you don't have a character yet. Use `create` to make one.")
                     .ConfigureAwait(false);
             }
             else
@@ -47,11 +47,11 @@ namespace BumbleBot.Commands.Game
                         connection.Open();
                         command.ExecuteNonQuery();
                     }
-                    await ctx.Channel.SendMessageAsync("Barn has now been upgraded and can hold 10 more goats").ConfigureAwait(false);
+                    await ctx.Channel.SendMessageAsync("Barn has now been upgraded and can hold 10 more goats!").ConfigureAwait(false);
                 }
                 else
                 {
-                    await ctx.Channel.SendMessageAsync("Either the upgrade price you entered is not enough or you do not have enough credits")
+                    await ctx.Channel.SendMessageAsync("Either the upgrade price you entered is not enough or you do not have enough credits!")
                         .ConfigureAwait(false);
                 }
             }
@@ -64,7 +64,7 @@ namespace BumbleBot.Commands.Game
             Farmer farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
             if (farmer.barnspace == 0)
             {
-                await ctx.Channel.SendMessageAsync("Looks like you don't have a character yet. Use `create` to make one")
+                await ctx.Channel.SendMessageAsync("Looks like you don't have a character yet. Use `create` to make one.")
                     .ConfigureAwait(false);
             }
             else
@@ -82,11 +82,11 @@ namespace BumbleBot.Commands.Game
                         connection.Open();
                         command.ExecuteNonQuery();
                     }
-                    await ctx.Channel.SendMessageAsync("Grazing space has been expanded and can now hold 10 more gaots").ConfigureAwait(false);
+                    await ctx.Channel.SendMessageAsync("Pasture space has been expanded and can now feed 10 more goats!").ConfigureAwait(false);
                 }
                 else
                 {
-                    await ctx.Channel.SendMessageAsync("Either the upgrade price you entered is not enough or you do not have enough credits")
+                    await ctx.Channel.SendMessageAsync("Either the upgrade price you entered is not enough or you do not have enough credits!")
                         .ConfigureAwait(false);
 
 
