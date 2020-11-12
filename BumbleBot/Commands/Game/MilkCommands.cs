@@ -122,11 +122,11 @@ namespace BumbleBot.Commands.Game
                 }
                 if (farmer == null)
                 {
-                    await ctx.Channel.SendMessageAsync("You do not have a character setup yet").ConfigureAwait(false);
+                    await ctx.Channel.SendMessageAsync("You do not have a character setup yet.").ConfigureAwait(false);
                 }
                 else if (farmer.milk <=0)
                 {
-                    await ctx.Channel.SendMessageAsync("You do not have any milk you can sell").ConfigureAwait(false);
+                    await ctx.Channel.SendMessageAsync("You do not have any milk you can sell.").ConfigureAwait(false);
                 }
                 else
                 {
