@@ -168,7 +168,7 @@ namespace BumbleBot
                         if (channelList.Any(x => x.Id == 774294465942257715))
                         {
                             var channel = e.Guild.GetChannel(774294465942257715);
-                            _ = await channel.SendMessageAsync($"Congrats {e.Author.Mention} your current goat has just levelled up").ConfigureAwait(false);
+                            _ = await channel.SendMessageAsync($"Congrats {e.Author.Mention} your current goat has just gained a level").ConfigureAwait(false);
                         }
                     }
                     );
@@ -259,7 +259,7 @@ namespace BumbleBot
                 string goatImageUrl = GetKidImage(randomGoat.breed, randomGoat.baseColour);
                 var embed = new DiscordEmbedBuilder
                 {
-                    Title = $"{randomGoat.name} has spawned, type purchase to obtain her.",
+                    Title = $"{randomGoat.name} has become available, type purchase to add her to your herd.",
                     Color = DiscordColor.Aquamarine,
                     ImageUrl = $"attachment://{goatImageUrl}"
                 };
