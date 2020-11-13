@@ -180,6 +180,7 @@
     <Compile Include="Commands\Game\MilkCommands.cs" />
     <Compile Include="Models\MilkingResponse.cs" />
     <Compile Include="Models\ExpiryResponse.cs" />
+    <Compile Include="Commands\Game\GoatCommands.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />

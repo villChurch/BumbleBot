@@ -86,6 +86,9 @@ namespace BumbleBot.Commands.Game
                     var expiryPages = interactivity.GeneratePagesInEmbed(sb.ToString(), SplitType.Line, new DiscordEmbedBuilder());
                     await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, expiryPages)
                         .ConfigureAwait(false);
+                } else
+                {
+                    await ctx.Channel.SendMessageAsync("You currently don't have any milk").ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -137,6 +140,14 @@ namespace BumbleBot.Commands.Game
                         command.Parameters.Add("?milk", MySqlDbType.Decimal).Value = 0;
                         command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.credits;
                         command.Parameters.Add("?discordId", MySqlDbType.VarChar, 40).Value = ctx.User.Id;
+                        connection.Open();
+                        command.ExecuteNonQuery();
+                    }
+                    using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                    {
+                        string query = "Delete from milkexpiry where DiscordID = ?discordID";
+                        var command = new MySqlCommand(query, connection);
+                        command.Parameters.Add("?discordID", MySqlDbType.VarChar).Value = ctx.User.Id;
                         connection.Open();
                         command.ExecuteNonQuery();
                     }
