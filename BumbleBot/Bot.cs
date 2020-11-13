@@ -273,7 +273,7 @@ namespace BumbleBot
                     $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/Kids/{goatImageUrl}", embed: embed)
                     .ConfigureAwait(false);
                 var msg = await interactivtiy.WaitForMessageAsync(x => x.Channel == e.Guild.GetChannel(goatSpawnChannelId)
-                && x.Content.ToLower().Trim() == "capture", TimeSpan.FromSeconds(45)).ConfigureAwait(false);
+                && x.Content.ToLower().Trim() == "purchase", TimeSpan.FromSeconds(45)).ConfigureAwait(false);
                 await goatMsg.DeleteAsync();
                 GoatService goatService = new GoatService();
                 if (msg.TimedOut)
@@ -321,7 +321,7 @@ namespace BumbleBot
                             command.ExecuteNonQuery();
                         }
                         await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"Congrats " +
-                            $"{e.Guild.GetMemberAsync(msg.Result.Author.Id).Result.DisplayName} you caught " +
+                            $"{e.Guild.GetMemberAsync(msg.Result.Author.Id).Result.DisplayName} you purchased " +
                             $"{randomGoat.name}").ConfigureAwait(false);
                     }
                     catch (Exception ex)
