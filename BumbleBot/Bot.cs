@@ -265,7 +265,7 @@ namespace BumbleBot
                 };
                 embed.AddField("Colour", Enum.GetName(typeof(BaseColour), randomGoat.baseColour), false);
                 embed.AddField("Breed", Enum.GetName(typeof(Breed), randomGoat.breed).Replace("_", " "), true);
-                embed.AddField("Level", randomGoat.level.ToString(), true);
+                embed.AddField("Level", (randomGoat.level - 1).ToString(), true);
 
                 var interactivtiy = Client.GetInteractivity();
 
