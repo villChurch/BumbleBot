@@ -229,6 +229,7 @@ namespace BumbleBot.Services
                         goat.levelMulitplier = reader.GetDecimal("levelMultiplier");
                         goat.experience = reader.GetDecimal("experience");
                         goat.filePath = reader.GetString("imageLink");
+                        goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
                         goats.Add(goat);
                     }
                 }

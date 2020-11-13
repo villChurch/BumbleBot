@@ -63,9 +63,10 @@ namespace BumbleBot.Commands.Game
                         Title = $"{goat.id}",
                         ImageUrl = url + goat.filePath.Replace(" ", "%20")
                     };
-                    embed.AddField("Name", goat.name, true);
+                    embed.AddField("Name", goat.name, false);
                     embed.AddField("Level", goat.level.ToString(), true);
                     embed.AddField("Experience", goat.experience.ToString(), true);
+                    embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed).Replace("_", " "), true);
                     Page page = new Page
                     {
                         Embed = embed

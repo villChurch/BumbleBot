@@ -245,8 +245,8 @@ namespace BumbleBot
             if (result != null)
             {
                 Random rnd = new Random();
-                int breed = rnd.Next(0, 2);
-                int baseColour = rnd.Next(0, 4);
+                int breed = rnd.Next(0, 3);
+                int baseColour = rnd.Next(0, 5);
                 var randomGoat = new Goat();
                 randomGoat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), Enum.GetName(typeof(BaseColour), baseColour));
                 randomGoat.breed = (Breed)Enum.Parse(typeof(Breed), Enum.GetName(typeof(Breed), breed));
@@ -308,7 +308,7 @@ namespace BumbleBot
                             string query = "INSERT INTO goats (level, name, type, breed, baseColour, ownerID, experience, imageLink) " +
                                 "VALUES (?level, ?name, ?type, ?breed, ?baseColour, ?ownerID, ?exp, ?imageLink)";
                             var command = new MySqlCommand(query, connection);
-                            command.Parameters.Add("?level", MySqlDbType.Int32).Value = randomGoat.level;
+                            command.Parameters.Add("?level", MySqlDbType.Int32).Value = randomGoat.level - 1;
                             command.Parameters.Add("?name", MySqlDbType.VarChar, 255).Value = randomGoat.name;
                             command.Parameters.Add("?type", MySqlDbType.VarChar).Value = "Kid";
                             command.Parameters.Add("?breed", MySqlDbType.VarChar).Value = Enum.GetName(typeof(Breed), randomGoat.breed);
