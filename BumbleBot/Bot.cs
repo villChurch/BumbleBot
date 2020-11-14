@@ -86,6 +86,7 @@ namespace BumbleBot
 
             Services = new ServiceCollection()
                 .AddSingleton<AssholeService>()
+                .AddSingleton<TriviaServices>()
                 .AddTransient<GoatService>()
                 .AddTransient<FarmerService>()
                 .BuildServiceProvider(true);
