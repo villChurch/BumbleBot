@@ -181,6 +181,9 @@
     <Compile Include="Models\MilkingResponse.cs" />
     <Compile Include="Models\ExpiryResponse.cs" />
     <Compile Include="Commands\Game\GoatCommands.cs" />
+    <Compile Include="Models\TriviaQuestions.cs" />
+    <Compile Include="Services\TriviaServices.cs" />
+    <Compile Include="Commands\Trivia\MainTriviaCommands.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
@@ -192,6 +195,7 @@
     <Folder Include="Attributes\" />
     <Folder Include="Commands\AdminCommands\" />
     <Folder Include="Services\" />
+    <Folder Include="Commands\Trivia\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
