@@ -55,6 +55,49 @@ namespace BumbleBot.Services
             return (goatsLevel, goatsExperience);
         }
 
+        public void UpdateGoatImagesForKidsThatAreAdults(ulong userId)
+        {
+            List<Goat> goats = new List<Goat>();
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "Select * from goats where ownerID = ?ownerId and type = ?type and level > ?level";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?ownerId", MySqlDbType.VarChar).Value = userId;
+                command.Parameters.Add("?type", MySqlDbType.VarChar).Value = "Kid";
+                command.Parameters.Add("?level", MySqlDbType.Int32).Value = 99;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while(reader.Read())
+                    {
+                        Goat goat = new Goat();
+                        goat.id = reader.GetInt32("id");
+                        goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                        goat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                        goats.Add(goat);
+                    }
+                }
+                reader.Close();
+            }
+            goats.ForEach(goat => UpdateGoatImage(goat));
+
+        }
+
+        private void UpdateGoatImage(Goat goat)
+        {
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "Update goats Set imageLink = ?imageLink, type = ?type Where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?imageLink", MySqlDbType.VarChar).Value = $"Goat_Images/{GetAdultGoatImageUrlFromGoatObject(goat)}";
+                command.Parameters.Add("?id", MySqlDbType.Int32).Value = goat.id;
+                command.Parameters.Add("?type", MySqlDbType.VarChar).Value = "Adult";
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
+
         private void UpdateGoatLevelAndExperience(int oldLevel, int level, decimal experience, ulong userId)
         {
             if (level >= 100 && oldLevel < 100)
@@ -88,6 +131,56 @@ namespace BumbleBot.Services
             }
         }
 
+        private string GetAdultGoatImageUrlFromGoatObject(Goat goat)
+        {
+            string imageUrl = "";
+            string goatName = "";
+            string goatColour = "";
+
+            if (goat.breed.Equals(Breed.La_Mancha))
+            {
+                goatName = "LM";
+            }
+            else if (goat.breed.Equals(Breed.Nigerian_Dwarf))
+            {
+                goatName = "ND";
+            }
+            else
+            {
+                goatName = "NB";
+            }
+
+            if (goat.baseColour.Equals(BaseColour.Black))
+            {
+                goatColour = "black";
+            }
+            else if (goat.baseColour.Equals(BaseColour.Chocolate))
+            {
+                goatColour = "chocolate";
+            }
+            else if (goat.baseColour.Equals(BaseColour.Gold))
+            {
+                goatColour = "gold";
+            }
+            else if (goat.baseColour.Equals(BaseColour.Red))
+            {
+                goatColour = "red";
+            }
+            else if (goat.baseColour.Equals(BaseColour.White))
+            {
+                goatColour = "white";
+            }
+            Random random = new Random();
+            int randomNumber = random.Next(9);
+            if (randomNumber == 0)
+            {
+                return $"{goatName} {FirstCharToUpper(goatColour)}/{goatName}adult{goatColour}.png";
+            }
+            else
+            {
+                return $"{goatName} {FirstCharToUpper(goatColour)}/{goatName}adult{goatColour}{randomNumber}.png";
+            }
+        }
         private string GetAdultGoatImageUrl(ulong userId)
         {
             Goat goat = new Goat();

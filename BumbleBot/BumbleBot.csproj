@@ -184,6 +184,7 @@
     <Compile Include="Models\TriviaQuestions.cs" />
     <Compile Include="Services\TriviaServices.cs" />
     <Compile Include="Commands\Trivia\MainTriviaCommands.cs" />
+    <Compile Include="Models\DailyResponse.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />

@@ -285,7 +285,7 @@ namespace BumbleBot
                 else if (!goatService.CanGoatFitInBarn(msg.Result.Author.Id))
                 {
                     DiscordMember member = await e.Guild.GetMemberAsync(msg.Result.Author.Id);
-                    await e.Channel.SendMessageAsync($"Unfortunately {member.DisplayName} your barn is full and the goat has gone back to market!")
+                    await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"Unfortunately {member.DisplayName} your barn is full and the goat has gone back to market!")
                         .ConfigureAwait(false);
                 }
                 else

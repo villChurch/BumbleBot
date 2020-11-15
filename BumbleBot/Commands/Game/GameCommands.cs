@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using System.Timers;
 using BumbleBot.Attributes;
@@ -13,6 +14,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
 
 namespace BumbleBot.Commands.Game
 {
@@ -43,6 +45,34 @@ namespace BumbleBot.Commands.Game
             equipTimerrunning = false;
             equipTimer.Stop();
             equipTimer.Dispose();
+        }
+
+        [Command("daily")]
+        [Description("Collect your daily reward")]
+        public async Task CollectDaily(CommandContext ctx)
+        {
+            try
+            {
+                String uri = $"http://localhost:8080/daily/{ctx.User.Id}";
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+                request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+
+                using (HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync())
+                using (Stream stream = response.GetResponseStream())
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    var jsonReader = new JsonTextReader(reader);
+                    JsonSerializer serializer = new JsonSerializer();
+                    DailyResponse dailyResponse = serializer.Deserialize<DailyResponse>(jsonReader);
+                    goatService.UpdateGoatImagesForKidsThatAreAdults(ctx.User.Id);
+                    await ctx.Channel.SendMessageAsync(dailyResponse.message).ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Out.WriteLine(ex.Message);
+                Console.Out.WriteLine(ex.StackTrace);
+            }
         }
 
         [Command("create")]
