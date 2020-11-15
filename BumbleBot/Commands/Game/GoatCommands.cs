@@ -21,13 +21,15 @@ namespace BumbleBot.Commands.Game
     public class GoatCommands : BaseCommandModule
     {
         private GoatService goatService { get; }
+        private FarmerService farmerService { get; }
         private DBUtils dBUtils = new DBUtils();
         private Timer nameTimer;
         private bool nameTimerRunning = false;
 
-        public GoatCommands(GoatService goatService)
+        public GoatCommands(GoatService goatService, FarmerService farmerService)
         {
             this.goatService = goatService;
+            this.farmerService = farmerService;
         }
 
         private void SetNameTimer()
@@ -67,6 +69,7 @@ namespace BumbleBot.Commands.Game
                     embed.AddField("Level", goat.level.ToString(), true);
                     embed.AddField("Experience", goat.experience.ToString(), true);
                     embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed).Replace("_", " "), true);
+                    embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
                     Page page = new Page
                     {
                         Embed = embed
@@ -91,7 +94,7 @@ namespace BumbleBot.Commands.Game
                 List<Goat> goats = goatService.ReturnUsersGoats(ctx.User.Id);
                 if (goats.Any(x => x.id == goatId))
                 {
-                    using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                     {
                         string query = "Update goats Set name = ?newName where id = ?goatId";
                         var command = new MySqlCommand(query, connection);
@@ -106,6 +109,33 @@ namespace BumbleBot.Commands.Game
                 else
                 {
                     await ctx.Channel.SendMessageAsync("You do not own a goat with this ID").ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Out.WriteLine(ex.Message);
+                Console.Out.WriteLine(ex.StackTrace);
+            }
+        }
+
+        [Command("sell")]
+        [Description("Sell a goat")]
+        public async Task SellGoat(CommandContext ctx, [Description("id of goat to sell")] int goatId)
+        {
+            try
+            {
+                List<Goat> goats = goatService.ReturnUsersGoats(ctx.User.Id);
+                if (goats.Any(goat => goat.id == goatId))
+                {
+                    goatService.DeleteGoat(goatId);
+                    Goat goat = goats.First(g => g.id == goatId);
+                    farmerService.AddCreditsToFarmer(ctx.User.Id, (int)Math.Ceiling(goat.level * 0.75));
+                    await ctx.Channel.SendMessageAsync($"You have sold {goat.name} to market for {(int)Math.Ceiling(goat.level * 0.75)} " +
+                        $"credits").ConfigureAwait(false);
+                }
+                else
+                {
+                    await ctx.Channel.SendMessageAsync($"You do not own a goat with id {goatId}.").ConfigureAwait(false);
                 }
             }
             catch (Exception ex)

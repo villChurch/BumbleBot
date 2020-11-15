@@ -47,6 +47,14 @@ namespace BumbleBot.Commands.Game
             equipTimer.Dispose();
         }
 
+        [Command("spawn")]
+        [Hidden]
+        [OwnerOrPermission(DSharpPlus.Permissions.KickMembers)]
+        public async Task Spawn (CommandContext ctx)
+        {
+            await SpawnRandomGoat(ctx);
+        }
+
         [Command("daily")]
         [Description("Collect your daily reward")]
         public async Task CollectDaily(CommandContext ctx)
@@ -151,6 +159,7 @@ namespace BumbleBot.Commands.Game
                     }
                     reader.Close();
                 }
+                var goat = goatService.GetEquippedGoat(ctx.User.Id);
                 var embed = new DiscordEmbedBuilder
                 {
                     Title = $"Farmer {ctx.Member.DisplayName}'s Profile",
@@ -165,6 +174,15 @@ namespace BumbleBot.Commands.Game
                 embed.AddField("Barn Space", barnSize.ToString(), true);
                 embed.AddField("Pasture Available", $"Space For {grazingSize} Goats", true);
                 embed.AddField("Milk in Storage", $"{milkAmount} lbs", true);
+                if (goat.name != null)
+                {
+                    var url = "http://williamspires.com/";
+                    embed.AddField("Goat in hand", goat.name, false);
+                    embed.AddField("Goats level", goat.level.ToString(), true);
+                    embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed).Replace("_", " "), true);
+                    embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
+                    embed.ImageUrl = url + goat.filePath.Replace(" ", "%20");
+                }
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -319,8 +337,8 @@ namespace BumbleBot.Commands.Game
 
         public async Task SpawnRandomGoat(CommandContext ctx) {
             Random rnd = new Random();
-            int breed = rnd.Next(0, 2);
-            int baseColour = rnd.Next(0, 4);
+            int breed = rnd.Next(0, 3);
+            int baseColour = rnd.Next(0, 5);
             var randomGoat = new Goat();
             randomGoat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), Enum.GetName(typeof(BaseColour), baseColour));
             randomGoat.breed = (Breed)Enum.Parse(typeof(Breed), Enum.GetName(typeof(Breed), breed));
@@ -330,21 +348,27 @@ namespace BumbleBot.Commands.Game
             randomGoat.name = "Unregistered Goat";
             randomGoat.special = false;
 
+            string goatImageUrl = GetKidImage(randomGoat.breed, randomGoat.baseColour);
             var embed = new DiscordEmbedBuilder
             {
-                Title = $"{randomGoat.name} has spawned, type purchase to obtain her.",
-                Color = DiscordColor.Aquamarine
+                Title = $"{randomGoat.name} has become available, type purchase to add her to your herd.",
+                Color = DiscordColor.Aquamarine,
+                ImageUrl = $"attachment://{goatImageUrl}"
             };
+            embed.AddField("Cost", (randomGoat.level - 1).ToString() + " credits", false);
             embed.AddField("Colour", Enum.GetName(typeof(BaseColour), randomGoat.baseColour), false);
             embed.AddField("Breed", Enum.GetName(typeof(Breed), randomGoat.breed).Replace("_", " "), true);
-            embed.AddField("Level", randomGoat.level.ToString(), true);
+            embed.AddField("Level", (randomGoat.level - 1).ToString(), true);
 
             var interactivtiy = ctx.Client.GetInteractivity();
 
-            var goatMsg = await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+            var goatMsg = await ctx.Channel.SendFileAsync(
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/Kids/{goatImageUrl}", embed: embed)
+                .ConfigureAwait(false);
             var msg = await interactivtiy.WaitForMessageAsync(x => x.Channel == ctx.Channel
-            && x.Content.ToLower().Trim() == "purchase", TimeSpan.FromSeconds(15)).ConfigureAwait(false);
+            && x.Content.ToLower().Trim() == "purchase", TimeSpan.FromSeconds(45)).ConfigureAwait(false);
             await goatMsg.DeleteAsync();
+            GoatService goatService = new GoatService();
             if (msg.TimedOut)
             {
                 await ctx.Channel.SendMessageAsync($"No one decided to purchase {randomGoat.name}").ConfigureAwait(false);
@@ -356,41 +380,40 @@ namespace BumbleBot.Commands.Game
                 await ctx.Channel.SendMessageAsync($"Unfortunately {member.DisplayName} your barn is full and the goat has gone back to market!")
                     .ConfigureAwait(false);
             }
+            else if (!goatService.CanFarmerAffordGoat(randomGoat.level - 1, msg.Result.Author.Id))
+            {
+                DiscordMember member = await ctx.Guild.GetMemberAsync(msg.Result.Author.Id);
+                await ctx.Channel.SendMessageAsync($"Unfortunately {member.DisplayName} you can't afford this goat and the it has gone back to market!")
+                    .ConfigureAwait(false);
+            }
             else
             {
-                if (!DoesUserHaveCharacter(msg.Result.Author.Id))
-                {
-                    using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
-                    {
-                        string query = "INSERT INTO farmers (DiscordID) VALUES (?discordID)";
-                        var command = new MySqlCommand(query, connection);
-                        command.Parameters.Add("?discordID", MySqlDbType.VarChar, 40).Value = msg.Result.Author.Id;
-                        connection.Open();
-                        command.ExecuteNonQuery();
-                    }
-                }
                 await msg.Result.DeleteAsync();
                 try
                 {
                     using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                     {
-                        string query = "INSERT INTO goats (level, name, type, breed, baseColour, ownerID, experience) " +
-                            "VALUES (?level, ?name, ?type, ?breed, ?baseColour, ?ownerID, ?exp)";
+                        string query = "INSERT INTO goats (level, name, type, breed, baseColour, ownerID, experience, imageLink) " +
+                            "VALUES (?level, ?name, ?type, ?breed, ?baseColour, ?ownerID, ?exp, ?imageLink)";
                         var command = new MySqlCommand(query, connection);
-                        command.Parameters.Add("?level", MySqlDbType.Int32).Value = randomGoat.level;
+                        command.Parameters.Add("?level", MySqlDbType.Int32).Value = randomGoat.level - 1;
                         command.Parameters.Add("?name", MySqlDbType.VarChar, 255).Value = randomGoat.name;
                         command.Parameters.Add("?type", MySqlDbType.VarChar).Value = "Kid";
                         command.Parameters.Add("?breed", MySqlDbType.VarChar).Value = Enum.GetName(typeof(Breed), randomGoat.breed);
                         command.Parameters.Add("?baseColour", MySqlDbType.VarChar).Value = Enum.GetName(typeof(BaseColour), randomGoat.baseColour);
                         command.Parameters.Add("?ownerID", MySqlDbType.VarChar).Value = msg.Result.Author.Id;
                         command.Parameters.Add("?exp", MySqlDbType.Decimal).Value =
-                                (int)Math.Ceiling(10 * Math.Pow(1.05, (randomGoat.level - 1)));
+                            (int)Math.Ceiling(10 * Math.Pow(1.05, (randomGoat.level - 1)));
+                        command.Parameters.Add("?imageLink", MySqlDbType.VarChar).Value = $"Goat_Images/Kids/{goatImageUrl}";
                         connection.Open();
                         command.ExecuteNonQuery();
                     }
-                    await ctx.Channel.SendMessageAsync($"Congratulations " +
+                    FarmerService fs = new FarmerService();
+                    fs.DeductCreditsFromFarmer(msg.Result.Author.Id, randomGoat.level - 1);
+
+                    await ctx.Channel.SendMessageAsync($"Congrats " +
                         $"{ctx.Guild.GetMemberAsync(msg.Result.Author.Id).Result.DisplayName} you purchased " +
-                        $"{randomGoat.name}").ConfigureAwait(false);
+                        $"{randomGoat.name} for {(randomGoat.level - 1).ToString()} credits").ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -398,6 +421,47 @@ namespace BumbleBot.Commands.Game
                     Console.Out.WriteLine(ex.StackTrace);
                 }
             }
+        }
+
+        private String GetKidImage(Breed breed, BaseColour baseColour)
+        {
+            string goat;
+            if (breed.Equals(Breed.Nubian))
+            {
+                goat = "NBkid";
+            }
+            else if (breed.Equals(Breed.Nigerian_Dwarf))
+            {
+                goat = "NDkid";
+            }
+            else
+            {
+                goat = "LMkid";
+            }
+
+            string colour;
+            if (baseColour.Equals(BaseColour.Black))
+            {
+                colour = "black";
+            }
+            else if (baseColour.Equals(BaseColour.Chocolate))
+            {
+                colour = "chocolate";
+            }
+            else if (baseColour.Equals(BaseColour.Gold))
+            {
+                colour = "gold";
+            }
+            else if (baseColour.Equals(BaseColour.Red))
+            {
+                colour = "red";
+            }
+            else
+            {
+                colour = "white";
+            }
+
+            return $"{goat}{colour}.png";
         }
 
         private bool DoesUserHaveCharacter(ulong discordID)

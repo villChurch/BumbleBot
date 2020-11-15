@@ -264,6 +264,7 @@ namespace BumbleBot
                     Color = DiscordColor.Aquamarine,
                     ImageUrl = $"attachment://{goatImageUrl}"
                 };
+                embed.AddField("Cost", (randomGoat.level - 1).ToString() + " credits", false);
                 embed.AddField("Colour", Enum.GetName(typeof(BaseColour), randomGoat.baseColour), false);
                 embed.AddField("Breed", Enum.GetName(typeof(Breed), randomGoat.breed).Replace("_", " "), true);
                 embed.AddField("Level", (randomGoat.level - 1).ToString(), true);
@@ -288,19 +289,14 @@ namespace BumbleBot
                     await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"Unfortunately {member.DisplayName} your barn is full and the goat has gone back to market!")
                         .ConfigureAwait(false);
                 }
+                else if (!goatService.CanFarmerAffordGoat(randomGoat.level -1, msg.Result.Author.Id))
+                {
+                    DiscordMember member = await e.Guild.GetMemberAsync(msg.Result.Author.Id);
+                    await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"Unfortunately {member.DisplayName} you can't afford this goat and the it has gone back to market!")
+                        .ConfigureAwait(false);
+                }
                 else
                 {
-                    if (!DoesUserHaveCharacter(msg.Result.Author.Id))
-                    {
-                        using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
-                        {
-                            string query = "INSERT INTO farmers (DiscordID) VALUES (?discordID)";
-                            var command = new MySqlCommand(query, connection);
-                            command.Parameters.Add("?discordID", MySqlDbType.VarChar, 40).Value = msg.Result.Author.Id;
-                            connection.Open();
-                            command.ExecuteNonQuery();
-                        }
-                    }
                     await msg.Result.DeleteAsync();
                     try
                     {
@@ -321,9 +317,12 @@ namespace BumbleBot
                             connection.Open();
                             command.ExecuteNonQuery();
                         }
+                        FarmerService fs = new FarmerService();
+                        fs.DeductCreditsFromFarmer(msg.Result.Author.Id, randomGoat.level - 1);
+
                         await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"Congrats " +
                             $"{e.Guild.GetMemberAsync(msg.Result.Author.Id).Result.DisplayName} you purchased " +
-                            $"{randomGoat.name}").ConfigureAwait(false);
+                            $"{randomGoat.name} for {(randomGoat.level - 1).ToString()} credits").ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -336,8 +335,7 @@ namespace BumbleBot
 
         private String GetKidImage(Breed breed, BaseColour baseColour)
         {
-            string goat = "";
-            string colour = "";
+            string goat;
             if (breed.Equals(Breed.Nubian))
             {
                 goat = "NBkid";
@@ -351,6 +349,7 @@ namespace BumbleBot
                 goat = "LMkid";
             }
 
+            string colour;
             if (baseColour.Equals(BaseColour.Black))
             {
                 colour = "black";

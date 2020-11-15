@@ -45,5 +45,83 @@ namespace BumbleBot.Services
                 return new Farmer();
             }
         }
+
+        public void DeductCreditsFromFarmer(ulong farmerId, int credits)
+        {
+            try
+            {
+                int farmerCredits = 0;
+                using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    string query = "select credits from farmers where DiscordID = ?farmerId";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?farmerId", MySqlDbType.VarChar).Value = farmerId;
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        while(reader.Read())
+                        {
+                            farmerCredits = reader.GetInt32("credits");
+                        }
+                    }
+                    reader.Close();
+                }
+                farmerCredits -= credits;
+                using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    string query = "Update farmers Set credits = ?credits where DiscordID = ?farmerId";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmerCredits;
+                    command.Parameters.Add("?farmerId", MySqlDbType.VarChar).Value = farmerId;
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Out.WriteLine(ex.Message);
+                Console.Out.WriteLine(ex.StackTrace);
+            }
+        }
+
+        public void AddCreditsToFarmer(ulong farmerId, int credits)
+        {
+            try
+            {
+                int farmerCredits = 0;
+                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    string query = "select credits from farmers where DiscordID = ?farmerId";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?farmerId", MySqlDbType.VarChar).Value = farmerId;
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            farmerCredits = reader.GetInt32("credits");
+                        }
+                    }
+                    reader.Close();
+                }
+                farmerCredits += credits;
+                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    string query = "Update farmers Set credits = ?credits where DiscordID = ?farmerId";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmerCredits;
+                    command.Parameters.Add("?farmerId", MySqlDbType.VarChar).Value = farmerId;
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Out.WriteLine(ex.Message);
+                Console.Out.WriteLine(ex.StackTrace);
+            }
+        }
     }
 }
