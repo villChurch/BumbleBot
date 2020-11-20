@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using BumbleBot.Models;
@@ -12,23 +13,84 @@ namespace BumbleBot.Services
     {
 
         private DBUtils dBUtils = new DBUtils();
+        private readonly string deathPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         public GoatService()
         {
         }
 
-        public bool CheckExpAgainstNextLevel(ulong userId, decimal expToAdd)
+        public (bool, string) CheckExpAgainstNextLevel(ulong userId, decimal expToAdd)
         {
             //n =  ln(FV / PV)ln(1 + r)
             // exp = 10 * 1.05^level
+            string msg = "";
             (int, decimal) goatsLevelAndExp = GetCurrentLevelAndExpOfGoat(userId);
             int startingLevel = goatsLevelAndExp.Item1;
             if (goatsLevelAndExp.Item1 != 0)
             {
-                goatsLevelAndExp.Item1 = (int)Math.Floor((Math.Log((double)(goatsLevelAndExp.Item2 / 10)) / Math.Log(1.05)));
+                goatsLevelAndExp.Item1 = (int)Math.Floor(Math.Log((double)((goatsLevelAndExp.Item2 + expToAdd) / 10)) / Math.Log(1.05));
                 decimal newExp = goatsLevelAndExp.Item2 + expToAdd;
-                UpdateGoatLevelAndExperience(startingLevel, goatsLevelAndExp.Item1, newExp, userId);
+                // chance to die
+                Random rnd = new Random();
+                int number = rnd.Next(0, 71);
+                //number = 69;
+                if (startingLevel != goatsLevelAndExp.Item1 && number == 69)
+                {
+                    // kill goat
+                    msg = KillGoat(userId);
+                    return (startingLevel != goatsLevelAndExp.Item1, msg);
+                }
+                msg = UpdateGoatLevelAndExperience(startingLevel, goatsLevelAndExp.Item1, newExp, userId);
             }
-            return startingLevel != goatsLevelAndExp.Item1;
+            return (startingLevel != goatsLevelAndExp.Item1, msg);
+        }
+
+        private string KillGoat(ulong userId)
+        {
+            Goat goat = new Goat();
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from goats where ownerID = ?userId and equipped = 1";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?userId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while(reader.Read())
+                    {
+                        goat.name = reader.GetString("name");
+                        goat.id = reader.GetInt32("id");
+                        goat.level = reader.GetInt32("level");
+                        goat.levelMulitplier = reader.GetDecimal("levelMultiplier");
+                        goat.experience = reader.GetDecimal("experience");
+                        goat.filePath = reader.GetString("imageLink");
+                        goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                        goat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                    }
+                }
+                reader.Close();
+            }
+
+            using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "insert into deadgoats (goatid, baseColour, breed, level, name, ownerID, imageLink) " +
+                    "values (?goatid, ?baseColour, ?breed, ?level, ?name, ?ownerID, ?imageLink)";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goat.id;
+                command.Parameters.Add("?breed", MySqlDbType.VarChar).Value = Enum.GetName(typeof(Breed), goat.breed);
+                command.Parameters.Add("?baseColour", MySqlDbType.VarChar).Value = Enum.GetName(typeof(BaseColour), goat.baseColour);
+                command.Parameters.Add("?level", MySqlDbType.Int32).Value = goat.level;
+                command.Parameters.Add("?name", MySqlDbType.VarChar).Value = goat.name;
+                command.Parameters.Add("?imageLink", MySqlDbType.VarChar).Value = goat.filePath;
+                command.Parameters.Add("?ownerId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+            DeleteGoat(goat.id);
+            List<string> lines = File.ReadLines(deathPath + "/deaths.txt").ToList();
+            Random rnd = new Random();
+            string msg = $"Oh no! Your goat has unfortunately died from {lines.ElementAt(rnd.Next(0, lines.Count))} - rest in peace {goat.name}";
+            return msg;
         }
 
         private (int, decimal) GetCurrentLevelAndExpOfGoat(ulong userId)
@@ -98,7 +160,7 @@ namespace BumbleBot.Services
             }
         }
 
-        private void UpdateGoatLevelAndExperience(int oldLevel, int level, decimal experience, ulong userId)
+        private string UpdateGoatLevelAndExperience(int oldLevel, int level, decimal experience, ulong userId)
         {
             if (level >= 100 && oldLevel < 100)
             {
@@ -129,6 +191,7 @@ namespace BumbleBot.Services
                     command.ExecuteNonQuery();
                 }
             }
+            return "Congrats your current goat has just gained a level";
         }
 
         private string GetAdultGoatImageUrlFromGoatObject(Goat goat)
@@ -387,6 +450,15 @@ namespace BumbleBot.Services
             using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
             {
                 string query = "delete from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?id", MySqlDbType.Int32).Value = id;
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "delete from grazing where goatId = ?id";
                 var command = new MySqlCommand(query, connection);
                 command.Parameters.Add("?id", MySqlDbType.Int32).Value = id;
                 connection.Open();

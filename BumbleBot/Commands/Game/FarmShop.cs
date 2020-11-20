@@ -9,6 +9,7 @@ using DSharpPlus.Entities;
 namespace BumbleBot.Commands.Game
 {
     [Group("shop")]
+    [Aliases("market")]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class FarmShop : BaseCommandModule
     {
@@ -25,7 +26,7 @@ namespace BumbleBot.Commands.Game
             var embed = new DiscordEmbedBuilder
             {
                 Title = "Welcome to the Shop",
-                Description = "Here you will find a list of purchaseable items. To obtain them use `purchase {itemName}`.",
+                Description = "Here you will find a list of purchaseable items. To obtain them use `purchase {itemName} {itemCost}`.",
                 Color = DiscordColor.Aquamarine
             };
 
@@ -42,7 +43,7 @@ namespace BumbleBot.Commands.Game
                 int grazeCost = (currentFarmer.grazingspace + 10) * 100;
 
                 embed.AddField("Barn", $"Cost {barnCost} - Will provide 10 extra stalls");
-                embed.AddField("Graze", $"Cost {grazeCost} - Will provide 10 extra pasture space");
+                embed.AddField("Pasture", $"Cost {grazeCost} - Will provide 10 extra pasture space");
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
         }

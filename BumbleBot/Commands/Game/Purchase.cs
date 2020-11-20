@@ -55,7 +55,7 @@ namespace BumbleBot.Commands.Game
             }
         }
 
-        [Command ("graze")]
+        [Command ("pasture")]
         public async Task UpgradeGrazing(CommandContext ctx, int upgradePrice)
         {
             Farmer farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);

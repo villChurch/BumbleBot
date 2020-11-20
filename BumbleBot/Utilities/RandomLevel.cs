@@ -32,7 +32,7 @@ namespace BumbleBot.Utilities
             else // No need for final if statement
             {
                 Random randomLevel = new Random();
-                return randomLevel.Next(0, 25);
+                return randomLevel.Next(2, 25);
             }
         }
     }

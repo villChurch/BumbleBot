@@ -132,7 +132,7 @@ namespace BumbleBot.Commands.Game
                 }
                 else
                 {
-                    farmer.credits +=  (int)Math.Ceiling(farmer.milk * 5);
+                    farmer.credits +=  (int)Math.Ceiling(farmer.milk * 3);
                     using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                     {
                         string query = "Update farmers set milk = ?milk, credits = ?credits where DiscordID = ?discordId";
@@ -151,7 +151,7 @@ namespace BumbleBot.Commands.Game
                         connection.Open();
                         command.ExecuteNonQuery();
                     }
-                    await ctx.Channel.SendMessageAsync($"Congratulations {ctx.User.Mention} you have sold {farmer.milk} for " +
+                    await ctx.Channel.SendMessageAsync($"Congratulations {ctx.User.Mention} you have sold {farmer.milk} lbs of milk for " +
                         $"{Math.Ceiling(farmer.milk * 5)} credits.").ConfigureAwait(false);
                 }
             }
