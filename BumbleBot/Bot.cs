@@ -28,7 +28,6 @@ namespace BumbleBot
         private Timer timer;
         private int messageCount;
         private int gpm = 0; // goats per minute
-        private ulong guildId = 761698823726039120;
         private ulong goatSpawnChannelId = 762230405784272916;
         private DiscordClient Client { get; set; }
         private CommandsNextExtension Commands { get; set; }

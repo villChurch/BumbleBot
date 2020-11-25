@@ -78,7 +78,7 @@
       <HintPath>..\packages\System.Net.WebSockets.Client.4.3.2\lib\net46\System.Net.WebSockets.Client.dll</HintPath>
     </Reference>
     <Reference Include="DSharpPlus">
-      <HintPath>..\packages\DSharpPlus.4.0.0-nightly-00748\lib\netstandard2.0\DSharpPlus.dll</HintPath>
+      <HintPath>..\packages\DSharpPlus.4.0.0-nightly-00755\lib\netstandard2.0\DSharpPlus.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
       <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.5.0.0\lib\net461\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
@@ -93,10 +93,10 @@
       <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.5.0.0\lib\net461\Microsoft.Extensions.DependencyInjection.dll</HintPath>
     </Reference>
     <Reference Include="DSharpPlus.CommandsNext">
-      <HintPath>..\packages\DSharpPlus.CommandsNext.4.0.0-nightly-00748\lib\netstandard2.0\DSharpPlus.CommandsNext.dll</HintPath>
+      <HintPath>..\packages\DSharpPlus.CommandsNext.4.0.0-nightly-00755\lib\netstandard2.0\DSharpPlus.CommandsNext.dll</HintPath>
     </Reference>
     <Reference Include="DSharpPlus.Interactivity">
-      <HintPath>..\packages\DSharpPlus.Interactivity.4.0.0-nightly-00748\lib\netstandard2.0\DSharpPlus.Interactivity.dll</HintPath>
+      <HintPath>..\packages\DSharpPlus.Interactivity.4.0.0-nightly-00755\lib\netstandard2.0\DSharpPlus.Interactivity.dll</HintPath>
     </Reference>
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>..\packages\BouncyCastle.1.8.6.1\lib\BouncyCastle.Crypto.dll</HintPath>

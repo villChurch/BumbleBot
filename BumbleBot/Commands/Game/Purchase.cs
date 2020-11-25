@@ -89,6 +89,71 @@ namespace BumbleBot.Commands.Game
 
                 }
             }
-        } 
+        }
+
+        [Command("oats")]
+        [Description("purchase some oats")]
+        public async Task PurchaseOats(CommandContext ctx, int cost)
+        {
+            try
+            {
+                if (cost < 250)
+                {
+                    await ctx.Channel.SendMessageAsync("Oats cost 250 credits.").ConfigureAwait(false);
+                }
+                else
+                {
+                    bool hasOats = false;
+                    using (MySqlConnection conncetion = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                    {
+                        string query = "select oats from farmers where DiscordID = ?discordID";
+                        var command = new MySqlCommand(query, conncetion);
+                        command.Parameters.Add("?discordID", MySqlDbType.VarChar).Value = ctx.User.Id;
+                        conncetion.Open();
+                        var reader = command.ExecuteReader();
+                        if (reader.HasRows)
+                        {
+                            while (reader.Read())
+                            {
+                                hasOats = reader.GetBoolean("oats");
+                            }
+                        }
+                        reader.Close();
+                    }
+                    if (hasOats)
+                    {
+                        await ctx.Channel.SendMessageAsync("You already have oats. Please use your current batch before buying more.")
+                            .ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        Farmer farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
+                        if (farmer.credits >= 250)
+                        {
+                            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                            {
+                                string query = "update farmers set oats = 1, credits = ?credits where DiscordID = ?discordID";
+                                var command = new MySqlCommand(query, connection);
+                                command.Parameters.Add("?discordID", MySqlDbType.VarChar).Value = ctx.User.Id;
+                                command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.credits - 250;
+                                connection.Open();
+                                command.ExecuteNonQuery();
+                            }
+                            await ctx.Channel.SendMessageAsync("Oats have been purchased and will be used next time you milk your goats.")
+                                .ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await ctx.Channel.SendMessageAsync("You do not have enough credits to purchase more oats.").ConfigureAwait(false);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Out.WriteLine(ex.StackTrace);
+                Console.Out.WriteLine(ex.Message);
+            }
+        }
     }
 }

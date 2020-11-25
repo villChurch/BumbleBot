@@ -196,10 +196,9 @@ namespace BumbleBot.Services
 
         private string GetAdultGoatImageUrlFromGoatObject(Goat goat)
         {
-            string imageUrl = "";
-            string goatName = "";
             string goatColour = "";
 
+            string goatName;
             if (goat.breed.Equals(Breed.La_Mancha))
             {
                 goatName = "LM";
@@ -265,10 +264,10 @@ namespace BumbleBot.Services
                     }
                 }
             }
-            string imageUrl = "";
-            string goatName = "";
+
             string goatColour = "";
 
+            string goatName;
             if (goat.breed.Equals(Breed.La_Mancha))
             {
                 goatName = "LM";
@@ -384,6 +383,34 @@ namespace BumbleBot.Services
                         goat.level = reader.GetInt32("level");
                         goat.levelMulitplier = reader.GetDecimal("levelMultiplier");
                         goat.experience = reader.GetDecimal("experience");
+                        goat.filePath = reader.GetString("imageLink");
+                        goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                        goat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                        goats.Add(goat);
+                    }
+                }
+            }
+            return goats;
+        }
+
+        public List<Goat> ReturnUsersDeadGoats(ulong userId)
+        {
+            List<Goat> goats = new List<Goat>();
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from deadgoats where ownerID = ?ownerId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?ownerId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        Goat goat = new Goat();
+                        goat.name = reader.GetString("name");
+                        goat.id = reader.GetInt32("goatid");
+                        goat.level = reader.GetInt32("level");
                         goat.filePath = reader.GetString("imageLink");
                         goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
                         goat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));

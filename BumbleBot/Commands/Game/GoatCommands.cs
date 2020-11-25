@@ -23,28 +23,11 @@ namespace BumbleBot.Commands.Game
         private GoatService goatService { get; }
         private FarmerService farmerService { get; }
         private DBUtils dBUtils = new DBUtils();
-        private Timer nameTimer;
-        private bool nameTimerRunning = false;
 
         public GoatCommands(GoatService goatService, FarmerService farmerService)
         {
             this.goatService = goatService;
             this.farmerService = farmerService;
-        }
-
-        private void SetNameTimer()
-        {
-            nameTimer = new Timer(240000);
-            nameTimer.Elapsed += FinishTimer;
-            nameTimer.Enabled = true;
-            nameTimerRunning = true;
-        }
-
-        private void FinishTimer(Object source, ElapsedEventArgs e)
-        {
-            nameTimerRunning = false;
-            nameTimer.Stop();
-            nameTimer.Dispose();
         }
 
         [Command("show")]
@@ -137,6 +120,44 @@ namespace BumbleBot.Commands.Game
                 {
                     await ctx.Channel.SendMessageAsync($"You do not own a goat with id {goatId}.").ConfigureAwait(false);
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.Out.WriteLine(ex.Message);
+                Console.Out.WriteLine(ex.StackTrace);
+            }
+        }
+
+        [Command("memorial")]
+        [Description("See all your past goats")]
+        public async Task SeeDeadGoats(CommandContext ctx)
+        {
+            try
+            {
+                List<Goat> goats = goatService.ReturnUsersDeadGoats(ctx.User.Id);
+
+                var url = "http://williamspires.com/";
+                List<Page> pages = new List<Page>();
+                var interactivity = ctx.Client.GetInteractivity();
+                foreach (var goat in goats)
+                {
+                    var embed = new DiscordEmbedBuilder
+                    {
+                        Title = $"{goat.id}",
+                        ImageUrl = url + goat.filePath.Replace(" ", "%20")
+                    };
+                    embed.AddField("Name", goat.name, false);
+                    embed.AddField("Level", goat.level.ToString(), true);
+                    embed.AddField("Experience", goat.experience.ToString(), true);
+                    embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed).Replace("_", " "), true);
+                    embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
+                    Page page = new Page
+                    {
+                        Embed = embed
+                    };
+                    pages.Add(page);
+                }
+                await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

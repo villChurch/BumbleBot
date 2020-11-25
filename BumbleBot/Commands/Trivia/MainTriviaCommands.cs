@@ -21,27 +21,10 @@ namespace BumbleBot.Commands.Trivia
     {
 
         TriviaServices triviaServices { get; }
-        Timer timer;
-        bool questionTimerRunning = false;
 
         public MainTriviaCommands(TriviaServices triviaServices)
         {
             this.triviaServices = triviaServices;
-        }
-
-        private void SetTimer()
-        {
-            timer = new Timer(120000 / 4);
-            timer.Elapsed += FinishTimer;
-            timer.Enabled = true;
-            questionTimerRunning = true;
-        }
-
-        private void FinishTimer(Object source, ElapsedEventArgs e)
-        {
-            questionTimerRunning = false;
-            timer.Stop();
-            timer.Dispose();
         }
 
         [Command("count"), OwnerOrPermission(DSharpPlus.Permissions.KickMembers)]
