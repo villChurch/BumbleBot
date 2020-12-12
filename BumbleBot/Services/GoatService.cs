@@ -360,7 +360,7 @@ namespace BumbleBot.Services
                 }
                 reader.Close();
             }
-            return barnSize != numberOfGoats;
+            return barnSize != numberOfGoats && barnSize > numberOfGoats;
         }
 
         public List<Goat> ReturnUsersGoats(ulong userId)
@@ -421,6 +421,52 @@ namespace BumbleBot.Services
             return goats;
         }
 
+        public List<int> ReturnUsersAdultGoatIdsInKiddingPen(ulong userId)
+        {
+            List<int> goatIds = new List<int>();
+            List<Goat> ownedGoats = ReturnUsersGoats(userId);
+            using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select goatId from cookingdoes where ready = 0";
+                var command = new MySqlCommand(query, connection);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while(reader.Read())
+                    {
+                        goatIds.Add(reader.GetInt32("goatId"));
+                    }
+                }
+            }
+            return ownedGoats.Select(goat => goat.id).ToList().Where(id => goatIds.Contains(id)).ToList();
+        }
+
+        public List<Goat> ReturnUsersKidsInKiddingPen(ulong userId)
+        {
+            List<Goat> kids = new List<Goat>();
+            using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from newbornkids where ownerID = ?ownerId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?ownerId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    Goat goat = new Goat();
+                    goat.id = reader.GetInt32("id");
+                    goat.name = reader.GetString("name");
+                    goat.level = reader.GetInt32("level");
+                    goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                    goat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                    goat.filePath = $"{reader.GetString("imageLink")}";
+                    kids.Add(goat);
+                }
+            }
+            return kids;
+        }
+
         public Goat GetEquippedGoat(ulong userId)
         {
             Goat goat = new Goat();
@@ -470,6 +516,39 @@ namespace BumbleBot.Services
             }
 
             return credits >= buyPrice;
+        }
+
+        public void DeleteKidFromKiddingPen(int id)
+        {
+            using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "delete from newbornkids where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?id", MySqlDbType.Int32).Value = id;
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public void MoveKidIntoGoatPen(Goat goat, ulong userId)
+        {
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "insert into goats (level, name, type, breed, baseColour, ownerID, experience, imageLink) " +
+                    "values (?level, ?name, ?type, ?breed, ?baseColour, ?ownerID, ?experience, ?imageLink)";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?level", MySqlDbType.Int32).Value = goat.level;
+                command.Parameters.Add("?name", MySqlDbType.VarChar).Value = goat.name;
+                command.Parameters.Add("?type", MySqlDbType.VarChar).Value = "Kid";
+                command.Parameters.Add("?breed", MySqlDbType.VarChar).Value = Enum.GetName(typeof(Breed), goat.breed);
+                command.Parameters.Add("?baseColour", MySqlDbType.VarChar).Value = Enum.GetName(typeof(BaseColour), goat.baseColour);
+                command.Parameters.Add("?ownerID", MySqlDbType.VarChar).Value = userId;
+                command.Parameters.Add("?experience", MySqlDbType.Decimal).Value = (int)Math.Ceiling(10 * Math.Pow(1.05, (goat.level - 1)));
+                command.Parameters.Add("?imageLink", MySqlDbType.VarChar).Value = goat.filePath;
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+            DeleteKidFromKiddingPen(goat.id);
         }
 
         public void DeleteGoat(int id)

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using BumbleBot.Models;
 using BumbleBot.Utilities;
 using MySql.Data.MySqlClient;
+using System.Linq;
 
 namespace BumbleBot.Services
 {
@@ -10,6 +12,65 @@ namespace BumbleBot.Services
         private DBUtils dBUtils = new DBUtils();
         public FarmerService()
         {
+        }
+
+        public Boolean DoesFarmerHaveKidsInKiddingPen(ulong discordId)
+        {
+            bool hasKids = false;
+
+            using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from newbornkids where ownerID = ?ownerId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?ownerId", MySqlDbType.VarChar).Value = discordId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                hasKids = reader.HasRows;
+                reader.Close();
+            }
+            return hasKids;
+        }
+
+        public Boolean DoesFarmerHaveAKiddingPen(ulong discordId)
+        {
+            bool haspen = false;
+            using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select count(*) as pens from kiddingpens where ownerId = ?discordId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?discordId", MySqlDbType.VarChar).Value = discordId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                int count = 0;
+                while (reader.Read())
+                {
+                    count = reader.GetInt32("pens");
+                }
+                haspen = count > 0;
+            }
+            return haspen;
+        }
+
+        public Boolean DoesFarmerHaveAdultsInKiddingPen(List<Goat> usersGoats)
+        {
+            bool hasAdultsInPen = false;
+            List<int> goatIds = new List<int>();
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select goatId from cookingdoes where ready = 0";
+                var command = new MySqlCommand(query, connection);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if(reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goatIds.Add(reader.GetInt32("goatId"));
+                    }
+                }
+            }
+            List<int> ids = usersGoats.Select(goat => goat.id).ToList();
+            return ids.Any(x => goatIds.Contains(x));
         }
 
         public Farmer ReturnFarmerInfo(ulong discordId)

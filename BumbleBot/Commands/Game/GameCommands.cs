@@ -52,6 +52,7 @@ namespace BumbleBot.Commands.Game
         [OwnerOrPermission(DSharpPlus.Permissions.KickMembers)]
         public async Task Spawn (CommandContext ctx)
         {
+            await ctx.Message.DeleteAsync();
             await SpawnRandomGoat(ctx);
         }
 
@@ -73,6 +74,7 @@ namespace BumbleBot.Commands.Game
                     JsonSerializer serializer = new JsonSerializer();
                     DailyResponse dailyResponse = serializer.Deserialize<DailyResponse>(jsonReader);
                     goatService.UpdateGoatImagesForKidsThatAreAdults(ctx.User.Id);
+                    var interactivity = ctx.Client.GetInteractivity();
                     await ctx.Channel.SendMessageAsync(dailyResponse.message).ConfigureAwait(false);
                 }
             }

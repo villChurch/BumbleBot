@@ -44,6 +44,10 @@ namespace BumbleBot.Commands.Game
 
                 embed.AddField("Barn", $"Cost {barnCost} - Will provide 10 extra stalls");
                 embed.AddField("Pasture", $"Cost {grazeCost} - Will provide 10 extra pasture space");
+                if (!farmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
+                {
+                    embed.AddField("Shelter", "Cost 5000 - Purchases a kidding pen which adds the ability to breed goats");
+                }
                 embed.AddField("Oats", "Cost 250 - Will provide a boost to your goats milk output next time they're milked");
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }

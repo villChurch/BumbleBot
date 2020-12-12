@@ -186,6 +186,8 @@
     <Compile Include="Commands\Trivia\MainTriviaCommands.cs" />
     <Compile Include="Models\DailyResponse.cs" />
     <Compile Include="Commands\Game\GrazingCommands.cs" />
+    <Compile Include="Commands\Game\BreedingCommands.cs" />
+    <Compile Include="Commands\Game\KiddingPen.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />

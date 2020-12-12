@@ -20,6 +20,42 @@ namespace BumbleBot.Commands.Game
             this.farmerService = farmerService;
         }
 
+        [Command("shelter")]
+        public async Task BuyKiddingBarn(CommandContext ctx, int upgradePrice)
+        {
+            if (farmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
+            {
+                await ctx.Channel.SendMessageAsync("You already own a kidding pen.").ConfigureAwait(false);
+            }
+            else if (upgradePrice != 5000)
+            {
+                await ctx.Channel.SendMessageAsync("You have not entered the correct price for the kidding pen");
+            }
+            else
+            {
+                Farmer farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
+                using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    string query = "insert into kiddingpens (ownerId) values (?discordId)";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?discordId", MySqlDbType.VarChar).Value = ctx.User.Id;
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+
+                using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    string query = "update farmers set credits = ?credits where DiscordID = ?discordId";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.credits - 5000;
+                    command.Parameters.Add("?discordId", MySqlDbType.VarChar).Value = ctx.User.Id;
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+                await ctx.Channel.SendMessageAsync("You have successfully brought a kidding pen.").ConfigureAwait(false);
+            }
+        }
+
         [Command ("barn")]
         public async Task UpgradeBarn(CommandContext ctx, int upgradePrice)
         {
