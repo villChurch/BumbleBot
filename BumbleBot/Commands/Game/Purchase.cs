@@ -25,11 +25,11 @@ namespace BumbleBot.Commands.Game
         {
             if (farmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
             {
-                await ctx.Channel.SendMessageAsync("You already own a kidding pen.").ConfigureAwait(false);
+                await ctx.Channel.SendMessageAsync("You already own a shelter.").ConfigureAwait(false);
             }
             else if (upgradePrice != 5000)
             {
-                await ctx.Channel.SendMessageAsync("You have not entered the correct price for the kidding pen");
+                await ctx.Channel.SendMessageAsync("You have not entered the correct price for the shelter.");
             }
             else
             {
@@ -52,7 +52,7 @@ namespace BumbleBot.Commands.Game
                     connection.Open();
                     command.ExecuteNonQuery();
                 }
-                await ctx.Channel.SendMessageAsync("You have successfully brought a kidding pen.").ConfigureAwait(false);
+                await ctx.Channel.SendMessageAsync("You have successfully brought a shelter.").ConfigureAwait(false);
             }
         }
 

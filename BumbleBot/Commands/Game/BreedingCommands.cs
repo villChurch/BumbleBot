@@ -97,6 +97,10 @@ namespace BumbleBot.Commands.Game
                     {
                         await ctx.Channel.SendMessageAsync($"It appears you don't own a goat with id {goatId}").ConfigureAwait(false);
                     }
+                    else if (goats.Find(goat => goat.id == goatId).level < 100)
+                    {
+                        await ctx.Channel.SendMessageAsync("This goat is not yet an adult and only adults can be moved to the shelter").ConfigureAwait(false);
+                    }
                     else
                     {
                         // /breeding/{id}/{goatId}
