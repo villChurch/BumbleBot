@@ -188,6 +188,7 @@
     <Compile Include="Commands\Game\GrazingCommands.cs" />
     <Compile Include="Commands\Game\BreedingCommands.cs" />
     <Compile Include="Commands\Game\KiddingPen.cs" />
+    <Compile Include="Commands\Game\Trading.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />

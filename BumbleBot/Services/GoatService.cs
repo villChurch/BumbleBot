@@ -233,7 +233,9 @@ namespace BumbleBot.Services
                 goatColour = "white";
             }
             Random random = new Random();
-            int randomNumber = random.Next(9);
+            int count = Directory.GetFiles($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/NB White", "*",
+                SearchOption.TopDirectoryOnly).Length;
+            int randomNumber = random.Next(count);
             if (randomNumber == 0)
             {
                 return $"{goatName} {FirstCharToUpper(goatColour)}/{goatName}adult{goatColour}.png";
@@ -302,7 +304,9 @@ namespace BumbleBot.Services
                 goatColour = "white";
             }
             Random random = new Random();
-            int randomNumber = random.Next(9);
+            int count = Directory.GetFiles($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/NB White", "*",
+                SearchOption.TopDirectoryOnly).Length;
+            int randomNumber = random.Next(count);
             if (randomNumber == 0)
             {
                 return $"{goatName} {FirstCharToUpper(goatColour)}/{goatName}adult{goatColour}.png";
@@ -570,6 +574,27 @@ namespace BumbleBot.Services
                 connection.Open();
                 command.ExecuteNonQuery();
             }
+        }
+
+        public bool IsGoatCooking(int goatId)
+        {
+            bool cooking = false;
+
+            using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "Select * from cookingdoes where goatId = ?goatId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goatId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    cooking = true;
+                }
+                reader.Close();
+            }
+
+            return cooking;
         }
     }
 }
