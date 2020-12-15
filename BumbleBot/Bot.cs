@@ -146,7 +146,7 @@ namespace BumbleBot
                     }
                 }
             }
-            if (!e.Author.IsBot && e.Channel.ParentId != 725504404995964948) //e.Guild.Id == guildId && 
+            if (!e.Author.IsBot && e.Channel.ParentId != 725504404995964948 ) //e.Guild.Id == guildId && 
             {
                 messageCount++;
                 if (messageCount > 10 && gpm <= 0)

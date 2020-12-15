@@ -183,7 +183,7 @@ namespace BumbleBot.Commands.Game
                     embed.AddField("Goats level", goat.level.ToString(), true);
                     embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed).Replace("_", " "), true);
                     embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
-                    embed.ImageUrl = url + goat.filePath.Replace(" ", "%20");
+                    embed.ImageUrl = url + Uri.EscapeUriString(goat.filePath); //.Replace(" ", "%20");
                 }
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
