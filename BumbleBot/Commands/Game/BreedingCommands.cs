@@ -101,6 +101,10 @@ namespace BumbleBot.Commands.Game
                     {
                         await ctx.Channel.SendMessageAsync("This goat is not yet an adult and only adults can be moved to the shelter").ConfigureAwait(false);
                     }
+                    else if (goats.Find(goat => goat.id == goatId).baseColour == BaseColour.Special)
+                    {
+                        await ctx.Channel.SendMessageAsync("You cannot breed special goats").ConfigureAwait(false);
+                    }
                     else
                     {
                         // /breeding/{id}/{goatId}

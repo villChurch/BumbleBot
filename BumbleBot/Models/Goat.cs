@@ -14,7 +14,11 @@ namespace BumbleBot.Models
     {
         Nubian,
         Nigerian_Dwarf,
-        La_Mancha
+        La_Mancha,
+        Christmas,
+        Minx,
+        Bumble,
+        Zenyatta
     }
 
     public enum BaseColour
@@ -23,7 +27,8 @@ namespace BumbleBot.Models
         Black,
         Red,
         Chocolate,
-        Gold
+        Gold,
+        Special
     }
     public class Goat
     {

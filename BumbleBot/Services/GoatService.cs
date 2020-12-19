@@ -31,8 +31,8 @@ namespace BumbleBot.Services
                 decimal newExp = goatsLevelAndExp.Item2 + expToAdd;
                 // chance to die
                 Random rnd = new Random();
-                int number = rnd.Next(0, 71);
-                //number = 69;
+                int number;
+                number = IsSpecialGoat(userId) ? 0 : rnd.Next(0, 71);
                 if (startingLevel != goatsLevelAndExp.Item1 && number == 69)
                 {
                     // kill goat
@@ -42,6 +42,273 @@ namespace BumbleBot.Services
                 msg = UpdateGoatLevelAndExperience(startingLevel, goatsLevelAndExp.Item1, newExp, userId);
             }
             return (startingLevel != goatsLevelAndExp.Item1, msg);
+        }
+
+        private Boolean IsSpeicalGoatMinx(ulong userId)
+        {
+            Goat goat = new Goat();
+            using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from goats where ownerID = ?userId and equipped =1";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?userId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goat.name = reader.GetString("name");
+                        goat.id = reader.GetInt32("id");
+                        goat.level = reader.GetInt32("level");
+                        goat.levelMulitplier = reader.GetDecimal("levelMultiplier");
+                        goat.experience = reader.GetDecimal("experience");
+                        goat.filePath = reader.GetString("imageLink");
+                        goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                        goat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                    }
+                }
+                reader.Close();
+            }
+            return goat.breed == Breed.Minx;
+        }
+
+        private Boolean IsSpeicalGoatBumble(ulong userId)
+        {
+            Goat goat = new Goat();
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from goats where ownerID = ?userId and equipped =1";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?userId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goat.name = reader.GetString("name");
+                        goat.id = reader.GetInt32("id");
+                        goat.level = reader.GetInt32("level");
+                        goat.levelMulitplier = reader.GetDecimal("levelMultiplier");
+                        goat.experience = reader.GetDecimal("experience");
+                        goat.filePath = reader.GetString("imageLink");
+                        goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                        goat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                    }
+                }
+                reader.Close();
+            }
+            return goat.breed == Breed.Bumble;
+        }
+
+        private Boolean IsSpeicalGoatZen(ulong userId)
+        {
+            Goat goat = new Goat();
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from goats where ownerID = ?userId and equipped =1";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?userId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goat.name = reader.GetString("name");
+                        goat.id = reader.GetInt32("id");
+                        goat.level = reader.GetInt32("level");
+                        goat.levelMulitplier = reader.GetDecimal("levelMultiplier");
+                        goat.experience = reader.GetDecimal("experience");
+                        goat.filePath = reader.GetString("imageLink");
+                        goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                        goat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                    }
+                }
+                reader.Close();
+            }
+            return goat.breed == Breed.Zenyatta;
+        }
+
+        private Boolean IsSpecialGoat(ulong userId)
+        {
+            Goat goat = new Goat();
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from goats where ownerID = ?userId and equipped = 1";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?userId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goat.name = reader.GetString("name");
+                        goat.id = reader.GetInt32("id");
+                        goat.level = reader.GetInt32("level");
+                        goat.levelMulitplier = reader.GetDecimal("levelMultiplier");
+                        goat.experience = reader.GetDecimal("experience");
+                        goat.filePath = reader.GetString("imageLink");
+                        goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                        goat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                    }
+                }
+                reader.Close();
+            }
+
+            return goat.baseColour == BaseColour.Special;
+        }
+
+        public Boolean IsGoatSpecialByGoatId(int goatId)
+        {
+            Goat goat = new Goat();
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?id", MySqlDbType.VarChar).Value = goatId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goat.name = reader.GetString("name");
+                        goat.id = reader.GetInt32("id");
+                        goat.level = reader.GetInt32("level");
+                        goat.levelMulitplier = reader.GetDecimal("levelMultiplier");
+                        goat.experience = reader.GetDecimal("experience");
+                        goat.filePath = reader.GetString("imageLink");
+                        goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                        goat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                    }
+                }
+                reader.Close();
+            }
+
+            return goat.baseColour == BaseColour.Special;
+        }
+
+        public Boolean IsGoatMinxByGoatId(int goatId)
+        {
+            Goat goat = new Goat();
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?id", MySqlDbType.VarChar).Value = goatId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goat.name = reader.GetString("name");
+                        goat.id = reader.GetInt32("id");
+                        goat.level = reader.GetInt32("level");
+                        goat.levelMulitplier = reader.GetDecimal("levelMultiplier");
+                        goat.experience = reader.GetDecimal("experience");
+                        goat.filePath = reader.GetString("imageLink");
+                        goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                        goat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                    }
+                }
+                reader.Close();
+            }
+
+            return goat.breed == Breed.Minx;
+        }
+
+        public Boolean IsGoatBumbleByGoatId(int goatId)
+        {
+            Goat goat = new Goat();
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?id", MySqlDbType.VarChar).Value = goatId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goat.name = reader.GetString("name");
+                        goat.id = reader.GetInt32("id");
+                        goat.level = reader.GetInt32("level");
+                        goat.levelMulitplier = reader.GetDecimal("levelMultiplier");
+                        goat.experience = reader.GetDecimal("experience");
+                        goat.filePath = reader.GetString("imageLink");
+                        goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                        goat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                    }
+                }
+                reader.Close();
+            }
+
+            return goat.breed == Breed.Bumble;
+        }
+
+        public Boolean IsGoatZenByGoatId(int goatId)
+        {
+            Goat goat = new Goat();
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?id", MySqlDbType.VarChar).Value = goatId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goat.name = reader.GetString("name");
+                        goat.id = reader.GetInt32("id");
+                        goat.level = reader.GetInt32("level");
+                        goat.levelMulitplier = reader.GetDecimal("levelMultiplier");
+                        goat.experience = reader.GetDecimal("experience");
+                        goat.filePath = reader.GetString("imageLink");
+                        goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                        goat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                    }
+                }
+                reader.Close();
+            }
+
+            return goat.breed == Breed.Zenyatta;
+        }
+
+        private Boolean IsChristmasGoat(int goatId)
+        {
+            Goat goat = new Goat();
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?id", MySqlDbType.VarChar).Value = goatId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goat.name = reader.GetString("name");
+                        goat.id = reader.GetInt32("id");
+                        goat.level = reader.GetInt32("level");
+                        goat.levelMulitplier = reader.GetDecimal("levelMultiplier");
+                        goat.experience = reader.GetDecimal("experience");
+                        goat.filePath = reader.GetString("imageLink");
+                        goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                        goat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                    }
+                }
+                reader.Close();
+            }
+
+            return goat.breed == Breed.Christmas;
         }
 
         private string KillGoat(ulong userId)
@@ -196,6 +463,33 @@ namespace BumbleBot.Services
 
         private string GetAdultGoatImageUrlFromGoatObject(Goat goat)
         {
+            if (IsChristmasGoat(goat.id))
+            {
+                if (goat.filePath.EndsWith("SantaKid.png"))
+                {
+                    return "Special Variations/SantaAdult.png";
+                }
+                else if (goat.filePath.EndsWith("AngelLightsKid.png"))
+                {
+                    return "Special Variations/AngelLightsAdult.png";
+                }
+                else if (goat.filePath.EndsWith("GrinchKid.png"))
+                {
+                    return "Special Variations/GrinchAdult.png";
+                }
+            }
+            else if (IsGoatBumbleByGoatId(goat.id))
+            {
+                return "Special Variations/BumbleAdult.png";
+            }
+            else if (IsGoatMinxByGoatId(goat.id))
+            {
+                return "Special Variations/MinxAdult.png";
+            }
+            else if (IsGoatZenByGoatId(goat.id))
+            {
+                return "Special Variations/ZenyattaAdult.png";
+            }
             string goatColour = "";
 
             string goatName;
@@ -245,6 +539,7 @@ namespace BumbleBot.Services
                 return $"{goatName} {FirstCharToUpper(goatColour)}/{goatName}adult{goatColour}{randomNumber}.png";
             }
         }
+
         private string GetAdultGoatImageUrl(ulong userId)
         {
             Goat goat = new Goat();
@@ -261,12 +556,41 @@ namespace BumbleBot.Services
                     {
                         Enum.TryParse(reader.GetString("baseColour"), out BaseColour colour);
                         Enum.TryParse(reader.GetString("breed"), out Breed breed);
+                        goat.id = reader.GetInt32("id");
                         goat.baseColour = colour;
                         goat.breed = breed;
+                        goat.filePath = reader.GetString("imageLink");
                     }
                 }
             }
 
+            if(IsChristmasGoat(goat.id))
+            {
+                if (goat.filePath.EndsWith("SantaKid.png"))
+                {
+                    return "Special Variations/SantaAdult.png";
+                }
+                else if (goat.filePath.EndsWith("AngelLightsKid.png"))
+                {
+                    return "Special Variations/AngelLightsAdult.png";
+                }
+                else if (goat.filePath.EndsWith("GrinchKid.png"))
+                {
+                    return "Special Variations/GrinchAdult.png";
+                }
+            }
+            else if (IsGoatBumbleByGoatId(goat.id))
+            {
+                return "Special Variations/BumbleAdult.png";
+            }
+            else if (IsGoatMinxByGoatId(goat.id))
+            {
+                return "Special Variations/MinxAdult.png";
+            }
+            else if (IsGoatZenByGoatId(goat.id))
+            {
+                return "Special Variations/ZenyattaAdult.png";
+            }
             string goatColour = "";
 
             string goatName;

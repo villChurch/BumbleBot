@@ -46,7 +46,7 @@ namespace BumbleBot.Commands.Game
                     var embed = new DiscordEmbedBuilder
                     {
                         Title = $"{goat.id}",
-                        ImageUrl = url + goat.filePath.Replace(" ", "%20")
+                        ImageUrl = url + Uri.EscapeUriString(goat.filePath) //.Replace(" ", "%20")
                     };
                     embed.AddField("Name", goat.name, false);
                     embed.AddField("Level", goat.level.ToString(), true);
