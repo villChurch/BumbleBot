@@ -20,6 +20,33 @@ namespace BumbleBot.Commands.Game
             this.farmerService = farmerService;
         }
 
+        [Command("dairy")]
+        public async Task BuyDairy(CommandContext ctx, int upgradePrice)
+        {
+            if (farmerService.DoesFarmerHaveDairy(ctx.User.Id))
+            {
+                await ctx.Channel.SendMessageAsync("You already own a dairy.").ConfigureAwait(false);
+            }
+            else if (upgradePrice != 10000)
+            {
+                await ctx.Channel.SendMessageAsync("You have not entered the correct price for the shelter.");
+            }
+            else
+            {
+                using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    string query = "insert into dairy (ownerId) values (?discordId)";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?discordId", MySqlDbType.VarChar).Value = ctx.User.Id;
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+                farmerService.DeductCreditsFromFarmer(ctx.User.Id, 10000);
+
+                await ctx.Channel.SendMessageAsync("You have successfully brought a dairy.").ConfigureAwait(false);
+            }
+        }
+
         [Command("shelter")]
         public async Task BuyKiddingBarn(CommandContext ctx, int upgradePrice)
         {

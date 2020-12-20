@@ -31,6 +31,22 @@ namespace BumbleBot.Services
             return hasKids;
         }
 
+        public Boolean DoesFarmerHaveDairy(ulong discordId)
+        {
+            bool hasDairy = false;
+            using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from dairy where ownerID = ?ownerId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?ownerId", MySqlDbType.VarChar).Value = discordId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                hasDairy = reader.HasRows;
+                reader.Close();
+            }
+            return hasDairy;
+        }
+
         public Boolean DoesFarmerHaveAKiddingPen(ulong discordId)
         {
             bool haspen = false;

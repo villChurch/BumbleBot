@@ -22,13 +22,15 @@ namespace BumbleBot.Commands.Game
     public class GameCommands : BaseCommandModule
     {
         private DBUtils dbUtils = new DBUtils();
+        private FarmerService farmerService { get; }
         private GoatService goatService { get; }
         private Timer equipTimer;
         private bool equipTimerrunning = false;
 
-        public GameCommands(GoatService goatService)
+        public GameCommands(GoatService goatService, FarmerService farmerService)
         {
             this.goatService = goatService;
+            this.farmerService = farmerService;
         }
 
 
@@ -45,6 +47,15 @@ namespace BumbleBot.Commands.Game
             equipTimerrunning = false;
             equipTimer.Stop();
             equipTimer.Dispose();
+        }
+
+        [Command("givec")]
+        [Hidden]
+        [OwnerOrPermission(DSharpPlus.Permissions.KickMembers)]
+        public async Task GiveCredits(CommandContext ctx, DiscordUser member, int credits)
+        {
+            farmerService.AddCreditsToFarmer(member.Id, credits);
+            await ctx.Channel.SendMessageAsync($"{credits} have been given to {member.Mention}").ConfigureAwait(false);
         }
 
         [Command("spawn")]

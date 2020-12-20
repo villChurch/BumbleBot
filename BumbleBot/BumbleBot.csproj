@@ -189,6 +189,9 @@
     <Compile Include="Commands\Game\BreedingCommands.cs" />
     <Compile Include="Commands\Game\KiddingPen.cs" />
     <Compile Include="Commands\Game\Trading.cs" />
+    <Compile Include="Commands\Game\Dairy.cs" />
+    <Compile Include="Services\DairyService.cs" />
+    <Compile Include="Models\Dairy.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
