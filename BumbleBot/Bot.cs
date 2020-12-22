@@ -492,25 +492,25 @@ namespace BumbleBot
                 var goatMsg = await e.Guild.GetChannel(goatSpawnChannelId).SendFileAsync(
                     $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{randomGoat.filePath}", embed: embed)
                     .ConfigureAwait(false);
-                var msg = await interactivtiy.WaitForMessageAsync(x => x.Channel == e.Channel
+                var msg = await interactivtiy.WaitForMessageAsync(x => x.Channel == e.Guild.GetChannel(goatSpawnChannelId)
                 && x.Content.ToLower().Trim() == "purchase", TimeSpan.FromSeconds(45)).ConfigureAwait(false);
                 await goatMsg.DeleteAsync();
                 GoatService goatService = new GoatService();
                 if (msg.TimedOut)
                 {
-                    await e.Channel.SendMessageAsync($"No one decided to purchase {randomGoat.name}").ConfigureAwait(false);
+                    await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"No one decided to purchase {randomGoat.name}").ConfigureAwait(false);
                     return;
                 }
                 else if (!goatService.CanGoatFitInBarn(msg.Result.Author.Id))
                 {
                     DiscordMember member = await e.Guild.GetMemberAsync(msg.Result.Author.Id);
-                    await e.Channel.SendMessageAsync($"Unfortunately {member.DisplayName} your barn is full and the goat has gone back to market!")
+                    await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"Unfortunately {member.DisplayName} your barn is full and the goat has gone back to market!")
                         .ConfigureAwait(false);
                 }
                 else if (!goatService.CanFarmerAffordGoat(randomGoat.level - 1, msg.Result.Author.Id))
                 {
                     DiscordMember member = await e.Guild.GetMemberAsync(msg.Result.Author.Id);
-                    await e.Channel.SendMessageAsync($"Unfortunately {member.DisplayName} you can't afford this goat and the it has gone back to market!")
+                    await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"Unfortunately {member.DisplayName} you can't afford this goat and the it has gone back to market!")
                         .ConfigureAwait(false);
                 }
                 else
@@ -538,7 +538,7 @@ namespace BumbleBot
                         FarmerService fs = new FarmerService();
                         fs.DeductCreditsFromFarmer(msg.Result.Author.Id, randomGoat.level - 1);
 
-                        await e.Channel.SendMessageAsync($"Congrats " +
+                        await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"Congrats " +
                             $"{e.Guild.GetMemberAsync(msg.Result.Author.Id).Result.DisplayName} you purchased " +
                             $"{randomGoat.name} for {(randomGoat.level - 1).ToString()} credits").ConfigureAwait(false);
                     }
@@ -615,25 +615,25 @@ namespace BumbleBot
                 var goatMsg = await e.Guild.GetChannel(goatSpawnChannelId).SendFileAsync($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/Special Variations" +
                     $"/{specialGoat.filePath}", embed: embed).ConfigureAwait(false);
 
-                var msg = await interactivtiy.WaitForMessageAsync(x => x.Channel == e.Channel
+                var msg = await interactivtiy.WaitForMessageAsync(x => x.Channel == e.Guild.GetChannel(goatSpawnChannelId)
                 && x.Content.ToLower().Trim() == "purchase", TimeSpan.FromSeconds(45)).ConfigureAwait(false);
                 await goatMsg.DeleteAsync();
                 GoatService goatService = new GoatService();
                 if (msg.TimedOut)
                 {
-                    await e.Channel.SendMessageAsync($"No one decided to purchase {specialGoat.name}").ConfigureAwait(false);
+                    await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"No one decided to purchase {specialGoat.name}").ConfigureAwait(false);
                     return;
                 }
                 else if (!goatService.CanGoatFitInBarn(msg.Result.Author.Id))
                 {
                     DiscordMember member = await e.Guild.GetMemberAsync(msg.Result.Author.Id);
-                    await e.Channel.SendMessageAsync($"Unfortunately {member.DisplayName} your barn is full and the goat has gone back to market!")
+                    await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"Unfortunately {member.DisplayName} your barn is full and the goat has gone back to market!")
                         .ConfigureAwait(false);
                 }
                 else if (!goatService.CanFarmerAffordGoat(specialGoat.level - 1, msg.Result.Author.Id))
                 {
                     DiscordMember member = await e.Guild.GetMemberAsync(msg.Result.Author.Id);
-                    await e.Channel.SendMessageAsync($"Unfortunately {member.DisplayName} you can't afford this goat and the it has gone back to market!")
+                    await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"Unfortunately {member.DisplayName} you can't afford this goat and the it has gone back to market!")
                         .ConfigureAwait(false);
                 }
                 else
@@ -661,7 +661,7 @@ namespace BumbleBot
                         FarmerService fs = new FarmerService();
                         fs.DeductCreditsFromFarmer(msg.Result.Author.Id, specialGoat.level - 1);
 
-                        await e.Channel.SendMessageAsync($"Congrats " +
+                        await e.Guild.GetChannel(goatSpawnChannelId).SendMessageAsync($"Congrats " +
                             $"{e.Guild.GetMemberAsync(msg.Result.Author.Id).Result.DisplayName} you purchased " +
                             $"{specialGoat.name} for {(specialGoat.level - 1).ToString()} credits").ConfigureAwait(false);
                     }

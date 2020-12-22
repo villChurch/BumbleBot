@@ -404,6 +404,7 @@ namespace BumbleBot.Services
                         goat.id = reader.GetInt32("id");
                         goat.breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
                         goat.baseColour = (BaseColour)Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                        goat.filePath = reader.GetString("imageLink");
                         goats.Add(goat);
                     }
                 }
