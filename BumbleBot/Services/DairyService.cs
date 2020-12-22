@@ -62,5 +62,24 @@ namespace BumbleBot.Services
             }
             return dairy;
         }
+
+        public void RemoveSoftCheeseFromPlayer(ulong userId, int? softCheese)
+        {
+            if (null == softCheese)
+            {
+                using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    string query = "update dairy set softcheese = 0 where ownerID = ?userId";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?userId", MySqlDbType.VarChar).Value = userId;
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            else
+            {
+                Console.Out.WriteLine($"Soft cheese amount was not null it was {softCheese}");
+            }
+        }
     }
 }
