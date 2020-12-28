@@ -88,6 +88,7 @@ namespace BumbleBot
                 .AddSingleton<TriviaServices>()
                 .AddTransient<GoatService>()
                 .AddTransient<FarmerService>()
+                .AddTransient<DairyService>()
                 .BuildServiceProvider(true);
 
 #pragma warning disable IDE0058 // Expression value is never used
