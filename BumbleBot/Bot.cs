@@ -106,7 +106,7 @@ namespace BumbleBot
             {
                 StringPrefixes = new string[] { configJson.Prefix },
                 EnableMentionPrefix = true,
-                EnableDms = false,
+                EnableDms = true,
                 DmHelp = false,
                 Services = Services
             };
@@ -441,8 +441,9 @@ namespace BumbleBot
 
                 var embed = new DiscordEmbedBuilder
                 {
-                    Title = "Access denied",
-                    Description = $"{emoji} You do not have the permissions required to execute this command.",
+                    Title = "Access denied or run criteria not met",
+                    Description = $"{emoji} You do not have the permissions required to execute this command, " +
+                    $"or the pre-checks for this command have failed.",
                     Color = new DiscordColor(0xFF0000) // red
                 };
                 await e.Context.RespondAsync("", embed: embed);

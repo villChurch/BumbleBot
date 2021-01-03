@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using BumbleBot.Services;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Entities;
 
 namespace BumbleBot.Commands.Game
 {
@@ -18,6 +19,30 @@ namespace BumbleBot.Commands.Game
         {
             this.dairyService = dairyService;
             this.farmerService = farmerService;
+        }
+
+        [Command("show")]
+        [Description("Show the contents of your dairy")]
+        public async Task ShowContentsOfDairy(CommandContext ctx)
+        {
+            if (!dairyService.HasDairy(ctx.User.Id))
+            {
+                await ctx.Channel.SendMessageAsync($"{ctx.User.Mention} you do not have a dairy").ConfigureAwait(false);
+            }
+            else
+            {
+                var dairy = dairyService.GetUsersDairy(ctx.User.Id);
+                var embed = new DiscordEmbedBuilder
+                {
+                    Title = $"{ctx.User.Username}'s Dairy",
+                    Color = DiscordColor.Aquamarine
+                };
+                embed.AddField("Milk", $"{dairy.milk} lbs", true);
+                embed.AddField("Soft Cheese", $"{dairy.softCheese} lbs", true);
+                embed.AddField("Hard Cheese", $"{dairy.hardCheese} lbs", true);
+                embed.AddField("Milk capacity", $"{(dairy.slots * 1000)} lbs", true);
+                await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+            }
         }
 
         [Command("sell")]
@@ -38,9 +63,10 @@ namespace BumbleBot.Commands.Game
                 else
                 {
                     int sellAmount = 0;
-                    sellAmount += (int)Math.Ceiling(dairy.softCheese * 120);
+                    sellAmount += (int)Math.Ceiling(dairy.softCheese * 45);
                     farmerService.AddCreditsToFarmer(ctx.User.Id, sellAmount);
                     dairyService.RemoveSoftCheeseFromPlayer(ctx.User.Id, null);
+                    dairyService.DeleteSoftCheeseFromExpiryTable(ctx.User.Id);
                     await ctx.Channel.SendMessageAsync($"Sold contents of your dairy for {sellAmount}").ConfigureAwait(false);
                 }
             }

@@ -81,5 +81,17 @@ namespace BumbleBot.Services
                 Console.Out.WriteLine($"Soft cheese amount was not null it was {softCheese}");
             }
         }
+
+        public void DeleteSoftCheeseFromExpiryTable(ulong userId)
+        {
+            using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "delete from softcheeseexpiry where DiscordID = ?userId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?userId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
     }
 }

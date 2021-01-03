@@ -31,6 +31,42 @@ namespace BumbleBot.Services
             return hasKids;
         }
 
+        public void IncreaseKiddingPenCapacity(ulong discordId, int currentCapcity, int increaseBy)
+        {
+            using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "update kiddingpens set capacity = ?capacity where ownerID = ?ownerId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?capacity", MySqlDbType.Int32).Value = currentCapcity + increaseBy;
+                command.Parameters.Add("?ownerId", MySqlDbType.VarChar).Value = discordId;
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public int GetKiddingPenCapacity(ulong discordId)
+        {
+            int capacity = 1;
+
+            using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "select * from kiddingpens where ownerID = ?ownerId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?ownerId", MySqlDbType.VarChar).Value = discordId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        capacity = reader.GetInt32("capacity");
+                    }
+                }
+            }
+
+            return capacity;
+        }
+
         public Boolean DoesFarmerHaveDairy(ulong discordId)
         {
             bool hasDairy = false;

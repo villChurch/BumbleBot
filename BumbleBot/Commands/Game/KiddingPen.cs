@@ -25,6 +25,63 @@ namespace BumbleBot.Commands.Game
             this.goatService = goatService;
         }
 
+        [GroupCommand]
+        public async Task ShowUpgradeOptions(CommandContext ctx)
+        {
+            var embed = new DiscordEmbedBuilder
+            {
+                Title = "Shelter upgrade options",
+                Color = DiscordColor.Aquamarine,
+                Description = "Here are the available upgrade options for your shelter. To upgrade run `shelter upgrade {item} {price}`"
+            };
+            int capacity = farmerService.GetKiddingPenCapacity(ctx.User.Id);
+            int price = (int)Math.Ceiling((5000 * capacity) / 2.0);
+            embed.AddField("Capacity", $"{price} credits will increase capacity by 1");
+            await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+        }
+
+        [Command("upgrade")]
+        [Hidden]
+        [Description("show upgrade options for shelter and upgrade it")]
+        public async Task UpgradeShelter(CommandContext ctx, string option, int price)
+        {
+            HashSet<String> options = new HashSet<string>
+            {
+                "capacity"
+            };
+
+            if (options.Contains(option))
+            {
+                if (option.ToLower().Equals("capacity"))
+                {
+                    int capacity = farmerService.GetKiddingPenCapacity(ctx.User.Id);
+                    int upgradePrice = (int)Math.Ceiling((5000 * capacity) / 2.0);
+                    if (price == upgradePrice)
+                    {
+                        Farmer farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
+                        if (farmer.credits >= upgradePrice)
+                        {
+                            farmerService.IncreaseKiddingPenCapacity(ctx.User.Id, capacity, 1);
+                            farmerService.DeductCreditsFromFarmer(ctx.User.Id, upgradePrice);
+                            await ctx.Channel.SendMessageAsync($"Your shelter can now hold {capacity + 1} does").ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await ctx.Channel.SendMessageAsync($"You only have {farmer.credits} which is not enough").ConfigureAwait(false);
+                        }
+                    }
+                    else
+                    {
+                        await ctx.Channel.SendMessageAsync($"Upgrade price for {option} is {upgradePrice} not {price}").ConfigureAwait(false);
+                    }
+                }
+            }
+            else
+            {
+                await ctx.Channel.SendMessageAsync($"There is no upgrade option for the shelter called {option}").ConfigureAwait(false);
+            }
+        }
+
         [Command("move")]
         [Aliases("transfer")]
         [Description("move a kid into your goat pen")]

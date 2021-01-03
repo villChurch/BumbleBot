@@ -192,6 +192,7 @@
     <Compile Include="Commands\Game\Dairy.cs" />
     <Compile Include="Services\DairyService.cs" />
     <Compile Include="Models\Dairy.cs" />
+    <Compile Include="Attributes\InDmChannel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />

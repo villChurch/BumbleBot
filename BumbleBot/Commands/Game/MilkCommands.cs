@@ -152,7 +152,7 @@ namespace BumbleBot.Commands.Game
                         command.ExecuteNonQuery();
                     }
                     await ctx.Channel.SendMessageAsync($"Congratulations {ctx.User.Mention} you have sold {farmer.milk} lbs of milk for " +
-                        $"{Math.Ceiling(farmer.milk * 5)} credits.").ConfigureAwait(false);
+                        $"{Math.Ceiling(farmer.milk * 3)} credits.").ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
