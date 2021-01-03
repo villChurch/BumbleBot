@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
@@ -21,6 +22,7 @@ namespace BumbleBot.Commands.Game
         }
 
         [Command("dairy")]
+        [HasEnoughCredits(0)]
         public async Task BuyDairy(CommandContext ctx, int upgradePrice)
         {
             if (farmerService.DoesFarmerHaveDairy(ctx.User.Id))
@@ -48,6 +50,7 @@ namespace BumbleBot.Commands.Game
         }
 
         [Command("shelter")]
+        [HasEnoughCredits(0)]
         public async Task BuyKiddingBarn(CommandContext ctx, int upgradePrice)
         {
             if (farmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
@@ -69,21 +72,13 @@ namespace BumbleBot.Commands.Game
                     connection.Open();
                     command.ExecuteNonQuery();
                 }
-
-                using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
-                {
-                    string query = "update farmers set credits = ?credits where DiscordID = ?discordId";
-                    var command = new MySqlCommand(query, connection);
-                    command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.credits - 5000;
-                    command.Parameters.Add("?discordId", MySqlDbType.VarChar).Value = ctx.User.Id;
-                    connection.Open();
-                    command.ExecuteNonQuery();
-                }
+                farmerService.DeductCreditsFromFarmer(ctx.User.Id, 5000);
                 await ctx.Channel.SendMessageAsync("You have successfully brought a shelter.").ConfigureAwait(false);
             }
         }
 
         [Command ("barn")]
+        [HasEnoughCredits(0)]
         public async Task UpgradeBarn(CommandContext ctx, int upgradePrice)
         {
             Farmer farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
@@ -96,7 +91,7 @@ namespace BumbleBot.Commands.Game
             else
             {
                 int barnUpgradeCost = (farmer.barnspace + 10) * 100;
-                if (upgradePrice >= barnUpgradeCost && farmer.credits >= upgradePrice)
+                if (upgradePrice >= barnUpgradeCost)
                 {
                     using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                     {
@@ -119,6 +114,7 @@ namespace BumbleBot.Commands.Game
         }
 
         [Command ("pasture")]
+        [HasEnoughCredits(0)]
         public async Task UpgradeGrazing(CommandContext ctx, int upgradePrice)
         {
             Farmer farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
@@ -130,7 +126,7 @@ namespace BumbleBot.Commands.Game
             else
             {
                 int grazingUpgradeCost = (farmer.grazingspace + 10) * 100;
-                if (upgradePrice >= grazingUpgradeCost && farmer.credits >= upgradePrice)
+                if (upgradePrice >= grazingUpgradeCost)
                 {
                     using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                     {
@@ -155,6 +151,7 @@ namespace BumbleBot.Commands.Game
         }
 
         [Command("oats")]
+        [HasEnoughCredits(0)]
         [Description("purchase some oats")]
         public async Task PurchaseOats(CommandContext ctx, int cost)
         {
@@ -191,24 +188,17 @@ namespace BumbleBot.Commands.Game
                     else
                     {
                         Farmer farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
-                        if (farmer.credits >= 250)
+                        using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                         {
-                            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
-                            {
-                                string query = "update farmers set oats = 1, credits = ?credits where DiscordID = ?discordID";
-                                var command = new MySqlCommand(query, connection);
-                                command.Parameters.Add("?discordID", MySqlDbType.VarChar).Value = ctx.User.Id;
-                                command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.credits - 250;
-                                connection.Open();
-                                command.ExecuteNonQuery();
-                            }
-                            await ctx.Channel.SendMessageAsync("Oats have been purchased and will be used next time you milk your goats.")
-                                .ConfigureAwait(false);
+                            string query = "update farmers set oats = 1, credits = ?credits where DiscordID = ?discordID";
+                            var command = new MySqlCommand(query, connection);
+                            command.Parameters.Add("?discordID", MySqlDbType.VarChar).Value = ctx.User.Id;
+                            command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.credits - 250;
+                            connection.Open();
+                            command.ExecuteNonQuery();
                         }
-                        else
-                        {
-                            await ctx.Channel.SendMessageAsync("You do not have enough credits to purchase more oats.").ConfigureAwait(false);
-                        }
+                        await ctx.Channel.SendMessageAsync("Oats have been purchased and will be used next time you milk your goats.")
+                            .ConfigureAwait(false);
                     }
                 }
             }

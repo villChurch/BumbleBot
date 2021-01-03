@@ -193,6 +193,7 @@
     <Compile Include="Services\DairyService.cs" />
     <Compile Include="Models\Dairy.cs" />
     <Compile Include="Attributes\InDmChannel.cs" />
+    <Compile Include="Attributes\HasEnoughCredits.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />

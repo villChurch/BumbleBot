@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using DSharpPlus.CommandsNext;
@@ -40,8 +40,31 @@ namespace BumbleBot.Commands.Game
             await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
         }
 
+        [Command("info")]
+        [Description("Show information about your shelter")]
+        public async Task ShowShelterInfo(CommandContext ctx)
+        {
+            if (farmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
+            {
+                var embed = new DiscordEmbedBuilder
+                {
+                    Title = $"{ctx.User.Username}'s shelter",
+                    Color = DiscordColor.Aquamarine
+                };
+                embed.AddField("Capacity", farmerService.GetKiddingPenCapacity(ctx.User.Id).ToString(), true);
+                embed.AddField("In use",
+                    farmerService.DoesFarmerHaveAdultsInKiddingPen(goatService.ReturnUsersGoats(ctx.User.Id)) ? "Yes" : "False", true);
+                embed.AddField("Kids in shelter", farmerService.DoesFarmerHaveKidsInKiddingPen(ctx.User.Id) ? "Yes" : "False", true);
+                await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+            }
+            else
+            {
+                await ctx.Channel.SendMessageAsync("You do not own a shelter yet.").ConfigureAwait(false);
+            }
+        }
+
         [Command("upgrade")]
-        [Hidden]
+        [HasEnoughCredits(1)]
         [Description("show upgrade options for shelter and upgrade it")]
         public async Task UpgradeShelter(CommandContext ctx, string option, int price)
         {
@@ -50,7 +73,11 @@ namespace BumbleBot.Commands.Game
                 "capacity"
             };
 
-            if (options.Contains(option))
+            if(!farmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
+            {
+                await ctx.Channel.SendMessageAsync("You do not own a shelter yet.").ConfigureAwait(false);
+            }
+            else if (options.Contains(option))
             {
                 if (option.ToLower().Equals("capacity"))
                 {
@@ -58,17 +85,9 @@ namespace BumbleBot.Commands.Game
                     int upgradePrice = (int)Math.Ceiling((5000 * capacity) / 2.0);
                     if (price == upgradePrice)
                     {
-                        Farmer farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
-                        if (farmer.credits >= upgradePrice)
-                        {
-                            farmerService.IncreaseKiddingPenCapacity(ctx.User.Id, capacity, 1);
-                            farmerService.DeductCreditsFromFarmer(ctx.User.Id, upgradePrice);
-                            await ctx.Channel.SendMessageAsync($"Your shelter can now hold {capacity + 1} does").ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            await ctx.Channel.SendMessageAsync($"You only have {farmer.credits} which is not enough").ConfigureAwait(false);
-                        }
+                        farmerService.IncreaseKiddingPenCapacity(ctx.User.Id, capacity, 1);
+                        farmerService.DeductCreditsFromFarmer(ctx.User.Id, upgradePrice);
+                        await ctx.Channel.SendMessageAsync($"Your shelter can now hold {capacity + 1} does").ConfigureAwait(false);
                     }
                     else
                     {

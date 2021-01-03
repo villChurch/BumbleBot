@@ -20,6 +20,9 @@ using BumbleBot.Services;
 using Microsoft.Extensions.Logging;
 using DSharpPlus.Interactivity.Extensions;
 using System.Linq;
+using BumbleBot.Attributes;
+using System.Collections.Generic;
+using DSharpPlus.CommandsNext.Attributes;
 
 namespace BumbleBot
 {
@@ -437,16 +440,31 @@ namespace BumbleBot
 
             if (e.Exception is ChecksFailedException ex)
             {
-                var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
-
-                var embed = new DiscordEmbedBuilder
+                IReadOnlyList<CheckBaseAttribute> failed = ex.FailedChecks;
+                var test = failed.Any(x =>x is HasEnoughCredits);
+                if (test)
                 {
-                    Title = "Access denied or run criteria not met",
-                    Description = $"{emoji} You do not have the permissions required to execute this command, " +
-                    $"or the pre-checks for this command have failed.",
-                    Color = new DiscordColor(0xFF0000) // red
-                };
-                await e.Context.RespondAsync("", embed: embed);
+                    var embed = new DiscordEmbedBuilder
+                    {
+                        Title = "Lack of funds",
+                        Description = "You do not have enough credits to perform this action",
+                        Color = DiscordColor.Aquamarine
+                    };
+                    await e.Context.RespondAsync("", embed: embed);
+                }
+                else
+                {
+                    var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
+
+                    var embed = new DiscordEmbedBuilder
+                    {
+                        Title = "Access denied or run criteria not met",
+                        Description = $"{emoji} You do not have the permissions required to execute this command, " +
+                        $"or the pre-checks for this command have failed.",
+                        Color = new DiscordColor(0xFF0000) // red
+                    };
+                    await e.Context.RespondAsync("", embed: embed);
+                }
             }
             else if (e.Exception is CommandNotFoundException Cnfex)
             {
