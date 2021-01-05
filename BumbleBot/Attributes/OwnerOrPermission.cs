@@ -10,12 +10,12 @@ namespace BumbleBot.Attributes
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class OwnerOrPermission : CheckBaseAttribute
     {
-        public Permissions Permissions { get; private set; }
-
         public OwnerOrPermission(Permissions permissions)
         {
-            this.Permissions = permissions;
+            Permissions = permissions;
         }
+
+        public Permissions Permissions { get; }
 
         public override Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
         {
@@ -34,7 +34,7 @@ namespace BumbleBot.Attributes
                 return Task.FromResult(false);
             var pusr = ctx.Channel.PermissionsFor(usr);
 
-            return Task.FromResult((pusr & this.Permissions) == this.Permissions);
+            return Task.FromResult((pusr & Permissions) == Permissions);
         }
     }
 }

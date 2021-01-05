@@ -1,13 +1,13 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using BumbleBot.Models;
 using BumbleBot.Services;
+using BumbleBot.Utilities;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using System.Linq;
-using BumbleBot.Models;
 using DSharpPlus.Interactivity.Extensions;
-using BumbleBot.Utilities;
 using MySql.Data.MySqlClient;
 
 namespace BumbleBot.Commands.Game
@@ -15,18 +15,23 @@ namespace BumbleBot.Commands.Game
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class Trading : BaseCommandModule
     {
-        FarmerService farmerService { get; }
-        GoatService goatService { get; }
-        DBUtils dBUtils = new DBUtils();
-        public Trading (FarmerService farmerService, GoatService goatService)
+        private readonly DBUtils dBUtils = new DBUtils();
+
+        public Trading(FarmerService farmerService, GoatService goatService)
         {
             this.farmerService = farmerService;
             this.goatService = goatService;
         }
+
+        private FarmerService farmerService { get; }
+        private GoatService goatService { get; }
+
         [Command("trade")]
         [Aliases("gift", "give")]
-        public async Task TradeGoat(CommandContext ctx, [Description ("goat id you want to trade/gift")] int goatId,
-            [Description ("member you want to trade/gift the goat to")] DiscordMember recipient)
+        public async Task TradeGoat(CommandContext ctx, [Description("goat id you want to trade/gift")]
+            int goatId,
+            [Description("member you want to trade/gift the goat to")]
+            DiscordMember recipient)
         {
             var recipientFarmer = farmerService.ReturnFarmerInfo(recipient.Id);
             var sendersGoats = goatService.ReturnUsersGoats(ctx.User.Id);
@@ -36,19 +41,24 @@ namespace BumbleBot.Commands.Game
             }
             else if (recipientFarmer.barnspace < 10)
             {
-                await ctx.Channel.SendMessageAsync($"{recipient.Mention} does not have a profile setup.").ConfigureAwait(false);
+                await ctx.Channel.SendMessageAsync($"{recipient.Mention} does not have a profile setup.")
+                    .ConfigureAwait(false);
             }
             else if (!goatService.CanGoatFitInBarn(recipient.Id))
             {
-                await ctx.Channel.SendMessageAsync($"{recipient.Mention} does not have enough room in their barn for this goat").ConfigureAwait(false);
+                await ctx.Channel
+                    .SendMessageAsync($"{recipient.Mention} does not have enough room in their barn for this goat")
+                    .ConfigureAwait(false);
             }
-            else if(goatService.IsGoatCooking(goatId))
+            else if (goatService.IsGoatCooking(goatId))
             {
-                await ctx.Channel.SendMessageAsync($"Goat with id {goatId} is currently in your shelter and cannot be moved").ConfigureAwait(false);
+                await ctx.Channel
+                    .SendMessageAsync($"Goat with id {goatId} is currently in your shelter and cannot be moved")
+                    .ConfigureAwait(false);
             }
             else
             {
-                Goat goat = sendersGoats.First(x => x.id == goatId);
+                var goat = sendersGoats.First(x => x.id == goatId);
                 _ = TradeGoat(ctx, recipient, goat);
             }
         }
@@ -64,7 +74,7 @@ namespace BumbleBot.Commands.Game
                     Title = $"Incoming gift from {ctx.User.Mention}",
                     ImageUrl = url + goat.filePath.Replace(" ", "%20")
                 };
-                embed.AddField("Name", goat.name, false);
+                embed.AddField("Name", goat.name);
                 embed.AddField("Level", goat.level.ToString(), true);
                 embed.AddField("Experience", goat.experience.ToString(), true);
                 embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed).Replace("_", " "), true);
@@ -75,8 +85,11 @@ namespace BumbleBot.Commands.Game
                 var noEmoji = DiscordEmoji.FromName(ctx.Client, ":x:");
                 await message.CreateReactionAsync(yesEmoji).ConfigureAwait(false);
                 await message.CreateReactionAsync(noEmoji).ConfigureAwait(false);
-                var result = await interactivity.WaitForReactionAsync(x => x.Message == message && x.User.Id == recipient.Id
-                && (x.Emoji == yesEmoji || x.Emoji == noEmoji), TimeSpan.FromMinutes(2)).ConfigureAwait(false);
+                var result = await interactivity.WaitForReactionAsync(x => x.Message == message &&
+                                                                           x.User.Id == recipient.Id
+                                                                           && (x.Emoji == yesEmoji ||
+                                                                               x.Emoji == noEmoji),
+                    TimeSpan.FromMinutes(2)).ConfigureAwait(false);
 
                 if (result.TimedOut)
                 {
@@ -84,28 +97,33 @@ namespace BumbleBot.Commands.Game
                 }
                 else if (result.Result.Emoji == yesEmoji)
                 {
-                    using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                     {
-                        string query = "Update goats Set ownerID = ?recipientId where id = ?goatId";
+                        var query = "Update goats Set ownerID = ?recipientId where id = ?goatId";
                         var command = new MySqlCommand(query, connection);
                         command.Parameters.Add("?recipientId", MySqlDbType.VarChar).Value = recipient.Id;
                         command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goat.id;
                         connection.Open();
                         command.ExecuteNonQuery();
                     }
-                    using(MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+
+                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                     {
-                        string query = "Delete from grazing where goatId = ?goatId";
+                        var query = "Delete from grazing where goatId = ?goatId";
                         var command = new MySqlCommand(query, connection);
                         command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goat.id;
                         connection.Open();
                         command.ExecuteNonQuery();
                     }
-                    await ctx.Channel.SendMessageAsync($"Goat {goat.name} has now been given to {recipient.DisplayName}").ConfigureAwait(false);
+
+                    await ctx.Channel
+                        .SendMessageAsync($"Goat {goat.name} has now been given to {recipient.DisplayName}")
+                        .ConfigureAwait(false);
                 }
                 else if (result.Result.Emoji == noEmoji)
                 {
-                    await ctx.Channel.SendMessageAsync($"{recipient.DisplayName} has rejected the trade").ConfigureAwait(false);
+                    await ctx.Channel.SendMessageAsync($"{recipient.DisplayName} has rejected the trade")
+                        .ConfigureAwait(false);
                 }
             }
             catch (Exception ex)

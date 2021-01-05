@@ -1,5 +1,4 @@
-﻿using System;
-namespace BumbleBot.Models
+﻿namespace BumbleBot.Models
 {
     public class Dairy
     {
@@ -7,8 +6,5 @@ namespace BumbleBot.Models
         public int slots { get; set; }
         public decimal softCheese { get; set; }
         public decimal hardCheese { get; set; }
-        public Dairy()
-        {
-        }
     }
 }

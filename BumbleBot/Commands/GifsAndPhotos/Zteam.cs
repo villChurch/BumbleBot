@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,64 +21,61 @@ namespace BumbleBot.Commands.GifsAndPhotos
     public class Zteam : BaseCommandModule
     {
         private readonly DBUtils dBUtils = new DBUtils();
-        private AssholeService assholeService { get; }
 
         public Zteam(AssholeService assholeService)
         {
             this.assholeService = assholeService;
         }
 
+        private AssholeService assholeService { get; }
+
         [GroupCommand]
         public async Task ShowRandomZteamPhoto(CommandContext ctx)
         {
             try
             {
-                this.assholeService.SetAhConfig();
-                bool isAssholeMode = false;
-                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                assholeService.SetAhConfig();
+                var isAssholeMode = false;
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    string query = "Select boolValue from config where paramName = ?paramName";
+                    var query = "Select boolValue from config where paramName = ?paramName";
                     var command = new MySqlCommand(query, connection);
                     command.Parameters.Add("?paramName", MySqlDbType.VarChar, 2550).Value = "assholeMode";
                     connection.Open();
                     var reader = command.ExecuteReader();
                     if (reader.HasRows)
-                    {
                         while (reader.Read())
-                        {
                             isAssholeMode = reader.GetBoolean("boolValue");
-                        }
-                    }
                     reader.Close();
                 }
+
                 if (isAssholeMode)
                 {
                     await ctx.Channel.SendMessageAsync("Don't feel like it right now").ConfigureAwait(false);
                     return;
                 }
-                List<string> zteamLinks = new List<string>();
-                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+
+                var zteamLinks = new List<string>();
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    string query = "Select zteamLink from zteam";
+                    var query = "Select zteamLink from zteam";
                     var command = new MySqlCommand(query, connection);
                     connection.Open();
                     var reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        zteamLinks.Add(reader.GetString("zteamLink"));
-                    }
+                    while (reader.Read()) zteamLinks.Add(reader.GetString("zteamLink"));
                     reader.Close();
                 }
 
                 if (zteamLinks.Count < 0)
                 {
-                    await ctx.Channel.SendMessageAsync($"Currently there are no zteam pictures! Run {Formatter.InlineCode("!zteam add")}" +
-                        $" to add one").ConfigureAwait(false);
+                    await ctx.Channel.SendMessageAsync(
+                        $"Currently there are no zteam pictures! Run {Formatter.InlineCode("!zteam add")}" +
+                        " to add one").ConfigureAwait(false);
                 }
                 else
                 {
-                    Random rnd = new Random();
-                    int gifToShow = rnd.Next(0, zteamLinks.Count);
+                    var rnd = new Random();
+                    var gifToShow = rnd.Next(0, zteamLinks.Count);
 
                     await ctx.Channel.SendMessageAsync(zteamLinks.ElementAt(gifToShow)).ConfigureAwait(false);
                 }
@@ -96,23 +94,26 @@ namespace BumbleBot.Commands.GifsAndPhotos
         {
             try
             {
-                string gifLink = "";
+                var gifLink = "";
                 var interactivity = ctx.Client.GetInteractivity();
 
-                await ctx.Channel.SendMessageAsync("Please enter the link for this zteam picture/gif").ConfigureAwait(false);
-                var linkResponse = await interactivity.WaitForMessageAsync(x => x.Channel == ctx.Channel && x.Author == ctx.Message.Author,
+                await ctx.Channel.SendMessageAsync("Please enter the link for this zteam picture/gif")
+                    .ConfigureAwait(false);
+                var linkResponse = await interactivity.WaitForMessageAsync(
+                    x => x.Channel == ctx.Channel && x.Author == ctx.Message.Author,
                     TimeSpan.FromMinutes(5)).ConfigureAwait(false);
                 if (linkResponse.TimedOut)
                 {
-                    await ctx.Channel.SendMessageAsync($"{ctx.Command.Name} command has timed out please try again").ConfigureAwait(false);
+                    await ctx.Channel.SendMessageAsync($"{ctx.Command.Name} command has timed out please try again")
+                        .ConfigureAwait(false);
                     return;
                 }
 
                 gifLink = linkResponse.Result.Content.Trim();
 
-                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    string query = "Insert into zteam (zteamLink, addedBy) Values (?zteamLink, ?addedBy)";
+                    var query = "Insert into zteam (zteamLink, addedBy) Values (?zteamLink, ?addedBy)";
                     var command = new MySqlCommand(query, connection);
                     command.Parameters.Add("?zteamLink", MySqlDbType.VarChar).Value = gifLink;
                     command.Parameters.Add("?addedBy", MySqlDbType.VarChar, 40).Value = ctx.Member.Id;
@@ -136,33 +137,29 @@ namespace BumbleBot.Commands.GifsAndPhotos
         {
             try
             {
-                Dictionary<string, string> zteamPics = new Dictionary<string, string>();
-                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                var zteamPics = new Dictionary<string, string>();
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    string query = "Select id, zteamLink from zteam";
+                    var query = "Select id, zteamLink from zteam";
                     var command = new MySqlCommand(query, connection);
                     connection.Open();
                     var reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        zteamPics.Add(reader.GetString("id"), reader.GetString("zteamLink"));
-                    }
+                    while (reader.Read()) zteamPics.Add(reader.GetString("id"), reader.GetString("zteamLink"));
                     reader.Close();
                 }
 
                 if (zteamPics.Count < 1)
                 {
-                    await ctx.Channel.SendMessageAsync("There currently are no zteam pictures stored").ConfigureAwait(false);
+                    await ctx.Channel.SendMessageAsync("There currently are no zteam pictures stored")
+                        .ConfigureAwait(false);
                 }
                 else
                 {
                     var interactivity = ctx.Client.GetInteractivity();
-                    StringBuilder sb = new StringBuilder();
-                    foreach (var gifKey in zteamPics.Keys)
-                    {
-                        sb.AppendLine(gifKey + " - " + zteamPics[gifKey]);
-                    }
-                    var gifPages = interactivity.GeneratePagesInEmbed(sb.ToString(), SplitType.Line, new DiscordEmbedBuilder());
+                    var sb = new StringBuilder();
+                    foreach (var gifKey in zteamPics.Keys) sb.AppendLine(gifKey + " - " + zteamPics[gifKey]);
+                    var gifPages =
+                        interactivity.GeneratePagesInEmbed(sb.ToString(), SplitType.Line, new DiscordEmbedBuilder());
                     await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, gifPages)
                         .ConfigureAwait(false);
                 }
@@ -177,21 +174,24 @@ namespace BumbleBot.Commands.GifsAndPhotos
         [Command("delete")]
         [Description("deletes zteam picture or gif")]
         [OwnerOrPermission(Permissions.Administrator)]
-        public async Task DeleteZteamPictureOrGif(CommandContext ctx, [RemainingText, Description("id of zteam picture to delete")] int zteamId)
+        public async Task DeleteZteamPictureOrGif(CommandContext ctx,
+            [RemainingText] [Description("id of zteam picture to delete")]
+            int zteamId)
         {
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    MySqlCommand command = new MySqlCommand("RemoveZteam", connection)
+                    var command = new MySqlCommand("RemoveZteam", connection)
                     {
-                        CommandType = System.Data.CommandType.StoredProcedure
+                        CommandType = CommandType.StoredProcedure
                     };
 
                     command.Parameters.Add("zteamId", MySqlDbType.Int32).Value = zteamId;
                     connection.Open();
                     command.ExecuteNonQuery();
                 }
+
                 await ctx.Channel.SendMessageAsync($"Deleted minx picture with id of {zteamId}").ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -204,32 +204,27 @@ namespace BumbleBot.Commands.GifsAndPhotos
         [Command("show")]
         [Description("shows specific zteam picture or gif")]
         [OwnerOrPermission(Permissions.Administrator)]
-        public async Task ShowZteam(CommandContext ctx, [RemainingText, Description("id of zteam picture to show")] int zteamId)
+        public async Task ShowZteam(CommandContext ctx, [RemainingText] [Description("id of zteam picture to show")]
+            int zteamId)
         {
             try
             {
-                string zteamLink = "";
-                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                var zteamLink = "";
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    string query = "Select zteamLink from zteam where id = ?id";
+                    var query = "Select zteamLink from zteam where id = ?id";
                     var command = new MySqlCommand(query, connection);
                     command.Parameters.Add("?id", MySqlDbType.VarChar).Value = zteamId;
                     connection.Open();
                     var reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        zteamLink = reader.GetString("zteamLink");
-                    }
+                    while (reader.Read()) zteamLink = reader.GetString("zteamLink");
                 }
 
                 if (string.IsNullOrEmpty(zteamLink))
-                {
-                    await ctx.Channel.SendMessageAsync($"Could not find a minx photo with id of {zteamId}").ConfigureAwait(false);
-                }
+                    await ctx.Channel.SendMessageAsync($"Could not find a minx photo with id of {zteamId}")
+                        .ConfigureAwait(false);
                 else
-                {
                     await ctx.Channel.SendMessageAsync(zteamLink).ConfigureAwait(false);
-                }
             }
             catch (Exception ex)
             {

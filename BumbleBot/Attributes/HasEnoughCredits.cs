@@ -9,43 +9,36 @@ namespace BumbleBot.Attributes
 {
     public class HasEnoughCredits : CheckBaseAttribute
     {
-        private int balance { get; set; }
-        private DBUtils dBUtils = new DBUtils();
-        public int argumentPosition { get; set; }
+        private readonly DBUtils dBUtils = new DBUtils();
+
         public HasEnoughCredits(int argumentPosition)
         {
             this.argumentPosition = argumentPosition;
         }
 
+        private int balance { get; set; }
+        public int argumentPosition { get; set; }
+
         public override Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
         {
-            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
             {
-                string query = "select * from farmers where DiscordID = ?discordId";
+                var query = "select * from farmers where DiscordID = ?discordId";
                 var command = new MySqlCommand(query, connection);
                 command.Parameters.Add("?discordId", MySqlDbType.VarChar).Value = ctx.User.Id;
                 connection.Open();
                 var reader = command.ExecuteReader();
                 if (reader.HasRows)
-                {
-                    while(reader.Read())
-                    {
-                        this.balance = reader.GetInt32("credits");
-                    }
-                }
+                    while (reader.Read())
+                        balance = reader.GetInt32("credits");
                 else
-                {
                     balance = 0;
-                }
                 reader.Close();
             }
 
             var arguments = ctx.RawArgumentString.Split(' ');
-            if (ctx.Command.Name.ToLower().Equals("help"))
-            {
-                return Task.FromResult(1 == 1);
-            }
-            int buyPrice = Convert.ToInt32(arguments[argumentPosition]);
+            if (ctx.Command.Name.ToLower().Equals("help")) return Task.FromResult(1 == 1);
+            var buyPrice = Convert.ToInt32(arguments[argumentPosition]);
             return Task.FromResult(balance >= buyPrice);
         }
     }

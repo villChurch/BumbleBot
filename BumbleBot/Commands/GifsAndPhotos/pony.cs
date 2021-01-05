@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,64 +21,61 @@ namespace BumbleBot.Commands.GifsAndPhotos
     public class pony : BaseCommandModule
     {
         private readonly DBUtils dBUtils = new DBUtils();
-        private AssholeService assholeService { get; }
 
         public pony(AssholeService assholeService)
         {
             this.assholeService = assholeService;
         }
 
+        private AssholeService assholeService { get; }
+
         [GroupCommand]
         public async Task ShowRandomPonyPhoto(CommandContext ctx)
         {
             try
             {
-                this.assholeService.SetAhConfig();
-                bool isAssholeMode = false;
-                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                assholeService.SetAhConfig();
+                var isAssholeMode = false;
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    string query = "Select boolValue from config where paramName = ?paramName";
+                    var query = "Select boolValue from config where paramName = ?paramName";
                     var command = new MySqlCommand(query, connection);
                     command.Parameters.Add("?paramName", MySqlDbType.VarChar, 2550).Value = "assholeMode";
                     connection.Open();
                     var reader = command.ExecuteReader();
                     if (reader.HasRows)
-                    {
                         while (reader.Read())
-                        {
                             isAssholeMode = reader.GetBoolean("boolValue");
-                        }
-                    }
                     reader.Close();
                 }
+
                 if (isAssholeMode)
                 {
                     await ctx.Channel.SendMessageAsync("Don't feel like it right now").ConfigureAwait(false);
                     return;
                 }
-                List<string> ponyLinks = new List<string>();
-                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+
+                var ponyLinks = new List<string>();
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    string query = "Select ponyLink from pony";
+                    var query = "Select ponyLink from pony";
                     var command = new MySqlCommand(query, connection);
                     connection.Open();
                     var reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        ponyLinks.Add(reader.GetString("ponyLink"));
-                    }
+                    while (reader.Read()) ponyLinks.Add(reader.GetString("ponyLink"));
                     reader.Close();
                 }
 
                 if (ponyLinks.Count < 0)
                 {
-                    await ctx.Channel.SendMessageAsync($"Currently there are no kid pictures! Run {Formatter.InlineCode("!pony add")}" +
-                        $" to add one").ConfigureAwait(false);
+                    await ctx.Channel.SendMessageAsync(
+                        $"Currently there are no kid pictures! Run {Formatter.InlineCode("!pony add")}" +
+                        " to add one").ConfigureAwait(false);
                 }
                 else
                 {
-                    Random rnd = new Random();
-                    int gifToShow = rnd.Next(0, ponyLinks.Count);
+                    var rnd = new Random();
+                    var gifToShow = rnd.Next(0, ponyLinks.Count);
 
                     await ctx.Channel.SendMessageAsync(ponyLinks.ElementAt(gifToShow)).ConfigureAwait(false);
                 }
@@ -96,23 +94,26 @@ namespace BumbleBot.Commands.GifsAndPhotos
         {
             try
             {
-                string gifLink = "";
+                var gifLink = "";
                 var interactivity = ctx.Client.GetInteractivity();
 
-                await ctx.Channel.SendMessageAsync("Please enter the link for this pony picture/gif").ConfigureAwait(false);
-                var linkResponse = await interactivity.WaitForMessageAsync(x => x.Channel == ctx.Channel && x.Author == ctx.Message.Author,
+                await ctx.Channel.SendMessageAsync("Please enter the link for this pony picture/gif")
+                    .ConfigureAwait(false);
+                var linkResponse = await interactivity.WaitForMessageAsync(
+                    x => x.Channel == ctx.Channel && x.Author == ctx.Message.Author,
                     TimeSpan.FromMinutes(5)).ConfigureAwait(false);
                 if (linkResponse.TimedOut)
                 {
-                    await ctx.Channel.SendMessageAsync($"{ctx.Command.Name} command has timed out please try again").ConfigureAwait(false);
+                    await ctx.Channel.SendMessageAsync($"{ctx.Command.Name} command has timed out please try again")
+                        .ConfigureAwait(false);
                     return;
                 }
 
                 gifLink = linkResponse.Result.Content.Trim();
 
-                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    string query = "Insert into pony (ponyLink, addedBy) Values (?ponyLink, ?addedBy)";
+                    var query = "Insert into pony (ponyLink, addedBy) Values (?ponyLink, ?addedBy)";
                     var command = new MySqlCommand(query, connection);
                     command.Parameters.Add("?ponyLink", MySqlDbType.VarChar).Value = gifLink;
                     command.Parameters.Add("?addedBy", MySqlDbType.VarChar, 40).Value = ctx.Member.Id;
@@ -136,33 +137,29 @@ namespace BumbleBot.Commands.GifsAndPhotos
         {
             try
             {
-                Dictionary<string, string> ponyPics = new Dictionary<string, string>();
-                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                var ponyPics = new Dictionary<string, string>();
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    string query = "Select id, ponyLink from pony";
+                    var query = "Select id, ponyLink from pony";
                     var command = new MySqlCommand(query, connection);
                     connection.Open();
                     var reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        ponyPics.Add(reader.GetString("id"), reader.GetString("ponyLink"));
-                    }
+                    while (reader.Read()) ponyPics.Add(reader.GetString("id"), reader.GetString("ponyLink"));
                     reader.Close();
                 }
 
                 if (ponyPics.Count < 1)
                 {
-                    await ctx.Channel.SendMessageAsync("There currently are no pony pictures stored").ConfigureAwait(false);
+                    await ctx.Channel.SendMessageAsync("There currently are no pony pictures stored")
+                        .ConfigureAwait(false);
                 }
                 else
                 {
                     var interactivity = ctx.Client.GetInteractivity();
-                    StringBuilder sb = new StringBuilder();
-                    foreach (var gifKey in ponyPics.Keys)
-                    {
-                        sb.AppendLine(gifKey + " - " + ponyPics[gifKey]);
-                    }
-                    var gifPages = interactivity.GeneratePagesInEmbed(sb.ToString(), SplitType.Line, new DiscordEmbedBuilder());
+                    var sb = new StringBuilder();
+                    foreach (var gifKey in ponyPics.Keys) sb.AppendLine(gifKey + " - " + ponyPics[gifKey]);
+                    var gifPages =
+                        interactivity.GeneratePagesInEmbed(sb.ToString(), SplitType.Line, new DiscordEmbedBuilder());
                     await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, gifPages)
                         .ConfigureAwait(false);
                 }
@@ -177,21 +174,24 @@ namespace BumbleBot.Commands.GifsAndPhotos
         [Command("delete")]
         [Description("deletes pony picture or gif")]
         [OwnerOrPermission(Permissions.Administrator)]
-        public async Task DeletePonyPictureOrGif(CommandContext ctx, [RemainingText, Description("id of pony picture to delete")] int ponyId)
+        public async Task DeletePonyPictureOrGif(CommandContext ctx,
+            [RemainingText] [Description("id of pony picture to delete")]
+            int ponyId)
         {
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    MySqlCommand command = new MySqlCommand("RemovePony", connection)
+                    var command = new MySqlCommand("RemovePony", connection)
                     {
-                        CommandType = System.Data.CommandType.StoredProcedure
+                        CommandType = CommandType.StoredProcedure
                     };
 
                     command.Parameters.Add("ponyId", MySqlDbType.Int32).Value = ponyId;
                     connection.Open();
                     command.ExecuteNonQuery();
                 }
+
                 await ctx.Channel.SendMessageAsync($"Deleted minx picture with id of {ponyId}").ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -204,32 +204,27 @@ namespace BumbleBot.Commands.GifsAndPhotos
         [Command("show")]
         [Description("shows specific pony picture or gif")]
         [OwnerOrPermission(Permissions.Administrator)]
-        public async Task ShowPony(CommandContext ctx, [RemainingText, Description("id of pony picture to show")] int ponyId)
+        public async Task ShowPony(CommandContext ctx, [RemainingText] [Description("id of pony picture to show")]
+            int ponyId)
         {
             try
             {
-                string ponyLink = "";
-                using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                var ponyLink = "";
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    string query = "Select ponyLink from pony where id = ?id";
+                    var query = "Select ponyLink from pony where id = ?id";
                     var command = new MySqlCommand(query, connection);
                     command.Parameters.Add("?id", MySqlDbType.VarChar).Value = ponyId;
                     connection.Open();
                     var reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {
-                        ponyLink = reader.GetString("ponyLink");
-                    }
+                    while (reader.Read()) ponyLink = reader.GetString("ponyLink");
                 }
 
                 if (string.IsNullOrEmpty(ponyLink))
-                {
-                    await ctx.Channel.SendMessageAsync($"Could not find a minx photo with id of {ponyId}").ConfigureAwait(false);
-                }
+                    await ctx.Channel.SendMessageAsync($"Could not find a minx photo with id of {ponyId}")
+                        .ConfigureAwait(false);
                 else
-                {
                     await ctx.Channel.SendMessageAsync(ponyLink).ConfigureAwait(false);
-                }
             }
             catch (Exception ex)
             {

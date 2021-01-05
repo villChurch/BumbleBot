@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Utilities;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using MySql.Data.MySqlClient;
-using BumbleBot.Attributes;
-using DSharpPlus;
-using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity.Extensions;
+using MySql.Data.MySqlClient;
 
 namespace BumbleBot.Commands.AdminCommands
 {
@@ -25,16 +25,18 @@ namespace BumbleBot.Commands.AdminCommands
         {
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    string query = "Update config SET stringResponse = ?spawnChannel where paramName = ?paramName";
+                    var query = "Update config SET stringResponse = ?spawnChannel where paramName = ?paramName";
                     var command = new MySqlCommand(query, connection);
                     command.Parameters.Add("?spawnChannel", MySqlDbType.VarChar).Value = discordChannel.Id;
                     command.Parameters.Add("?paramName", MySqlDbType.VarChar).Value = "spawnChannel";
                     connection.Open();
                     command.ExecuteNonQuery();
                 }
-                await ctx.Channel.SendMessageAsync($"Goats will spawn in {discordChannel.Mention}").ConfigureAwait(false);
+
+                await ctx.Channel.SendMessageAsync($"Goats will spawn in {discordChannel.Mention}")
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -50,15 +52,16 @@ namespace BumbleBot.Commands.AdminCommands
         {
             try
             {
-                using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    string query = "Update config SET boolValue = ?boolValue where paramName = ?paramName";
+                    var query = "Update config SET boolValue = ?boolValue where paramName = ?paramName";
                     var command = new MySqlCommand(query, connection);
                     command.Parameters.Add("?boolValue", MySqlDbType.Int16).Value = 1;
                     command.Parameters.Add("?paramName", MySqlDbType.VarChar).Value = "assholeMode";
                     connection.Open();
                     command.ExecuteNonQuery();
                 }
+
                 await ctx.Channel.SendMessageAsync("Parameter set").ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -72,29 +75,29 @@ namespace BumbleBot.Commands.AdminCommands
         [Aliases("ar")]
         [Hidden]
         [OwnerOrPermission(Permissions.Administrator)]
-        public async Task SetAssholeResponse(CommandContext ctx) {
+        public async Task SetAssholeResponse(CommandContext ctx)
+        {
             try
             {
-                string currentResponse = "";
-                using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                var currentResponse = "";
+                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                 {
-                    string query = "Select stringResponse from config where paramName = ?paramName";
+                    var query = "Select stringResponse from config where paramName = ?paramName";
                     var command = new MySqlCommand(query, connection);
                     command.Parameters.Add("?paramName", MySqlDbType.VarChar).Value = "assholeResponse";
                     connection.Open();
                     var reader = command.ExecuteReader();
                     if (reader.HasRows)
-                    {
-                        while(reader.Read())
-                        {
+                        while (reader.Read())
                             currentResponse = reader.GetString("stringResponse");
-                        }
-                    }
                     reader.Close();
                 }
+
                 var interactivity = ctx.Client.GetInteractivity();
-                await ctx.Channel.SendMessageAsync($"Current reponse is: {currentResponse} Please enter the new one").ConfigureAwait(false);
-                var responseMsg = await interactivity.WaitForMessageAsync(x => x.Author == ctx.Message.Author && x.Channel == ctx.Channel,
+                await ctx.Channel.SendMessageAsync($"Current reponse is: {currentResponse} Please enter the new one")
+                    .ConfigureAwait(false);
+                var responseMsg = await interactivity.WaitForMessageAsync(
+                    x => x.Author == ctx.Message.Author && x.Channel == ctx.Channel,
                     TimeSpan.FromMinutes(5));
                 if (responseMsg.TimedOut)
                 {
@@ -102,15 +105,17 @@ namespace BumbleBot.Commands.AdminCommands
                 }
                 else
                 {
-                    using (MySqlConnection connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                     {
-                        string query = "Update config set stringResponse = ?stringResponse where paramName = ?paramName";
+                        var query = "Update config set stringResponse = ?stringResponse where paramName = ?paramName";
                         var command = new MySqlCommand(query, connection);
-                        command.Parameters.Add("?stringResponse", MySqlDbType.VarChar).Value = responseMsg.Result.Content;
+                        command.Parameters.Add("?stringResponse", MySqlDbType.VarChar).Value =
+                            responseMsg.Result.Content;
                         command.Parameters.Add("?paramName", MySqlDbType.VarChar).Value = "assholeResponse";
                         connection.Open();
                         command.ExecuteNonQuery();
                     }
+
                     await ctx.Channel.SendMessageAsync("Response now updated").ConfigureAwait(false);
                 }
             }
@@ -118,7 +123,7 @@ namespace BumbleBot.Commands.AdminCommands
             {
                 Console.Out.WriteLine(ex.Message);
                 Console.Out.WriteLine(ex.StackTrace);
-            } 
+            }
         }
     }
 }

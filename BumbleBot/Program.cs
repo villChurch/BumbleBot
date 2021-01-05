@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace BumbleBot
+﻿namespace BumbleBot
 {
-    class MainClass
+    internal class MainClass
     {
         public static void Main(string[] args)
         {

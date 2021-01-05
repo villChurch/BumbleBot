@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 
@@ -10,22 +9,23 @@ namespace BumbleBot.Utilities
     public class DBUtils
     {
         private readonly string configFilePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
         public string ReturnPopulatedConnectionStringAsync()
         {
-            string json = string.Empty;
+            var json = string.Empty;
 
-            using (FileStream fs =
+            using (var fs =
                 File.OpenRead(configFilePath + "/config.json")
             )
-            using (StreamReader sr = new StreamReader(fs, new UTF8Encoding(false)))
+            using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
             {
                 json = sr.ReadToEnd();
             }
 
-            ConfigJson configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
+            var configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
 
-            MySqlConnectionStringBuilder mcsb = new MySqlConnectionStringBuilder
+            var mcsb = new MySqlConnectionStringBuilder
             {
                 Database = configJson.databaseName,
                 Password = configJson.databasePassword,
@@ -40,20 +40,20 @@ namespace BumbleBot.Utilities
 
         public static string ReturnPopulatedConnectionStringStatic()
         {
-            string json = string.Empty;
+            var json = string.Empty;
 
-            using (FileStream fs =
+            using (var fs =
                 File.OpenRead(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "/config.json")
             )
-            using (StreamReader sr = new StreamReader(fs, new UTF8Encoding(false)))
+            using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
             {
                 json = sr.ReadToEnd();
             }
 
-            ConfigJson configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
+            var configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
 
-            MySqlConnectionStringBuilder mcsb = new MySqlConnectionStringBuilder
+            var mcsb = new MySqlConnectionStringBuilder
             {
                 Database = configJson.databaseName,
                 Password = configJson.databasePassword,

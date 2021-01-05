@@ -1,5 +1,4 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace BumbleBot.Models
@@ -30,6 +29,7 @@ namespace BumbleBot.Models
         Gold,
         Special
     }
+
     public class Goat
     {
         public bool special { get; set; }
@@ -46,11 +46,9 @@ namespace BumbleBot.Models
 
         [JsonConverter(typeof(StringEnumConverter))]
         public BaseColour baseColour { get; set; }
+
         public bool equiped { get; set; }
         public decimal experience { get; set; }
         public string filePath { get; set; }
-        public Goat()
-        {
-        }
     }
 }

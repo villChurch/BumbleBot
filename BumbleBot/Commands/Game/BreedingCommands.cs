@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using MySql.Data.MySqlClient;
-using System.Linq;
-using System.Net;
-using System.IO;
-using Newtonsoft.Json;
+using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.Entities;
 
 namespace BumbleBot.Commands.Game
 {
@@ -22,16 +20,16 @@ namespace BumbleBot.Commands.Game
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class BreedingCommands : BaseCommandModule
     {
-
-        FarmerService farmerService { get; }
-        GoatService goatService { get; }
-        DBUtils dBUtils = new DBUtils();
+        private DBUtils dBUtils = new DBUtils();
 
         public BreedingCommands(FarmerService farmerService, GoatService goatService)
         {
             this.farmerService = farmerService;
             this.goatService = goatService;
         }
+
+        private FarmerService farmerService { get; }
+        private GoatService goatService { get; }
 
         [Command("show")]
         [Description("Show current goats that have been sent to breed")]
@@ -45,15 +43,16 @@ namespace BumbleBot.Commands.Game
                 }
                 else if (!farmerService.DoesFarmerHaveAdultsInKiddingPen(goatService.ReturnUsersGoats(ctx.User.Id)))
                 {
-                    await ctx.Channel.SendMessageAsync("You currently do not have any adult goats in your kidding pen").ConfigureAwait(false);
+                    await ctx.Channel.SendMessageAsync("You currently do not have any adult goats in your kidding pen")
+                        .ConfigureAwait(false);
                 }
                 else
                 {
-                    List<int> breedingIds = goatService.ReturnUsersAdultGoatIdsInKiddingPen(ctx.User.Id);
-                    List<Goat> breedingGoats =
+                    var breedingIds = goatService.ReturnUsersAdultGoatIdsInKiddingPen(ctx.User.Id);
+                    var breedingGoats =
                         goatService.ReturnUsersGoats(ctx.User.Id).Where(goat => breedingIds.Contains(goat.id)).ToList();
                     var url = "http://williamspires.com/";
-                    List<Page> pages = new List<Page>();
+                    var pages = new List<Page>();
                     var interactivity = ctx.Client.GetInteractivity();
                     foreach (var goat in breedingGoats)
                     {
@@ -62,17 +61,18 @@ namespace BumbleBot.Commands.Game
                             Title = $"{goat.id}",
                             ImageUrl = url + goat.filePath.Replace(" ", "%20")
                         };
-                        embed.AddField("Name", goat.name, false);
+                        embed.AddField("Name", goat.name);
                         embed.AddField("Level", goat.level.ToString(), true);
                         embed.AddField("Experience", goat.experience.ToString(), true);
                         embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed).Replace("_", " "), true);
                         embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
-                        Page page = new Page
+                        var page = new Page
                         {
                             Embed = embed
                         };
                         pages.Add(page);
                     }
+
                     await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false);
                 }
             }
@@ -91,15 +91,19 @@ namespace BumbleBot.Commands.Game
             {
                 if (farmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
                 {
-                    List<Goat> goats = goatService.ReturnUsersGoats(ctx.User.Id);
+                    var goats = goatService.ReturnUsersGoats(ctx.User.Id);
 
                     if (goats.Where(goat => goat.id == goatId).ToList().Count == 0)
                     {
-                        await ctx.Channel.SendMessageAsync($"It appears you don't own a goat with id {goatId}").ConfigureAwait(false);
+                        await ctx.Channel.SendMessageAsync($"It appears you don't own a goat with id {goatId}")
+                            .ConfigureAwait(false);
                     }
                     else if (goats.Find(goat => goat.id == goatId).level < 100)
                     {
-                        await ctx.Channel.SendMessageAsync("This goat is not yet an adult and only adults can be moved to the shelter").ConfigureAwait(false);
+                        await ctx.Channel
+                            .SendMessageAsync(
+                                "This goat is not yet an adult and only adults can be moved to the shelter")
+                            .ConfigureAwait(false);
                     }
                     else if (goats.Find(goat => goat.id == goatId).baseColour == BaseColour.Special)
                     {
@@ -108,13 +112,13 @@ namespace BumbleBot.Commands.Game
                     else
                     {
                         // /breeding/{id}/{goatId}
-                        String uri = $"http://localhost:8080/breeding/{ctx.User.Id}/{goatId}";
-                        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+                        var uri = $"http://localhost:8080/breeding/{ctx.User.Id}/{goatId}";
+                        var request = (HttpWebRequest) WebRequest.Create(uri);
                         request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 
-                        using (HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync())
-                        using (Stream stream = response.GetResponseStream())
-                        using (StreamReader reader = new StreamReader(stream))
+                        using (var response = (HttpWebResponse) await request.GetResponseAsync())
+                        using (var stream = response.GetResponseStream())
+                        using (var reader = new StreamReader(stream))
                         {
                             var stringResponse = reader.ReadToEnd();
 
@@ -124,7 +128,8 @@ namespace BumbleBot.Commands.Game
                 }
                 else
                 {
-                    await ctx.Channel.SendMessageAsync("You need to purchase the shelter/kidding pen first").ConfigureAwait(false);
+                    await ctx.Channel.SendMessageAsync("You need to purchase the shelter/kidding pen first")
+                        .ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -132,6 +137,6 @@ namespace BumbleBot.Commands.Game
                 Console.Out.WriteLine(ex.Message);
                 Console.Out.WriteLine(ex.StackTrace);
             }
-        } 
+        }
     }
 }
