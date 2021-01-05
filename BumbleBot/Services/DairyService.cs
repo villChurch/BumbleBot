@@ -63,6 +63,19 @@ namespace BumbleBot.Services
             return dairy;
         }
 
+        public void IncreaseCapcityOfDairy(ulong userId, int currentCapacity, int increaseBy)
+        {
+            using (MySqlConnection connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                string query = "update dairy set slots = ?slots where ownerID = ?userId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?slots", MySqlDbType.Int32).Value = currentCapacity + increaseBy;
+                command.Parameters.Add("?userId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
+
         public void RemoveSoftCheeseFromPlayer(ulong userId, int? softCheese)
         {
             if (null == softCheese)

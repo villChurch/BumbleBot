@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Services;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
@@ -21,7 +23,68 @@ namespace BumbleBot.Commands.Game
             this.farmerService = farmerService;
         }
 
+        [GroupCommand]
+        public async Task ShowDairyUpgrades(CommandContext ctx)
+        {
+            if (!dairyService.HasDairy(ctx.User.Id))
+            {
+                await ctx.Channel.SendMessageAsync($"{ctx.User.Mention} you do not have a dairy").ConfigureAwait(false);
+            }
+            else
+            {
+                var embed = new DiscordEmbedBuilder
+                {
+                    Title = "Dairy Upgrade Options",
+                    Color = DiscordColor.Aquamarine,
+                    Description = "Here are the available upgrade options for your dairy. To upgrade run `dairy upgrade {item} {price}`"
+                };
+                var dairy = dairyService.GetUsersDairy(ctx.User.Id);
+                int price = dairy.slots * 5000;
+                embed.AddField("Capacity", $"{price} credits will increase milk capacity by 1,000 lbs", false);
+                await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+            }
+        }
+
+        [Command("upgrade")]
+        [HasEnoughCredits(1)]
+        [Description("Purchase upgrades for your dairy")]
+        public async Task UpgradeDairy(CommandContext ctx, string option, int price)
+        {
+            HashSet<string> options = new HashSet<string>
+            {
+                "capacity"
+            };
+            if (!dairyService.HasDairy(ctx.User.Id))
+            {
+                await ctx.Channel.SendMessageAsync($"{ctx.User.Mention} you do not have a dairy").ConfigureAwait(false);
+            }
+            else if (options.Contains(option.ToLower()))
+            {
+                var dairy = dairyService.GetUsersDairy(ctx.User.Id);
+                if (option.ToLower().Equals("capacity"))
+                {
+                    var upgradePrice = (dairy.slots * 5000);
+                    if (price == upgradePrice)
+                    {
+                        farmerService.DeductCreditsFromFarmer(ctx.User.Id, price);
+                        dairyService.IncreaseCapcityOfDairy(ctx.User.Id, dairy.slots, 1);
+                        await ctx.Channel.SendMessageAsync($"Your dairy can now hold {(dairy.slots + 1) * 1000} lbs of milk").ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await ctx.Channel.SendMessageAsync($"Upgrade price for {option} is {upgradePrice} not {price}").ConfigureAwait(false);
+                    }
+                }
+
+            }
+            else
+            {
+                await ctx.Channel.SendMessageAsync($"There is no upgrade option for the dairy called {option}").ConfigureAwait(false);
+            }
+        }
+
         [Command("show")]
+        [Aliases("info")]
         [Description("Show the contents of your dairy")]
         public async Task ShowContentsOfDairy(CommandContext ctx)
         {

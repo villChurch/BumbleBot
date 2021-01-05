@@ -41,7 +41,10 @@ namespace BumbleBot.Attributes
             }
 
             var arguments = ctx.RawArgumentString.Split(' ');
-
+            if (ctx.Command.Name.ToLower().Equals("help"))
+            {
+                return Task.FromResult(1 == 1);
+            }
             int buyPrice = Convert.ToInt32(arguments[argumentPosition]);
             return Task.FromResult(balance >= buyPrice);
         }

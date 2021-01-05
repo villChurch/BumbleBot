@@ -480,6 +480,11 @@ namespace BumbleBot
                 };
                 await e.Context.RespondAsync("", embed: embed);
             }
+            else
+            {
+                Console.Out.WriteLine(e.Exception.Message);
+                Console.Out.WriteLine(e.Exception.StackTrace);
+            }
         }
 
         public async Task SpawnChristmasGoat(MessageCreateEventArgs e)
