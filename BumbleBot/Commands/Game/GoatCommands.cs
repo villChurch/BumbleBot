@@ -11,6 +11,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using MySql.Data.MySqlClient;
+using Type = BumbleBot.Models.Type;
 
 namespace BumbleBot.Commands.Game
 {
@@ -29,6 +30,161 @@ namespace BumbleBot.Commands.Game
 
         private GoatService goatService { get; }
         private FarmerService farmerService { get; }
+
+        [Command("stats")]
+        [Aliases("statistics")]
+        [Description("show statistics relating to goats you own")]
+        public async Task ShowGoatStatistics(CommandContext ctx)
+        {
+            var goats = goatService.ReturnUsersGoats(ctx.User.Id);
+            var deadGoats = goatService.ReturnUsersDeadGoats(ctx.User.Id);
+            var kidsInPen = goatService.ReturnUsersKidsInKiddingPen(ctx.User.Id);
+
+            var embed = new DiscordEmbedBuilder()
+            {
+                Title = $"{((DiscordMember) ctx.User).Nickname}'s Goat statistics",
+                Color = DiscordColor.Aquamarine
+            };
+            embed.AddField("Number of goats owned", goats.Count.ToString(), true);
+            embed.AddField("Number of adults", goats.FindAll(goat => goat.type == Type.Adult).Count.ToString(), true);
+            embed.AddField("Number of kids", goats.FindAll(goat => goat.type == Type.Kid).Count.ToString(), true);
+            embed.AddField("Number of Nubian goats", goats.FindAll(goat => goat.breed == Breed.Nubian).Count.ToString(),
+                true);
+            embed.AddField("Number of La Mancha goats",
+                goats.FindAll(goat => goat.breed == Breed.La_Mancha).Count.ToString(), true);
+            embed.AddField("Number of Nigerian Dwarf goats",
+                goats.FindAll(goat => goat.breed == Breed.Nigerian_Dwarf).Count.ToString(), true);
+            embed.AddField("Number of Special goats",
+                goats.FindAll(goat => goat.baseColour == BaseColour.Special).Count.ToString(), true);
+            embed.AddField("Number of Chocolate goats",
+                goats.FindAll(goat => goat.baseColour == BaseColour.Chocolate).Count.ToString(), true);
+            embed.AddField("Number of Black goats",
+                goats.FindAll(goat => goat.baseColour == BaseColour.Black).Count.ToString(), true);
+            embed.AddField("Number of White goats",
+                goats.FindAll(goat => goat.baseColour == BaseColour.White).Count.ToString(), true);
+            embed.AddField("Number of Gold goats",
+                goats.FindAll(goat => goat.baseColour == BaseColour.Gold).Count.ToString(), true);
+            embed.AddField("Number of Red goats",
+                goats.FindAll(goat => goat.baseColour == BaseColour.Red).Count.ToString(), true);
+            embed.AddField("Number of kids in shelter", kidsInPen.Count.ToString(), true);
+            embed.AddField("Number of goats in memorial", deadGoats.Count.ToString(), true);
+            await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+        }
+
+        [Command("ordered")]
+        [Description("Shows your goats ordered by a parameter")]
+        public async Task ShowGoatsOrdered(CommandContext ctx, string parameter)
+        {
+            try
+            {
+                var orderParams = new HashSet<string>()
+                {
+                    "level",
+                    "breed",
+                    "colour"
+                };
+                if (parameter.ToLower().Equals("color"))
+                {
+                    parameter = "colour";
+                    await ctx.Channel.SendMessageAsync($"{ctx.User.Mention} you must of meant colour!")
+                        .ConfigureAwait(false);
+                }
+                if (!orderParams.Contains(parameter.ToLower()))
+                {
+                    await ctx.Channel.SendMessageAsync($"There is no order option of {parameter}")
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    if (parameter.ToLower().Equals("level"))
+                    {
+                        var goats = goatService.ReturnUsersGoats(ctx.User.Id).OrderByDescending(x => x.level);
+                        var url = "http://williamspires.com/";
+                        var pages = new List<Page>();
+                        var interactivity = ctx.Client.GetInteractivity();
+                        foreach (var goat in goats)
+                        {
+                            var embed = new DiscordEmbedBuilder
+                            {
+                                Title = $"{goat.id}",
+                                ImageUrl = url + Uri.EscapeUriString(goat.filePath) //.Replace(" ", "%20")
+                            };
+                            embed.AddField("Name", goat.name);
+                            embed.AddField("Level", goat.level.ToString(), true);
+                            embed.AddField("Experience", goat.experience.ToString(), true);
+                            embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed)?.Replace("_", " "), true);
+                            embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
+                            var page = new Page
+                            {
+                                Embed = embed
+                            };
+                            pages.Add(page);
+                        }
+
+                        await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false);
+                    }
+                    else if (parameter.ToLower().Equals("breed"))
+                    {
+                        var goats = goatService.ReturnUsersGoats(ctx.User.Id).OrderBy(x => x.breed);
+                        var url = "http://williamspires.com/";
+                        var pages = new List<Page>();
+                        var interactivity = ctx.Client.GetInteractivity();
+                        foreach (var goat in goats)
+                        {
+                            var embed = new DiscordEmbedBuilder
+                            {
+                                Title = $"{goat.id}",
+                                ImageUrl = url + Uri.EscapeUriString(goat.filePath) //.Replace(" ", "%20")
+                            };
+                            embed.AddField("Name", goat.name);
+                            embed.AddField("Level", goat.level.ToString(), true);
+                            embed.AddField("Experience", goat.experience.ToString(), true);
+                            embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed)?.Replace("_", " "), true);
+                            embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
+                            var page = new Page
+                            {
+                                Embed = embed
+                            };
+                            pages.Add(page);
+                        }
+
+                        await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false);
+                    }
+                    else if (parameter.ToLower().Equals("colour"))
+                    {
+                        var goats = goatService.ReturnUsersGoats(ctx.User.Id).OrderBy(x => x.baseColour);
+                        var url = "http://williamspires.com/";
+                        var pages = new List<Page>();
+                        var interactivity = ctx.Client.GetInteractivity();
+                        foreach (var goat in goats)
+                        {
+                            var embed = new DiscordEmbedBuilder
+                            {
+                                Title = $"{goat.id}",
+                                ImageUrl = url + Uri.EscapeUriString(goat.filePath) //.Replace(" ", "%20")
+                            };
+                            embed.AddField("Name", goat.name);
+                            embed.AddField("Level", goat.level.ToString(), true);
+                            embed.AddField("Experience", goat.experience.ToString(), true);
+                            embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed)?.Replace("_", " "), true);
+                            embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
+                            var page = new Page
+                            {
+                                Embed = embed
+                            };
+                            pages.Add(page);
+                        }
+
+                        await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(ex.StackTrace);
+            }
+        }
 
         [Command("show")]
         [Description("Shows your goats")]

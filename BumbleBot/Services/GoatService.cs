@@ -5,6 +5,7 @@ using System.Linq;
 using BumbleBot.Models;
 using BumbleBot.Utilities;
 using MySql.Data.MySqlClient;
+using Type = BumbleBot.Models.Type;
 
 namespace BumbleBot.Services
 {
@@ -646,6 +647,7 @@ namespace BumbleBot.Services
                         goat.filePath = reader.GetString("imageLink");
                         goat.breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
                         goat.baseColour = (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                        goat.type = (Type) Enum.Parse(typeof(Type), reader.GetString("type"));
                         goats.Add(goat);
                     }
             }
