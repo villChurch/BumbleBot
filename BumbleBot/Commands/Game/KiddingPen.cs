@@ -9,6 +9,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using Org.BouncyCastle.Utilities;
 
 namespace BumbleBot.Commands.Game
 {
@@ -111,7 +112,7 @@ namespace BumbleBot.Commands.Game
         [Command("move")]
         [Aliases("transfer")]
         [Description("move a kid into your goat pen")]
-        public async Task MoveKidIntoKiddingPen(CommandContext ctx, [Description("id of kid to move")] int id)
+        public async Task MoveKidIntoKiddingPen(CommandContext ctx, [Description("id of kid to move")] string idString)
         {
             try
             {
@@ -124,16 +125,38 @@ namespace BumbleBot.Commands.Game
                     await ctx.Channel.SendMessageAsync("You currently don't have any kids in your kidding pen")
                         .ConfigureAwait(false);
                 }
-                else
+                else if (idString.ToLower().Equals("all"))
                 {
                     var kids = goatService.ReturnUsersKidsInKiddingPen(ctx.User.Id);
+                    if (goatService.CanGoatsFitInBarn(ctx.User.Id, kids.Count))
+                    {
+                        kids.ForEach(kid => goatService.MoveKidIntoGoatPen(kid, ctx.User.Id));
+                        await ctx.Channel.SendMessageAsync($"{kids.Count} kids have now been moved to your barn")
+                            .ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await ctx.Channel
+                            .SendMessageAsync($"There is not enough room in your barn for all {kids.Count} kids")
+                            .ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    if (!int.TryParse(idString, out var id))
+                    {
+                        await ctx.Channel.SendMessageAsync($"You entered {idString} which is not a number")
+                            .ConfigureAwait(false);
+                        throw new Exception("not a number");
+                    }
+                    var kids = goatService.ReturnUsersKidsInKiddingPen(ctx.User.Id);
                     var kidToMove = kids.Find(x => x.id == id);
-                    if (string.IsNullOrEmpty(kidToMove.name))
+                    if (null == kidToMove)
                     {
                         await ctx.Channel.SendMessageAsync("You don't have a kid in your shelter with this id")
                             .ConfigureAwait(false);
                     }
-                    else if (goatService.CanGoatFitInBarn(ctx.User.Id))
+                    else if (goatService.CanGoatsFitInBarn(ctx.User.Id, 1))
                     {
                         goatService.MoveKidIntoGoatPen(kidToMove, ctx.User.Id);
                         await ctx.Channel.SendMessageAsync($"Kid with id {id} has been moved into your barn")
@@ -155,7 +178,7 @@ namespace BumbleBot.Commands.Game
 
         [Command("sell")]
         [Description("Sell a kid in your shelter")]
-        public async Task SellKidInKiddingPen(CommandContext ctx, [Description("id of kid to sell")] int id)
+        public async Task SellKidInKiddingPen(CommandContext ctx, [Description("id of kid to sell")] string idString)
         {
             try
             {
@@ -168,11 +191,30 @@ namespace BumbleBot.Commands.Game
                     await ctx.Channel.SendMessageAsync("You currently don't have any kids in your kidding pen")
                         .ConfigureAwait(false);
                 }
-                else
+                else if (idString.ToLower().Equals("all"))
                 {
                     var kids = goatService.ReturnUsersKidsInKiddingPen(ctx.User.Id);
+                    var total = 0;
+                    kids.ForEach(kid =>
+                    {
+                        goatService.DeleteKidFromKiddingPen(kid.id);
+                        farmerService.AddCreditsToFarmer(ctx.User.Id, kid.level * 2);
+                        total += kid.level * 2;
+                    });
+                    var kidOrKids = kids.Count == 1 ? "kid" : "kids";
+                    await ctx.Channel.SendMessageAsync($"You have sold {kids.Count} {kidOrKids} for {total.ToString()} credits.").ConfigureAwait(false);
+                }
+                else
+                {
+                    if (!int.TryParse(idString, out var id))
+                    {
+                        await ctx.Channel.SendMessageAsync($"You entered {idString} which is not a number")
+                            .ConfigureAwait(false);
+                        throw new Exception("not a number");
+                    }
+                    var kids = goatService.ReturnUsersKidsInKiddingPen(ctx.User.Id);
                     var kidToSell = kids.Find(x => x.id == id);
-                    if (string.IsNullOrEmpty(kidToSell.name))
+                    if (null == kidToSell)
                     {
                         await ctx.Channel.SendMessageAsync("You don't have a kid in your shelter with this id")
                             .ConfigureAwait(false);

@@ -44,7 +44,7 @@ namespace BumbleBot.Commands.Game
                 await ctx.Channel.SendMessageAsync($"{recipient.Mention} does not have a profile setup.")
                     .ConfigureAwait(false);
             }
-            else if (!goatService.CanGoatFitInBarn(recipient.Id))
+            else if (!goatService.CanGoatsFitInBarn(recipient.Id, 1))
             {
                 await ctx.Channel
                     .SendMessageAsync($"{recipient.Mention} does not have enough room in their barn for this goat")

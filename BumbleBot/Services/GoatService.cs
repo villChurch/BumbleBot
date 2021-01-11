@@ -592,7 +592,7 @@ namespace BumbleBot.Services
             }
         }
 
-        public bool CanGoatFitInBarn(ulong discordId)
+        public bool CanGoatsFitInBarn(ulong discordId, int numberOfGoatsToAdd)
         {
             var barnSize = 10;
             var numberOfGoats = 0;
@@ -622,7 +622,7 @@ namespace BumbleBot.Services
                 reader.Close();
             }
 
-            return barnSize != numberOfGoats && barnSize > numberOfGoats;
+            return barnSize != numberOfGoats && barnSize >= (numberOfGoats + numberOfGoatsToAdd);
         }
 
         public List<Goat> ReturnUsersGoats(ulong userId)

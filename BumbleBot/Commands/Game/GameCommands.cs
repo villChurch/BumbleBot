@@ -403,7 +403,7 @@ namespace BumbleBot.Commands.Game
                     await ctx.Channel.SendMessageAsync($"No one decided to purchase {specialGoat.name}")
                         .ConfigureAwait(false);
                 }
-                else if (!goatService.CanGoatFitInBarn(msg.Result.Author.Id))
+                else if (!goatService.CanGoatsFitInBarn(msg.Result.Author.Id, 1))
                 {
                     var member = await ctx.Guild.GetMemberAsync(msg.Result.Author.Id);
                     await ctx.Channel
@@ -540,7 +540,7 @@ namespace BumbleBot.Commands.Game
                     await ctx.Channel.SendMessageAsync($"No one decided to purchase {randomGoat.name}")
                         .ConfigureAwait(false);
                 }
-                else if (!goatService.CanGoatFitInBarn(msg.Result.Author.Id))
+                else if (!goatService.CanGoatsFitInBarn(msg.Result.Author.Id, 1))
                 {
                     var member = await ctx.Guild.GetMemberAsync(msg.Result.Author.Id);
                     await ctx.Channel
@@ -678,7 +678,7 @@ namespace BumbleBot.Commands.Game
                     await ctx.Channel.SendMessageAsync($"No one decided to purchase {randomGoat.name}")
                         .ConfigureAwait(false);
                 }
-                else if (!goatService.CanGoatFitInBarn(msg.Result.Author.Id))
+                else if (!goatService.CanGoatsFitInBarn(msg.Result.Author.Id, 1))
                 {
                     var member = await ctx.Guild.GetMemberAsync(msg.Result.Author.Id);
                     await ctx.Channel
