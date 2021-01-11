@@ -18,23 +18,23 @@ using MySql.Data.MySqlClient;
 namespace BumbleBot.Commands.GifsAndPhotos
 {
     [Group("pony")]
-    public class pony : BaseCommandModule
+    public class Pony : BaseCommandModule
     {
-        private readonly DBUtils dBUtils = new DBUtils();
+        private readonly DbUtils dBUtils = new DbUtils();
 
-        public pony(AssholeService assholeService)
+        public Pony(AssholeService assholeService)
         {
-            this.assholeService = assholeService;
+            this.AssholeService = assholeService;
         }
 
-        private AssholeService assholeService { get; }
+        private AssholeService AssholeService { get; }
 
         [GroupCommand]
         public async Task ShowRandomPonyPhoto(CommandContext ctx)
         {
             try
             {
-                assholeService.SetAhConfig();
+                AssholeService.SetAhConfig();
                 var isAssholeMode = false;
                 using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {

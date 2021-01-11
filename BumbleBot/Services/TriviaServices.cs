@@ -17,8 +17,8 @@ namespace BumbleBot.Services
         private Timer timer;
         private Timer triviaQuestionTimer;
 
-        private bool triviaRunning { get; set; }
-        private bool questionTimerRunning { get; set; }
+        private bool TriviaRunning { get; set; }
+        private bool QuestionTimerRunning { get; set; }
 
         public TriviaQuestions GetQuestionsAsync()
         {
@@ -40,7 +40,7 @@ namespace BumbleBot.Services
             timer.Start();
             timer.Elapsed += (sender, e) => StartTriviaTimer(sender, e, ctx, channel);
             timer.Enabled = true;
-            triviaRunning = true;
+            TriviaRunning = true;
         }
 
         private void StartTriviaTimer(object source, ElapsedEventArgs e, CommandContext ctx, DiscordChannel channel)
@@ -56,12 +56,12 @@ namespace BumbleBot.Services
         private void TriviaTimerHandler(object source, ElapsedEventArgs e, CommandContext ctx, DiscordChannel channel)
         {
             _ = AskQuestion(ctx, channel);
-            questionTimerRunning = false;
+            QuestionTimerRunning = false;
         }
 
         public bool StartCountdownTriviaTimer(CommandContext ctx, DiscordChannel channel)
         {
-            if (triviaRunning)
+            if (TriviaRunning)
             {
                 return false;
             }
@@ -72,12 +72,12 @@ namespace BumbleBot.Services
 
         public bool StopTrivia()
         {
-            if (triviaRunning)
+            if (TriviaRunning)
             {
                 triviaQuestionTimer.Stop();
                 triviaQuestionTimer.Dispose();
-                triviaRunning = false;
-                questionTimerRunning = false;
+                TriviaRunning = false;
+                QuestionTimerRunning = false;
                 return true;
             }
 
@@ -139,8 +139,8 @@ namespace BumbleBot.Services
                 var correctAnswerEmoji = DiscordEmoji.FromName(ctx.Client,
                     $"{alphaReactionCommon}{characterr.ToString().ToLower()}:");
                 var voted = new HashSet<DiscordUser>();
-                questionTimerRunning = true;
-                while (questionTimerRunning)
+                QuestionTimerRunning = true;
+                while (QuestionTimerRunning)
                 {
                     var response = await interactivity.WaitForReactionAsync(
                         x => x.Message == msg && emojis.Contains(x.Emoji) && x.User.IsBot == false,
@@ -155,7 +155,7 @@ namespace BumbleBot.Services
                                         $"Congratulations {response.Result.User.Mention} you got the right answer with " +
                                         $"{characterr}")
                                     .ConfigureAwait(false);
-                                questionTimerRunning = false;
+                                QuestionTimerRunning = false;
                             }
                             else
                             {
@@ -177,8 +177,8 @@ namespace BumbleBot.Services
                     .ConfigureAwait(false);
                 triviaQuestionTimer.Stop();
                 triviaQuestionTimer.Dispose();
-                questionTimerRunning = false;
-                triviaRunning = false;
+                QuestionTimerRunning = false;
+                TriviaRunning = false;
                 Console.Out.WriteLine(ex.Message);
                 Console.Out.WriteLine(ex.StackTrace);
             }

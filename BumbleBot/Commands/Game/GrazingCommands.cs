@@ -18,16 +18,16 @@ namespace BumbleBot.Commands.Game
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class GrazingCommands : BaseCommandModule
     {
-        private readonly DBUtils dBUtils = new DBUtils();
+        private readonly DbUtils dBUtils = new DbUtils();
 
         public GrazingCommands(GoatService goatService, FarmerService farmerService)
         {
-            this.goatService = goatService;
-            this.farmerService = farmerService;
+            this.GoatService = goatService;
+            this.FarmerService = farmerService;
         }
 
-        private GoatService goatService { get; }
-        private FarmerService farmerService { get; }
+        private GoatService GoatService { get; }
+        private FarmerService FarmerService { get; }
 
         [Command("show")]
         [Description("Show a list of current goats you have grazing")]
@@ -48,8 +48,8 @@ namespace BumbleBot.Commands.Game
                             ids.Add(reader.GetInt32("goatId"));
                 }
 
-                var goats = goatService.ReturnUsersGoats(ctx.User.Id).OrderByDescending(x => x.level);
-                var goatsInPasture = goats.Where(goat => ids.Contains(goat.id)).ToList();
+                var goats = GoatService.ReturnUsersGoats(ctx.User.Id).OrderByDescending(x => x.Level);
+                var goatsInPasture = goats.Where(goat => ids.Contains(goat.Id)).ToList();
                 if (goatsInPasture.Count < 1)
                 {
                     await ctx.Channel.SendMessageAsync("You do not have goats out in the pasture yet")
@@ -64,14 +64,14 @@ namespace BumbleBot.Commands.Game
                     {
                         var embed = new DiscordEmbedBuilder
                         {
-                            Title = $"{goat.id}",
-                            ImageUrl = url + goat.filePath.Replace(" ", "%20")
+                            Title = $"{goat.Id}",
+                            ImageUrl = url + goat.FilePath.Replace(" ", "%20")
                         };
-                        embed.AddField("Name", goat.name);
-                        embed.AddField("Level", goat.level.ToString(), true);
-                        embed.AddField("Experience", goat.experience.ToString(), true);
-                        embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed).Replace("_", " "), true);
-                        embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
+                        embed.AddField("Name", goat.Name);
+                        embed.AddField("Level", goat.Level.ToString(), true);
+                        embed.AddField("Experience", goat.Experience.ToString(), true);
+                        embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed).Replace("_", " "), true);
+                        embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
                         var page = new Page
                         {
                             Embed = embed
@@ -98,8 +98,8 @@ namespace BumbleBot.Commands.Game
             try
             {
                 var ids = new List<int>();
-                var goats = goatService.ReturnUsersGoats(ctx.User.Id);
-                var ownedGoatIds = goats.Select(goat => goat.id).ToList();
+                var goats = GoatService.ReturnUsersGoats(ctx.User.Id);
+                var ownedGoatIds = goats.Select(goat => goat.Id).ToList();
                 var notYours = ids.Where(id => !ownedGoatIds.Contains(id)).ToList();
                 var removeAll = false;
                 if(goatIDs.ToLower().Trim().Equals("all"))
@@ -110,7 +110,7 @@ namespace BumbleBot.Commands.Game
                     ids.Add(int.Parse(goatIDs));
                 else
                     ids = goatIDs.Split(' ').Select(int.Parse).ToList();
-                ownedGoatIds = goats.Select(goat => goat.id).ToList();
+                ownedGoatIds = goats.Select(goat => goat.Id).ToList();
                 notYours = ids.Where(id => !ownedGoatIds.Contains(id)).ToList();
                 if (removeAll)
                 {
@@ -131,13 +131,13 @@ namespace BumbleBot.Commands.Game
                 }
                 else
                 {
-                    goats.Where(goat => ids.Contains(goat.id)).ToList().ForEach(goat =>
+                    goats.Where(goat => ids.Contains(goat.Id)).ToList().ForEach(goat =>
                     {
                         using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                         {
                             var query = "delete from grazing where goatId = ?goatId";
                             var command = new MySqlCommand(query, connection);
-                            command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goat.id;
+                            command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goat.Id;
                             connection.Open();
                             command.ExecuteNonQuery();
                         }
@@ -163,8 +163,8 @@ namespace BumbleBot.Commands.Game
             try
             {
                 var ids = new List<int>();
-                var goats = goatService.ReturnUsersGoats(ctx.User.Id);
-                var ownedGoatIds = goats.Select(goat => goat.id).ToList();
+                var goats = GoatService.ReturnUsersGoats(ctx.User.Id);
+                var ownedGoatIds = goats.Select(goat => goat.Id).ToList();
                 var notYours = ids.Where(id => !ownedGoatIds.Contains(id)).ToList();
                 var isBestCommand = false;
                 if (goatIDs.ToLower().Trim().Equals("best"))
@@ -175,12 +175,12 @@ namespace BumbleBot.Commands.Game
                     ids.Add(int.Parse(goatIDs));
                 else
                     ids = goatIDs.Split(' ').Select(int.Parse).ToList();
-                ownedGoatIds = goats.Select(goat => goat.id).ToList();
+                ownedGoatIds = goats.Select(goat => goat.Id).ToList();
                 notYours = ids.Where(id => !ownedGoatIds.Contains(id)).ToList();
                 if (isBestCommand)
                 {
-                    goats.OrderByDescending(x => x.level);
-                    var pastureSize = farmerService.ReturnFarmerInfo(ctx.User.Id).grazingspace;
+                    goats.OrderByDescending(x => x.Level);
+                    var pastureSize = FarmerService.ReturnFarmerInfo(ctx.User.Id).Grazingspace;
                     using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                     {
                         var query = "delete from grazing where farmerId = ?farmerId";
@@ -201,7 +201,7 @@ namespace BumbleBot.Commands.Game
                             {
                                 var query = "replace into grazing (goatId, farmerId) Values (?goatId, ?farmerId)";
                                 var command = new MySqlCommand(query, connection);
-                                command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goats[i].id;
+                                command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goats[i].Id;
                                 command.Parameters.Add("?farmerId", MySqlDbType.VarChar).Value = ctx.User.Id;
                                 connection.Open();
                                 command.ExecuteNonQuery();
@@ -219,8 +219,8 @@ namespace BumbleBot.Commands.Game
                 {
                     var grazingSize = 0;
                     var currentlyGrazing = 0;
-                    var farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
-                    grazingSize = farmer.grazingspace;
+                    var farmer = FarmerService.ReturnFarmerInfo(ctx.User.Id);
+                    grazingSize = farmer.Grazingspace;
                     using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                     {
                         var query = "select COUNT(*) as goatsGrazing from grazing where farmerId = ?farmerId";
@@ -243,13 +243,13 @@ namespace BumbleBot.Commands.Game
                     }
                     else if (remainingSpace > 0)
                     {
-                        goats.Where(goat => ids.Contains(goat.id)).ToList().ForEach(goat =>
+                        goats.Where(goat => ids.Contains(goat.Id)).ToList().ForEach(goat =>
                         {
                             using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                             {
                                 var query = "replace into grazing (goatId, farmerId) Values (?goatId, ?farmerId)";
                                 var command = new MySqlCommand(query, connection);
-                                command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goat.id;
+                                command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goat.Id;
                                 command.Parameters.Add("?farmerId", MySqlDbType.VarChar).Value = ctx.User.Id;
                                 connection.Open();
                                 command.ExecuteNonQuery();

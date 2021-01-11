@@ -7,8 +7,28 @@ namespace BumbleBot.Services
 {
     public class DairyService
     {
-        private readonly DBUtils dBUtils = new DBUtils();
+        private readonly DbUtils dBUtils = new DbUtils();
 
+        public void DeductAllHardCheeseFromDairy(ulong userId)
+        {
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "update dairy set hardcheese = 0 where ownerID = ?userId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?userId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "delete from aging where DiscordID = ?userId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?userId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
         public bool DoesDairyHaveACave(ulong userId)
         {
             var hasCave = false;
@@ -57,9 +77,9 @@ namespace BumbleBot.Services
         public bool CanMilkFitInDairy(ulong userId, int milkAmount)
         {
             var dairy = GetUsersDairy(userId);
-            if (dairy.slots < 1) return false;
-            var milkCapacity = dairy.slots * 1000;
-            return dairy.milk + milkAmount <= milkCapacity;
+            if (dairy.Slots < 1) return false;
+            var milkCapacity = dairy.Slots * 1000;
+            return dairy.Milk + milkAmount <= milkCapacity;
         }
 
         public Cave GetUsersCave(ulong userId)
@@ -75,8 +95,8 @@ namespace BumbleBot.Services
                 if (reader.HasRows)
                     while (reader.Read())
                     {
-                        cave.softCheese = reader.GetDecimal("softCheese");
-                        cave.slots = reader.GetInt32("slots");
+                        cave.SoftCheese = reader.GetDecimal("softCheese");
+                        cave.Slots = reader.GetInt32("slots");
                     }
 
                 reader.Close();
@@ -98,10 +118,10 @@ namespace BumbleBot.Services
                 if (reader.HasRows)
                     while (reader.Read())
                     {
-                        dairy.milk = reader.GetDecimal("milk");
-                        dairy.slots = reader.GetInt32("slots");
-                        dairy.softCheese = reader.GetDecimal("softcheese");
-                        dairy.hardCheese = reader.GetDecimal("hardcheese");
+                        dairy.Milk = reader.GetDecimal("milk");
+                        dairy.Slots = reader.GetInt32("slots");
+                        dairy.SoftCheese = reader.GetDecimal("softcheese");
+                        dairy.HardCheese = reader.GetDecimal("hardcheese");
                     }
 
                 reader.Close();

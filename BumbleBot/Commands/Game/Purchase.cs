@@ -13,7 +13,7 @@ namespace BumbleBot.Commands.Game
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class Purchase : BaseCommandModule
     {
-        private readonly DBUtils dBUtils = new DBUtils();
+        private readonly DbUtils dBUtils = new DbUtils();
         private readonly FarmerService farmerService;
 
         public Purchase(FarmerService farmerService)
@@ -85,7 +85,7 @@ namespace BumbleBot.Commands.Game
         {
             var farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
 
-            if (farmer.barnspace == 0)
+            if (farmer.Barnspace == 0)
             {
                 await ctx.Channel
                     .SendMessageAsync("Looks like you don't have a character yet. Use `create` to make one.")
@@ -93,7 +93,7 @@ namespace BumbleBot.Commands.Game
             }
             else
             {
-                var barnUpgradeCost = (farmer.barnspace + 10) * 100;
+                var barnUpgradeCost = (farmer.Barnspace + 10) * 100;
                 if (upgradePrice >= barnUpgradeCost)
                 {
                     using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
@@ -101,8 +101,8 @@ namespace BumbleBot.Commands.Game
                         var query =
                             "UPDATE farmers SET barnsize = ?barnsize, credits = ?credits WHERE DiscordID = ?discordId";
                         var command = new MySqlCommand(query, connection);
-                        command.Parameters.Add("?barnsize", MySqlDbType.Int32).Value = farmer.barnspace + 10;
-                        command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.credits - barnUpgradeCost;
+                        command.Parameters.Add("?barnsize", MySqlDbType.Int32).Value = farmer.Barnspace + 10;
+                        command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.Credits - barnUpgradeCost;
                         command.Parameters.Add("?discordId", MySqlDbType.VarChar).Value = ctx.User.Id;
                         connection.Open();
                         command.ExecuteNonQuery();
@@ -126,7 +126,7 @@ namespace BumbleBot.Commands.Game
         public async Task UpgradeGrazing(CommandContext ctx, int upgradePrice)
         {
             var farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
-            if (farmer.barnspace == 0)
+            if (farmer.Barnspace == 0)
             {
                 await ctx.Channel
                     .SendMessageAsync("Looks like you don't have a character yet. Use `create` to make one.")
@@ -134,7 +134,7 @@ namespace BumbleBot.Commands.Game
             }
             else
             {
-                var grazingUpgradeCost = (farmer.grazingspace + 10) * 100;
+                var grazingUpgradeCost = (farmer.Grazingspace + 10) * 100;
                 if (upgradePrice >= grazingUpgradeCost)
                 {
                     using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
@@ -142,9 +142,9 @@ namespace BumbleBot.Commands.Game
                         var query =
                             "UPDATE farmers SET grazesize = ?grazesize, credits = ?credits WHERE DiscordID = ?discordId";
                         var command = new MySqlCommand(query, connection);
-                        command.Parameters.Add("?grazesize", MySqlDbType.Int32).Value = farmer.grazingspace + 10;
+                        command.Parameters.Add("?grazesize", MySqlDbType.Int32).Value = farmer.Grazingspace + 10;
                         command.Parameters.Add("?credits", MySqlDbType.Int32).Value =
-                            farmer.credits - grazingUpgradeCost;
+                            farmer.Credits - grazingUpgradeCost;
                         command.Parameters.Add("?discordId", MySqlDbType.VarChar).Value = ctx.User.Id;
                         connection.Open();
                         command.ExecuteNonQuery();
@@ -206,7 +206,7 @@ namespace BumbleBot.Commands.Game
                             var query = "update farmers set oats = 1, credits = ?credits where DiscordID = ?discordID";
                             var command = new MySqlCommand(query, connection);
                             command.Parameters.Add("?discordID", MySqlDbType.VarChar).Value = ctx.User.Id;
-                            command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.credits - 250;
+                            command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.Credits - 250;
                             connection.Open();
                             command.ExecuteNonQuery();
                         }

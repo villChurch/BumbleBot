@@ -20,16 +20,16 @@ namespace BumbleBot.Commands.Game
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class BreedingCommands : BaseCommandModule
     {
-        private DBUtils dBUtils = new DBUtils();
+        private DbUtils dBUtils = new DbUtils();
 
         public BreedingCommands(FarmerService farmerService, GoatService goatService)
         {
-            this.farmerService = farmerService;
-            this.goatService = goatService;
+            this.FarmerService = farmerService;
+            this.GoatService = goatService;
         }
 
-        private FarmerService farmerService { get; }
-        private GoatService goatService { get; }
+        private FarmerService FarmerService { get; }
+        private GoatService GoatService { get; }
 
         [Command("show")]
         [Description("Show current goats that have been sent to breed")]
@@ -37,20 +37,20 @@ namespace BumbleBot.Commands.Game
         {
             try
             {
-                if (!farmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
+                if (!FarmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
                 {
                     await ctx.Channel.SendMessageAsync("You currently don't have a kidding pen").ConfigureAwait(false);
                 }
-                else if (!farmerService.DoesFarmerHaveAdultsInKiddingPen(goatService.ReturnUsersGoats(ctx.User.Id)))
+                else if (!FarmerService.DoesFarmerHaveAdultsInKiddingPen(GoatService.ReturnUsersGoats(ctx.User.Id)))
                 {
                     await ctx.Channel.SendMessageAsync("You currently do not have any adult goats in your kidding pen")
                         .ConfigureAwait(false);
                 }
                 else
                 {
-                    var breedingIds = goatService.ReturnUsersAdultGoatIdsInKiddingPen(ctx.User.Id);
+                    var breedingIds = GoatService.ReturnUsersAdultGoatIdsInKiddingPen(ctx.User.Id);
                     var breedingGoats =
-                        goatService.ReturnUsersGoats(ctx.User.Id).Where(goat => breedingIds.Contains(goat.id)).ToList();
+                        GoatService.ReturnUsersGoats(ctx.User.Id).Where(goat => breedingIds.Contains(goat.Id)).ToList();
                     var url = "http://williamspires.com/";
                     var pages = new List<Page>();
                     var interactivity = ctx.Client.GetInteractivity();
@@ -58,14 +58,14 @@ namespace BumbleBot.Commands.Game
                     {
                         var embed = new DiscordEmbedBuilder
                         {
-                            Title = $"{goat.id}",
-                            ImageUrl = url + goat.filePath.Replace(" ", "%20")
+                            Title = $"{goat.Id}",
+                            ImageUrl = url + goat.FilePath.Replace(" ", "%20")
                         };
-                        embed.AddField("Name", goat.name);
-                        embed.AddField("Level", goat.level.ToString(), true);
-                        embed.AddField("Experience", goat.experience.ToString(), true);
-                        embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed).Replace("_", " "), true);
-                        embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
+                        embed.AddField("Name", goat.Name);
+                        embed.AddField("Level", goat.Level.ToString(), true);
+                        embed.AddField("Experience", goat.Experience.ToString(), true);
+                        embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed).Replace("_", " "), true);
+                        embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
                         var page = new Page
                         {
                             Embed = embed
@@ -89,23 +89,23 @@ namespace BumbleBot.Commands.Game
         {
             try
             {
-                if (farmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
+                if (FarmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
                 {
-                    var goats = goatService.ReturnUsersGoats(ctx.User.Id);
+                    var goats = GoatService.ReturnUsersGoats(ctx.User.Id);
 
-                    if (goats.Where(goat => goat.id == goatId).ToList().Count == 0)
+                    if (goats.Where(goat => goat.Id == goatId).ToList().Count == 0)
                     {
                         await ctx.Channel.SendMessageAsync($"It appears you don't own a goat with id {goatId}")
                             .ConfigureAwait(false);
                     }
-                    else if (goats.Find(goat => goat.id == goatId).level < 100)
+                    else if (goats.Find(goat => goat.Id == goatId).Level < 100)
                     {
                         await ctx.Channel
                             .SendMessageAsync(
                                 "This goat is not yet an adult and only adults can be moved to the shelter")
                             .ConfigureAwait(false);
                     }
-                    else if (goats.Find(goat => goat.id == goatId).baseColour == BaseColour.Special)
+                    else if (goats.Find(goat => goat.Id == goatId).BaseColour == BaseColour.Special)
                     {
                         await ctx.Channel.SendMessageAsync("You cannot breed special goats").ConfigureAwait(false);
                     }

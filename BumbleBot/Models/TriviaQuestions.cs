@@ -32,14 +32,14 @@ namespace Bumblebot.Models
         public bool? Bool;
         public string String;
 
-        public static implicit operator IncorrectAnswer(bool Bool)
+        public static implicit operator IncorrectAnswer(bool @bool)
         {
-            return new IncorrectAnswer {Bool = Bool};
+            return new IncorrectAnswer {Bool = @bool};
         }
 
-        public static implicit operator IncorrectAnswer(string String)
+        public static implicit operator IncorrectAnswer(string @string)
         {
-            return new IncorrectAnswer {String = String};
+            return new IncorrectAnswer {String = @string};
         }
     }
 

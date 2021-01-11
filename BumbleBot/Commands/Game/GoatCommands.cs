@@ -20,25 +20,25 @@ namespace BumbleBot.Commands.Game
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class GoatCommands : BaseCommandModule
     {
-        private readonly DBUtils dBUtils = new DBUtils();
+        private readonly DbUtils dBUtils = new DbUtils();
 
         public GoatCommands(GoatService goatService, FarmerService farmerService)
         {
-            this.goatService = goatService;
-            this.farmerService = farmerService;
+            this.GoatService = goatService;
+            this.FarmerService = farmerService;
         }
 
-        private GoatService goatService { get; }
-        private FarmerService farmerService { get; }
+        private GoatService GoatService { get; }
+        private FarmerService FarmerService { get; }
 
         [Command("stats")]
         [Aliases("statistics")]
         [Description("show statistics relating to goats you own")]
         public async Task ShowGoatStatistics(CommandContext ctx)
         {
-            var goats = goatService.ReturnUsersGoats(ctx.User.Id);
-            var deadGoats = goatService.ReturnUsersDeadGoats(ctx.User.Id);
-            var kidsInPen = goatService.ReturnUsersKidsInKiddingPen(ctx.User.Id);
+            var goats = GoatService.ReturnUsersGoats(ctx.User.Id);
+            var deadGoats = GoatService.ReturnUsersDeadGoats(ctx.User.Id);
+            var kidsInPen = GoatService.ReturnUsersKidsInKiddingPen(ctx.User.Id);
 
             var embed = new DiscordEmbedBuilder()
             {
@@ -46,26 +46,26 @@ namespace BumbleBot.Commands.Game
                 Color = DiscordColor.Aquamarine
             };
             embed.AddField("Number of goats owned", goats.Count.ToString(), true);
-            embed.AddField("Number of adults", goats.FindAll(goat => goat.type == Type.Adult).Count.ToString(), true);
-            embed.AddField("Number of kids", goats.FindAll(goat => goat.type == Type.Kid).Count.ToString(), true);
-            embed.AddField("Number of Nubian goats", goats.FindAll(goat => goat.breed == Breed.Nubian).Count.ToString(),
+            embed.AddField("Number of adults", goats.FindAll(goat => goat.Type == Type.Adult).Count.ToString(), true);
+            embed.AddField("Number of kids", goats.FindAll(goat => goat.Type == Type.Kid).Count.ToString(), true);
+            embed.AddField("Number of Nubian goats", goats.FindAll(goat => goat.Breed == Breed.Nubian).Count.ToString(),
                 true);
             embed.AddField("Number of La Mancha goats",
-                goats.FindAll(goat => goat.breed == Breed.La_Mancha).Count.ToString(), true);
+                goats.FindAll(goat => goat.Breed == Breed.LaMancha).Count.ToString(), true);
             embed.AddField("Number of Nigerian Dwarf goats",
-                goats.FindAll(goat => goat.breed == Breed.Nigerian_Dwarf).Count.ToString(), true);
+                goats.FindAll(goat => goat.Breed == Breed.NigerianDwarf).Count.ToString(), true);
             embed.AddField("Number of Special goats",
-                goats.FindAll(goat => goat.baseColour == BaseColour.Special).Count.ToString(), true);
+                goats.FindAll(goat => goat.BaseColour == BaseColour.Special).Count.ToString(), true);
             embed.AddField("Number of Chocolate goats",
-                goats.FindAll(goat => goat.baseColour == BaseColour.Chocolate).Count.ToString(), true);
+                goats.FindAll(goat => goat.BaseColour == BaseColour.Chocolate).Count.ToString(), true);
             embed.AddField("Number of Black goats",
-                goats.FindAll(goat => goat.baseColour == BaseColour.Black).Count.ToString(), true);
+                goats.FindAll(goat => goat.BaseColour == BaseColour.Black).Count.ToString(), true);
             embed.AddField("Number of White goats",
-                goats.FindAll(goat => goat.baseColour == BaseColour.White).Count.ToString(), true);
+                goats.FindAll(goat => goat.BaseColour == BaseColour.White).Count.ToString(), true);
             embed.AddField("Number of Gold goats",
-                goats.FindAll(goat => goat.baseColour == BaseColour.Gold).Count.ToString(), true);
+                goats.FindAll(goat => goat.BaseColour == BaseColour.Gold).Count.ToString(), true);
             embed.AddField("Number of Red goats",
-                goats.FindAll(goat => goat.baseColour == BaseColour.Red).Count.ToString(), true);
+                goats.FindAll(goat => goat.BaseColour == BaseColour.Red).Count.ToString(), true);
             embed.AddField("Number of kids in shelter", kidsInPen.Count.ToString(), true);
             embed.AddField("Number of goats in memorial", deadGoats.Count.ToString(), true);
             await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
@@ -98,7 +98,7 @@ namespace BumbleBot.Commands.Game
                 {
                     if (parameter.ToLower().Equals("level"))
                     {
-                        var goats = goatService.ReturnUsersGoats(ctx.User.Id).OrderByDescending(x => x.level);
+                        var goats = GoatService.ReturnUsersGoats(ctx.User.Id).OrderByDescending(x => x.Level);
                         var url = "http://williamspires.com/";
                         var pages = new List<Page>();
                         var interactivity = ctx.Client.GetInteractivity();
@@ -106,14 +106,14 @@ namespace BumbleBot.Commands.Game
                         {
                             var embed = new DiscordEmbedBuilder
                             {
-                                Title = $"{goat.id}",
-                                ImageUrl = url + Uri.EscapeUriString(goat.filePath) //.Replace(" ", "%20")
+                                Title = $"{goat.Id}",
+                                ImageUrl = url + Uri.EscapeUriString(goat.FilePath) //.Replace(" ", "%20")
                             };
-                            embed.AddField("Name", goat.name);
-                            embed.AddField("Level", goat.level.ToString(), true);
-                            embed.AddField("Experience", goat.experience.ToString(), true);
-                            embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed)?.Replace("_", " "), true);
-                            embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
+                            embed.AddField("Name", goat.Name);
+                            embed.AddField("Level", goat.Level.ToString(), true);
+                            embed.AddField("Experience", goat.Experience.ToString(), true);
+                            embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
+                            embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
                             var page = new Page
                             {
                                 Embed = embed
@@ -125,7 +125,7 @@ namespace BumbleBot.Commands.Game
                     }
                     else if (parameter.ToLower().Equals("breed"))
                     {
-                        var goats = goatService.ReturnUsersGoats(ctx.User.Id).OrderBy(x => x.breed);
+                        var goats = GoatService.ReturnUsersGoats(ctx.User.Id).OrderBy(x => x.Breed);
                         var url = "http://williamspires.com/";
                         var pages = new List<Page>();
                         var interactivity = ctx.Client.GetInteractivity();
@@ -133,14 +133,14 @@ namespace BumbleBot.Commands.Game
                         {
                             var embed = new DiscordEmbedBuilder
                             {
-                                Title = $"{goat.id}",
-                                ImageUrl = url + Uri.EscapeUriString(goat.filePath) //.Replace(" ", "%20")
+                                Title = $"{goat.Id}",
+                                ImageUrl = url + Uri.EscapeUriString(goat.FilePath) //.Replace(" ", "%20")
                             };
-                            embed.AddField("Name", goat.name);
-                            embed.AddField("Level", goat.level.ToString(), true);
-                            embed.AddField("Experience", goat.experience.ToString(), true);
-                            embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed)?.Replace("_", " "), true);
-                            embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
+                            embed.AddField("Name", goat.Name);
+                            embed.AddField("Level", goat.Level.ToString(), true);
+                            embed.AddField("Experience", goat.Experience.ToString(), true);
+                            embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
+                            embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
                             var page = new Page
                             {
                                 Embed = embed
@@ -152,7 +152,7 @@ namespace BumbleBot.Commands.Game
                     }
                     else if (parameter.ToLower().Equals("colour"))
                     {
-                        var goats = goatService.ReturnUsersGoats(ctx.User.Id).OrderBy(x => x.baseColour);
+                        var goats = GoatService.ReturnUsersGoats(ctx.User.Id).OrderBy(x => x.BaseColour);
                         var url = "http://williamspires.com/";
                         var pages = new List<Page>();
                         var interactivity = ctx.Client.GetInteractivity();
@@ -160,14 +160,14 @@ namespace BumbleBot.Commands.Game
                         {
                             var embed = new DiscordEmbedBuilder
                             {
-                                Title = $"{goat.id}",
-                                ImageUrl = url + Uri.EscapeUriString(goat.filePath) //.Replace(" ", "%20")
+                                Title = $"{goat.Id}",
+                                ImageUrl = url + Uri.EscapeUriString(goat.FilePath) //.Replace(" ", "%20")
                             };
-                            embed.AddField("Name", goat.name);
-                            embed.AddField("Level", goat.level.ToString(), true);
-                            embed.AddField("Experience", goat.experience.ToString(), true);
-                            embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed)?.Replace("_", " "), true);
-                            embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
+                            embed.AddField("Name", goat.Name);
+                            embed.AddField("Level", goat.Level.ToString(), true);
+                            embed.AddField("Experience", goat.Experience.ToString(), true);
+                            embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
+                            embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
                             var page = new Page
                             {
                                 Embed = embed
@@ -192,7 +192,7 @@ namespace BumbleBot.Commands.Game
         {
             try
             {
-                var goats = goatService.ReturnUsersGoats(ctx.User.Id);
+                var goats = GoatService.ReturnUsersGoats(ctx.User.Id);
 
                 var url = "http://williamspires.com/";
                 var pages = new List<Page>();
@@ -201,14 +201,14 @@ namespace BumbleBot.Commands.Game
                 {
                     var embed = new DiscordEmbedBuilder
                     {
-                        Title = $"{goat.id}",
-                        ImageUrl = url + Uri.EscapeUriString(goat.filePath) //.Replace(" ", "%20")
+                        Title = $"{goat.Id}",
+                        ImageUrl = url + Uri.EscapeUriString(goat.FilePath) //.Replace(" ", "%20")
                     };
-                    embed.AddField("Name", goat.name);
-                    embed.AddField("Level", goat.level.ToString(), true);
-                    embed.AddField("Experience", goat.experience.ToString(), true);
-                    embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed).Replace("_", " "), true);
-                    embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
+                    embed.AddField("Name", goat.Name);
+                    embed.AddField("Level", goat.Level.ToString(), true);
+                    embed.AddField("Experience", goat.Experience.ToString(), true);
+                    embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed).Replace("_", " "), true);
+                    embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
                     var page = new Page
                     {
                         Embed = embed
@@ -233,8 +233,8 @@ namespace BumbleBot.Commands.Game
         {
             try
             {
-                var goats = goatService.ReturnUsersGoats(ctx.User.Id);
-                if (goats.Any(x => x.id == goatId))
+                var goats = GoatService.ReturnUsersGoats(ctx.User.Id);
+                if (goats.Any(x => x.Id == goatId))
                 {
                     using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                     {
@@ -246,8 +246,8 @@ namespace BumbleBot.Commands.Game
                         command.ExecuteNonQuery();
                     }
 
-                    var changedGoat = goats.Where(x => x.id == goatId);
-                    await ctx.Channel.SendMessageAsync($"{changedGoat.First().name} has been renamed to {newName}")
+                    var changedGoat = goats.Where(x => x.Id == goatId);
+                    await ctx.Channel.SendMessageAsync($"{changedGoat.First().Name} has been renamed to {newName}")
                         .ConfigureAwait(false);
                 }
                 else
@@ -268,14 +268,14 @@ namespace BumbleBot.Commands.Game
         {
             try
             {
-                var goats = goatService.ReturnUsersGoats(ctx.User.Id);
-                if (goats.Any(goat => goat.id == goatId))
+                var goats = GoatService.ReturnUsersGoats(ctx.User.Id);
+                if (goats.Any(goat => goat.Id == goatId))
                 {
-                    goatService.DeleteGoat(goatId);
-                    var goat = goats.First(g => g.id == goatId);
-                    farmerService.AddCreditsToFarmer(ctx.User.Id, (int) Math.Ceiling(goat.level * 0.75));
+                    GoatService.DeleteGoat(goatId);
+                    var goat = goats.First(g => g.Id == goatId);
+                    FarmerService.AddCreditsToFarmer(ctx.User.Id, (int) Math.Ceiling(goat.Level * 0.75));
                     await ctx.Channel.SendMessageAsync(
-                        $"You have sold {goat.name} to market for {(int) Math.Ceiling(goat.level * 0.75)} " +
+                        $"You have sold {goat.Name} to market for {(int) Math.Ceiling(goat.Level * 0.75)} " +
                         "credits").ConfigureAwait(false);
                 }
                 else
@@ -297,7 +297,7 @@ namespace BumbleBot.Commands.Game
         {
             try
             {
-                var goats = goatService.ReturnUsersDeadGoats(ctx.User.Id);
+                var goats = GoatService.ReturnUsersDeadGoats(ctx.User.Id);
 
                 var url = "http://williamspires.com/";
                 var pages = new List<Page>();
@@ -306,14 +306,14 @@ namespace BumbleBot.Commands.Game
                 {
                     var embed = new DiscordEmbedBuilder
                     {
-                        Title = $"{goat.id}",
-                        ImageUrl = url + goat.filePath.Replace(" ", "%20")
+                        Title = $"{goat.Id}",
+                        ImageUrl = url + goat.FilePath.Replace(" ", "%20")
                     };
-                    embed.AddField("Name", goat.name);
-                    embed.AddField("Level", goat.level.ToString(), true);
-                    embed.AddField("Experience", goat.experience.ToString(), true);
-                    embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed).Replace("_", " "), true);
-                    embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
+                    embed.AddField("Name", goat.Name);
+                    embed.AddField("Level", goat.Level.ToString(), true);
+                    embed.AddField("Experience", goat.Experience.ToString(), true);
+                    embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed).Replace("_", " "), true);
+                    embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
                     var page = new Page
                     {
                         Embed = embed

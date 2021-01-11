@@ -4,6 +4,6 @@ namespace BumbleBot.Models
 {
     public class DailyResponse
     {
-        [JsonProperty("response")] public string message { get; set; }
+        [JsonProperty("response")] public string Message { get; set; }
     }
 }

@@ -2,10 +2,10 @@
 {
     public class Farmer
     {
-        public ulong discordID { get; set; }
-        public int credits { get; set; }
-        public int barnspace { get; set; }
-        public int grazingspace { get; set; }
-        public decimal milk { get; set; }
+        public ulong DiscordId { get; set; }
+        public int Credits { get; set; }
+        public int Barnspace { get; set; }
+        public int Grazingspace { get; set; }
+        public decimal Milk { get; set; }
     }
 }

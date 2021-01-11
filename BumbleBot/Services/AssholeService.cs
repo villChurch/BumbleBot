@@ -7,7 +7,7 @@ namespace BumbleBot.Services
     public class AssholeService
     {
         private int commandsRunBeforeParamChange;
-        private readonly DBUtils dBUtils = new DBUtils();
+        private readonly DbUtils dBUtils = new DbUtils();
 
         public bool SetAhConfig()
         {

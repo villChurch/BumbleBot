@@ -2,9 +2,9 @@
 {
     public class Dairy
     {
-        public decimal milk { get; set; }
-        public int slots { get; set; }
-        public decimal softCheese { get; set; }
-        public decimal hardCheese { get; set; }
+        public decimal Milk { get; set; }
+        public int Slots { get; set; }
+        public decimal SoftCheese { get; set; }
+        public decimal HardCheese { get; set; }
     }
 }

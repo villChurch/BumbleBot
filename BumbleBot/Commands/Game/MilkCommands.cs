@@ -21,14 +21,14 @@ namespace BumbleBot.Commands.Game
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class MilkCommands : BaseCommandModule
     {
-        private readonly DBUtils dbUtils = new DBUtils();
+        private readonly DbUtils dbUtils = new DbUtils();
 
         public MilkCommands(GoatService goatService)
         {
-            this.goatService = goatService;
+            this.GoatService = goatService;
         }
 
-        private GoatService goatService { get; }
+        private GoatService GoatService { get; }
 
         [GroupCommand]
         public async Task MilkGoats(CommandContext ctx)
@@ -47,7 +47,7 @@ namespace BumbleBot.Commands.Game
                     var serializer = new JsonSerializer();
                     var milkingResponse = serializer.Deserialize<MilkingResponse>(jsonReader);
 
-                    await ctx.Channel.SendMessageAsync(milkingResponse.message).ConfigureAwait(false);
+                    await ctx.Channel.SendMessageAsync(milkingResponse.Message).ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
@@ -81,7 +81,7 @@ namespace BumbleBot.Commands.Game
                     sb.AppendLine("Expiry dates are shown in the following format YYYY-MM-dd");
                     expiryDates.ForEach(obj =>
                     {
-                        sb.AppendLine($"{obj.milk} lbs of milk will expire at {obj.expiryDate}");
+                        sb.AppendLine($"{obj.Milk} lbs of milk will expire at {obj.ExpiryDate}");
                     });
                     var interactivity = ctx.Client.GetInteractivity();
                     var expiryPages =
@@ -117,9 +117,9 @@ namespace BumbleBot.Commands.Game
                     if (reader.HasRows)
                         while (reader.Read())
                         {
-                            farmer.credits = reader.GetInt32("credits");
-                            farmer.milk = reader.GetDecimal("milk");
-                            farmer.discordID = reader.GetUInt64("DiscordID");
+                            farmer.Credits = reader.GetInt32("credits");
+                            farmer.Milk = reader.GetDecimal("milk");
+                            farmer.DiscordId = reader.GetUInt64("DiscordID");
                         }
 
                     reader.Close();
@@ -129,19 +129,19 @@ namespace BumbleBot.Commands.Game
                 {
                     await ctx.Channel.SendMessageAsync("You do not have a character setup yet.").ConfigureAwait(false);
                 }
-                else if (farmer.milk <= 0)
+                else if (farmer.Milk <= 0)
                 {
                     await ctx.Channel.SendMessageAsync("You do not have any milk you can sell.").ConfigureAwait(false);
                 }
                 else
                 {
-                    farmer.credits += (int) Math.Ceiling(farmer.milk * 3);
+                    farmer.Credits += (int) Math.Ceiling(farmer.Milk * 3);
                     using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                     {
                         var query = "Update farmers set milk = ?milk, credits = ?credits where DiscordID = ?discordId";
                         var command = new MySqlCommand(query, connection);
                         command.Parameters.Add("?milk", MySqlDbType.Decimal).Value = 0;
-                        command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.credits;
+                        command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.Credits;
                         command.Parameters.Add("?discordId", MySqlDbType.VarChar, 40).Value = ctx.User.Id;
                         connection.Open();
                         command.ExecuteNonQuery();
@@ -157,8 +157,8 @@ namespace BumbleBot.Commands.Game
                     }
 
                     await ctx.Channel.SendMessageAsync(
-                        $"Congratulations {ctx.User.Mention} you have sold {farmer.milk} lbs of milk for " +
-                        $"{Math.Ceiling(farmer.milk * 3)} credits.").ConfigureAwait(false);
+                        $"Congratulations {ctx.User.Mention} you have sold {farmer.Milk} lbs of milk for " +
+                        $"{Math.Ceiling(farmer.Milk * 3)} credits.").ConfigureAwait(false);
                 }
             }
             catch (Exception ex)

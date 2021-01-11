@@ -20,21 +20,21 @@ namespace BumbleBot.Commands.GifsAndPhotos
     [Group("minx")]
     public class Minx : BaseCommandModule
     {
-        private readonly DBUtils dBUtils = new DBUtils();
+        private readonly DbUtils dBUtils = new DbUtils();
 
         public Minx(AssholeService assholeService)
         {
-            this.assholeService = assholeService;
+            this.AssholeService = assholeService;
         }
 
-        private AssholeService assholeService { get; }
+        private AssholeService AssholeService { get; }
 
         [GroupCommand]
         public async Task ShowRandomMinxPhoto(CommandContext ctx)
         {
             try
             {
-                assholeService.SetAhConfig();
+                AssholeService.SetAhConfig();
                 var isAssholeMode = false;
                 using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {

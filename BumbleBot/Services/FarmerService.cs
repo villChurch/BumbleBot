@@ -9,7 +9,7 @@ namespace BumbleBot.Services
 {
     public class FarmerService
     {
-        private readonly DBUtils dBUtils = new DBUtils();
+        private readonly DbUtils dBUtils = new DbUtils();
 
         public bool DoesFarmerHaveKidsInKiddingPen(ulong discordId)
         {
@@ -111,7 +111,7 @@ namespace BumbleBot.Services
                         goatIds.Add(reader.GetInt32("goatId"));
             }
 
-            var ids = usersGoats.Select(goat => goat.id).ToList();
+            var ids = usersGoats.Select(goat => goat.Id).ToList();
             return ids.Any(x => goatIds.Contains(x));
         }
 
@@ -131,9 +131,9 @@ namespace BumbleBot.Services
                         while (reader.Read())
                         {
                             //farmer.discordID = discordId;
-                            farmer.credits = reader.GetInt32("credits");
-                            farmer.barnspace = reader.GetInt32("barnsize");
-                            farmer.grazingspace = reader.GetInt32("grazesize");
+                            farmer.Credits = reader.GetInt32("credits");
+                            farmer.Barnspace = reader.GetInt32("barnsize");
+                            farmer.Grazingspace = reader.GetInt32("grazesize");
                         }
 
                     reader.Close();

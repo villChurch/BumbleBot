@@ -17,17 +17,17 @@ namespace BumbleBot.Commands.Game
     {
         public Dairy(DairyService dairyService, FarmerService farmerService)
         {
-            this.dairyService = dairyService;
-            this.farmerService = farmerService;
+            this.DairyService = dairyService;
+            this.FarmerService = farmerService;
         }
 
-        private DairyService dairyService { get; }
-        private FarmerService farmerService { get; }
+        private DairyService DairyService { get; }
+        private FarmerService FarmerService { get; }
 
         [GroupCommand]
         public async Task ShowDairyUpgrades(CommandContext ctx)
         {
-            if (!dairyService.HasDairy(ctx.User.Id))
+            if (!DairyService.HasDairy(ctx.User.Id))
             {
                 await ctx.Channel.SendMessageAsync($"{ctx.User.Mention} you do not have a dairy").ConfigureAwait(false);
             }
@@ -40,10 +40,10 @@ namespace BumbleBot.Commands.Game
                     Description =
                         "Here are the available upgrade options for your dairy. To upgrade run `dairy upgrade {item} {price}`"
                 };
-                var dairy = dairyService.GetUsersDairy(ctx.User.Id);
-                var price = dairy.slots * 5000;
+                var dairy = DairyService.GetUsersDairy(ctx.User.Id);
+                var price = dairy.Slots * 5000;
                 embed.AddField("Capacity", $"{price} credits will increase milk capacity by 1,000 lbs");
-                if (!dairyService.DoesDairyHaveACave(ctx.User.Id))
+                if (!DairyService.DoesDairyHaveACave(ctx.User.Id))
                     embed.AddField("Cave", "12,000 credits will add a cave to your dairy to produce hard cheese");
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
@@ -59,24 +59,24 @@ namespace BumbleBot.Commands.Game
                 "capacity",
                 "cave"
             };
-            if (!dairyService.HasDairy(ctx.User.Id))
+            if (!DairyService.HasDairy(ctx.User.Id))
             {
                 await ctx.Channel.SendMessageAsync($"{ctx.User.Mention} you do not have a dairy").ConfigureAwait(false);
             }
             else if (options.Contains(option.ToLower()))
             {
-                var dairy = dairyService.GetUsersDairy(ctx.User.Id);
+                var dairy = DairyService.GetUsersDairy(ctx.User.Id);
                 switch (option.ToLower())
                 {
                     case "capacity":
                     {
-                        var upgradePrice = dairy.slots * 5000;
+                        var upgradePrice = dairy.Slots * 5000;
                         if (price == upgradePrice)
                         {
-                            farmerService.DeductCreditsFromFarmer(ctx.User.Id, price);
-                            dairyService.IncreaseCapcityOfDairy(ctx.User.Id, dairy.slots, 1);
+                            FarmerService.DeductCreditsFromFarmer(ctx.User.Id, price);
+                            DairyService.IncreaseCapcityOfDairy(ctx.User.Id, dairy.Slots, 1);
                             await ctx.Channel
-                                .SendMessageAsync($"Your dairy can now hold {(dairy.slots + 1) * 1000} lbs of milk")
+                                .SendMessageAsync($"Your dairy can now hold {(dairy.Slots + 1) * 1000} lbs of milk")
                                 .ConfigureAwait(false);
                         }
                         else
@@ -89,14 +89,14 @@ namespace BumbleBot.Commands.Game
                         break;
                     }
                     case "cave":
-                        if (dairyService.DoesDairyHaveACave(ctx.User.Id))
+                        if (DairyService.DoesDairyHaveACave(ctx.User.Id))
                         {
                             await ctx.Channel.SendMessageAsync("Your dairy already has a cave").ConfigureAwait(false);
                         }
                         else if (price == 12000)
                         {
-                            dairyService.CreateCaveInDairy(ctx.User.Id);
-                            farmerService.DeductCreditsFromFarmer(ctx.User.Id, 12000);
+                            DairyService.CreateCaveInDairy(ctx.User.Id);
+                            FarmerService.DeductCreditsFromFarmer(ctx.User.Id, 12000);
                             await ctx.Channel.SendMessageAsync("Your dairy now has a cave to age soft cheese in")
                                 .ConfigureAwait(false);
                         }
@@ -121,28 +121,28 @@ namespace BumbleBot.Commands.Game
         [Description("Show the contents of your dairy")]
         public async Task ShowContentsOfDairy(CommandContext ctx)
         {
-            if (!dairyService.HasDairy(ctx.User.Id))
+            if (!DairyService.HasDairy(ctx.User.Id))
             {
                 await ctx.Channel.SendMessageAsync($"{ctx.User.Mention} you do not have a dairy").ConfigureAwait(false);
             }
             else
             {
-                var dairy = dairyService.GetUsersDairy(ctx.User.Id);
+                var dairy = DairyService.GetUsersDairy(ctx.User.Id);
                 var embed = new DiscordEmbedBuilder
                 {
                     Title = $"{ctx.User.Username}'s Dairy",
                     Color = DiscordColor.Aquamarine
                 };
-                embed.AddField("Milk", $"{dairy.milk} lbs", true);
-                embed.AddField("Soft Cheese", $"{dairy.softCheese} lbs", true);
-                embed.AddField("Hard Cheese", $"{dairy.hardCheese} lbs", true);
-                embed.AddField("Milk capacity", $"{dairy.slots * 1000} lbs", true);
-                if (dairyService.DoesDairyHaveACave(ctx.User.Id))
+                embed.AddField("Milk", $"{dairy.Milk} lbs", true);
+                embed.AddField("Soft Cheese", $"{dairy.SoftCheese} lbs", true);
+                embed.AddField("Hard Cheese", $"{dairy.HardCheese} lbs", true);
+                embed.AddField("Milk capacity", $"{dairy.Slots * 1000} lbs", true);
+                if (DairyService.DoesDairyHaveACave(ctx.User.Id))
                 {
-                    var cave = dairyService.GetUsersCave(ctx.User.Id);
+                    var cave = DairyService.GetUsersCave(ctx.User.Id);
                     embed.AddField("Cave", "Dairy Cave information below");
-                    embed.AddField("Soft Cheese", $"{cave.softCheese} lbs", true);
-                    embed.AddField("Soft Cheese capacity", $"{cave.slots * 500} lbs", true);
+                    embed.AddField("Soft Cheese", $"{cave.SoftCheese} lbs", true);
+                    embed.AddField("Soft Cheese capacity", $"{cave.Slots * 500} lbs", true);
                 }
 
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
@@ -153,14 +153,14 @@ namespace BumbleBot.Commands.Game
         [Description("Sell the contents of your dairy")]
         public async Task SellContentsOfDairy(CommandContext ctx)
         {
-            if (!dairyService.HasDairy(ctx.User.Id))
+            if (!DairyService.HasDairy(ctx.User.Id))
             {
                 await ctx.Channel.SendMessageAsync($"{ctx.User.Mention} you do not have a dairy").ConfigureAwait(false);
             }
             else
             {
-                var dairy = dairyService.GetUsersDairy(ctx.User.Id);
-                if (dairy.softCheese <= 0 && dairy.hardCheese <= 0)
+                var dairy = DairyService.GetUsersDairy(ctx.User.Id);
+                if (dairy.SoftCheese <= 0 && dairy.HardCheese <= 0)
                 {
                     await ctx.Channel.SendMessageAsync("You don't have anything in your dairy that can be sold.")
                         .ConfigureAwait(false);
@@ -168,10 +168,10 @@ namespace BumbleBot.Commands.Game
                 else
                 {
                     var sellAmount = 0;
-                    sellAmount += (int) Math.Ceiling(dairy.softCheese * 45);
-                    farmerService.AddCreditsToFarmer(ctx.User.Id, sellAmount);
-                    dairyService.RemoveSoftCheeseFromPlayer(ctx.User.Id, null);
-                    dairyService.DeleteSoftCheeseFromExpiryTable(ctx.User.Id);
+                    sellAmount += (int) Math.Ceiling(dairy.SoftCheese * 45);
+                    FarmerService.AddCreditsToFarmer(ctx.User.Id, sellAmount);
+                    DairyService.RemoveSoftCheeseFromPlayer(ctx.User.Id, null);
+                    DairyService.DeleteSoftCheeseFromExpiryTable(ctx.User.Id);
                     await ctx.Channel.SendMessageAsync($"Sold contents of your dairy for {sellAmount}")
                         .ConfigureAwait(false);
                 }
@@ -188,11 +188,11 @@ namespace BumbleBot.Commands.Game
                                                    "therefore the amount must be divisible by 10.")
                     .ConfigureAwait(false);
             }
-            else if (!dairyService.HasDairy(ctx.User.Id))
+            else if (!DairyService.HasDairy(ctx.User.Id))
             {
                 await ctx.Channel.SendMessageAsync("You need to purchase a dairy first.").ConfigureAwait(false);
             }
-            else if (!dairyService.CanMilkFitInDairy(ctx.User.Id, milk))
+            else if (!DairyService.CanMilkFitInDairy(ctx.User.Id, milk))
             {
                 await ctx.Channel.SendMessageAsync($"There is not enough room in your dairy for {milk} lbs of milk")
                     .ConfigureAwait(false);

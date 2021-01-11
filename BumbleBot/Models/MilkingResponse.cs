@@ -4,6 +4,6 @@ namespace BumbleBot.Models
 {
     public class MilkingResponse
     {
-        [JsonProperty("message")] public string message { get; set; }
+        [JsonProperty("message")] public string Message { get; set; }
     }
 }

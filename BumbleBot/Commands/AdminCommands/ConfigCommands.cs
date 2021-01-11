@@ -15,7 +15,7 @@ namespace BumbleBot.Commands.AdminCommands
     [Hidden]
     public class ConfigCommands : BaseCommandModule
     {
-        private readonly DBUtils dbUtils = new DBUtils();
+        private readonly DbUtils dbUtils = new DbUtils();
 
         [Command("goatspawns")]
         [Aliases("gs", "gsc")]

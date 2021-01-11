@@ -15,16 +15,16 @@ namespace BumbleBot.Commands.Game
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class Trading : BaseCommandModule
     {
-        private readonly DBUtils dBUtils = new DBUtils();
+        private readonly DbUtils dBUtils = new DbUtils();
 
         public Trading(FarmerService farmerService, GoatService goatService)
         {
-            this.farmerService = farmerService;
-            this.goatService = goatService;
+            this.FarmerService = farmerService;
+            this.GoatService = goatService;
         }
 
-        private FarmerService farmerService { get; }
-        private GoatService goatService { get; }
+        private FarmerService FarmerService { get; }
+        private GoatService GoatService { get; }
 
         [Command("trade")]
         [Aliases("gift", "give")]
@@ -33,24 +33,24 @@ namespace BumbleBot.Commands.Game
             [Description("member you want to trade/gift the goat to")]
             DiscordMember recipient)
         {
-            var recipientFarmer = farmerService.ReturnFarmerInfo(recipient.Id);
-            var sendersGoats = goatService.ReturnUsersGoats(ctx.User.Id);
-            if (sendersGoats.Select(x => x.id == goatId).ToList().Count < 1)
+            var recipientFarmer = FarmerService.ReturnFarmerInfo(recipient.Id);
+            var sendersGoats = GoatService.ReturnUsersGoats(ctx.User.Id);
+            if (sendersGoats.Select(x => x.Id == goatId).ToList().Count < 1)
             {
                 await ctx.Channel.SendMessageAsync($"You do not own a goat with id {goatId}").ConfigureAwait(false);
             }
-            else if (recipientFarmer.barnspace < 10)
+            else if (recipientFarmer.Barnspace < 10)
             {
                 await ctx.Channel.SendMessageAsync($"{recipient.Mention} does not have a profile setup.")
                     .ConfigureAwait(false);
             }
-            else if (!goatService.CanGoatsFitInBarn(recipient.Id, 1))
+            else if (!GoatService.CanGoatsFitInBarn(recipient.Id, 1))
             {
                 await ctx.Channel
                     .SendMessageAsync($"{recipient.Mention} does not have enough room in their barn for this goat")
                     .ConfigureAwait(false);
             }
-            else if (goatService.IsGoatCooking(goatId))
+            else if (GoatService.IsGoatCooking(goatId))
             {
                 await ctx.Channel
                     .SendMessageAsync($"Goat with id {goatId} is currently in your shelter and cannot be moved")
@@ -58,7 +58,7 @@ namespace BumbleBot.Commands.Game
             }
             else
             {
-                var goat = sendersGoats.First(x => x.id == goatId);
+                var goat = sendersGoats.First(x => x.Id == goatId);
                 _ = TradeGoat(ctx, recipient, goat);
             }
         }
@@ -72,13 +72,13 @@ namespace BumbleBot.Commands.Game
                 var embed = new DiscordEmbedBuilder
                 {
                     Title = $"Incoming gift from {ctx.User.Mention}",
-                    ImageUrl = url + goat.filePath.Replace(" ", "%20")
+                    ImageUrl = url + goat.FilePath.Replace(" ", "%20")
                 };
-                embed.AddField("Name", goat.name);
-                embed.AddField("Level", goat.level.ToString(), true);
-                embed.AddField("Experience", goat.experience.ToString(), true);
-                embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.breed).Replace("_", " "), true);
-                embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.baseColour), true);
+                embed.AddField("Name", goat.Name);
+                embed.AddField("Level", goat.Level.ToString(), true);
+                embed.AddField("Experience", goat.Experience.ToString(), true);
+                embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed).Replace("_", " "), true);
+                embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
                 var message = await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
                 //white_check_mark
                 var yesEmoji = DiscordEmoji.FromName(ctx.Client, ":white_check_mark:");
@@ -102,7 +102,7 @@ namespace BumbleBot.Commands.Game
                         var query = "Update goats Set ownerID = ?recipientId where id = ?goatId";
                         var command = new MySqlCommand(query, connection);
                         command.Parameters.Add("?recipientId", MySqlDbType.VarChar).Value = recipient.Id;
-                        command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goat.id;
+                        command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goat.Id;
                         connection.Open();
                         command.ExecuteNonQuery();
                     }
@@ -111,13 +111,13 @@ namespace BumbleBot.Commands.Game
                     {
                         var query = "Delete from grazing where goatId = ?goatId";
                         var command = new MySqlCommand(query, connection);
-                        command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goat.id;
+                        command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goat.Id;
                         connection.Open();
                         command.ExecuteNonQuery();
                     }
 
                     await ctx.Channel
-                        .SendMessageAsync($"Goat {goat.name} has now been given to {recipient.DisplayName}")
+                        .SendMessageAsync($"Goat {goat.Name} has now been given to {recipient.DisplayName}")
                         .ConfigureAwait(false);
                 }
                 else if (result.Result.Emoji == noEmoji)

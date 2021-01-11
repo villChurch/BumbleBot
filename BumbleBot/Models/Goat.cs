@@ -12,8 +12,8 @@ namespace BumbleBot.Models
     public enum Breed
     {
         Nubian,
-        Nigerian_Dwarf,
-        La_Mancha,
+        NigerianDwarf,
+        LaMancha,
         Christmas,
         Minx,
         Bumble,
@@ -32,23 +32,23 @@ namespace BumbleBot.Models
 
     public class Goat
     {
-        public bool special { get; set; }
-        public int level { get; set; }
-        public string name { get; set; }
-        public decimal levelMulitplier { get; set; }
-        public int id { get; set; }
+        public bool Special { get; set; }
+        public int Level { get; set; }
+        public string Name { get; set; }
+        public decimal LevelMulitplier { get; set; }
+        public int Id { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public Type type { get; set; }
+        public Type Type { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public Breed breed { get; set; }
+        public Breed Breed { get; set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public BaseColour baseColour { get; set; }
+        public BaseColour BaseColour { get; set; }
 
-        public bool equiped { get; set; }
-        public decimal experience { get; set; }
-        public string filePath { get; set; }
+        public bool Equiped { get; set; }
+        public decimal Experience { get; set; }
+        public string FilePath { get; set; }
     }
 }

@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace BumbleBot.Utilities
 {
-    public class DBUtils
+    public class DbUtils
     {
         private readonly string configFilePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
@@ -27,11 +27,11 @@ namespace BumbleBot.Utilities
 
             var mcsb = new MySqlConnectionStringBuilder
             {
-                Database = configJson.databaseName,
-                Password = configJson.databasePassword,
-                UserID = configJson.databaseUser,
-                Port = configJson.databasePort,
-                Server = configJson.databaseServer,
+                Database = configJson.DatabaseName,
+                Password = configJson.DatabasePassword,
+                UserID = configJson.DatabaseUser,
+                Port = configJson.DatabasePort,
+                Server = configJson.DatabaseServer,
                 MaximumPoolSize = 300
             };
 
@@ -55,11 +55,11 @@ namespace BumbleBot.Utilities
 
             var mcsb = new MySqlConnectionStringBuilder
             {
-                Database = configJson.databaseName,
-                Password = configJson.databasePassword,
-                UserID = configJson.databaseUser,
-                Port = configJson.databasePort,
-                Server = configJson.databaseServer,
+                Database = configJson.DatabaseName,
+                Password = configJson.DatabasePassword,
+                UserID = configJson.DatabaseUser,
+                Port = configJson.DatabasePort,
+                Server = configJson.DatabaseServer,
                 MaximumPoolSize = 300
             };
 

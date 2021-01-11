@@ -14,16 +14,16 @@ namespace BumbleBot.Commands.Trivia
     {
         public MainTriviaCommands(TriviaServices triviaServices)
         {
-            this.triviaServices = triviaServices;
+            this.TriviaServices = triviaServices;
         }
 
-        private TriviaServices triviaServices { get; }
+        private TriviaServices TriviaServices { get; }
 
         [Command("count")]
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task GetNumberOfQuestions(CommandContext ctx)
         {
-            var questions = triviaServices.GetQuestionsAsync();
+            var questions = TriviaServices.GetQuestionsAsync();
 
             await ctx.Channel.SendMessageAsync($"There are {questions.Questions.Length} questions")
                 .ConfigureAwait(false);
@@ -33,7 +33,7 @@ namespace BumbleBot.Commands.Trivia
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task GetRandomQuestion(CommandContext ctx)
         {
-            await triviaServices.AskQuestion(ctx, ctx.Channel);
+            await TriviaServices.AskQuestion(ctx, ctx.Channel);
         }
 
         [Command("start")]
@@ -41,7 +41,7 @@ namespace BumbleBot.Commands.Trivia
         [Description("Starts a trivia game")]
         public async Task StartTriviaGame(CommandContext ctx, DiscordChannel channel)
         {
-            var started = triviaServices.StartCountdownTriviaTimer(ctx, channel);
+            var started = TriviaServices.StartCountdownTriviaTimer(ctx, channel);
 
             var message = started
                 ? $"Trivia wil now start in {channel.Mention} in 10 seconds"
@@ -55,7 +55,7 @@ namespace BumbleBot.Commands.Trivia
         [Description("Stops a trivia game")]
         public async Task StopTriviaGame(CommandContext ctx)
         {
-            var stopped = triviaServices.StopTrivia();
+            var stopped = TriviaServices.StopTrivia();
 
             var message = stopped ? "Trivia has been stopped" : "No trivia found to be stopped";
 

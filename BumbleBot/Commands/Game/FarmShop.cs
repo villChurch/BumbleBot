@@ -31,7 +31,7 @@ namespace BumbleBot.Commands.Game
 
             var currentFarmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
 
-            if (string.IsNullOrEmpty(currentFarmer.barnspace.ToString()) || currentFarmer.barnspace == 0)
+            if (string.IsNullOrEmpty(currentFarmer.Barnspace.ToString()) || currentFarmer.Barnspace == 0)
             {
                 await ctx.Channel
                     .SendMessageAsync("Looks like you don't have a character yet, use the `create` command to start.")
@@ -39,8 +39,8 @@ namespace BumbleBot.Commands.Game
             }
             else
             {
-                var barnCost = (currentFarmer.barnspace + 10) * 100;
-                var grazeCost = (currentFarmer.grazingspace + 10) * 100;
+                var barnCost = (currentFarmer.Barnspace + 10) * 100;
+                var grazeCost = (currentFarmer.Grazingspace + 10) * 100;
 
                 embed.AddField("Barn", $"Cost {barnCost} - Will provide 10 extra stalls");
                 embed.AddField("Pasture", $"Cost {grazeCost} - Will provide 10 extra pasture space");

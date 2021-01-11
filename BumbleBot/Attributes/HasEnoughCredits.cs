@@ -9,15 +9,15 @@ namespace BumbleBot.Attributes
 {
     public class HasEnoughCredits : CheckBaseAttribute
     {
-        private readonly DBUtils dBUtils = new DBUtils();
+        private readonly DbUtils dBUtils = new DbUtils();
 
         public HasEnoughCredits(int argumentPosition)
         {
-            this.argumentPosition = argumentPosition;
+            this.ArgumentPosition = argumentPosition;
         }
 
-        private int balance { get; set; }
-        public int argumentPosition { get; set; }
+        private int Balance { get; set; }
+        public int ArgumentPosition { get; set; }
 
         public override Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
         {
@@ -30,16 +30,16 @@ namespace BumbleBot.Attributes
                 var reader = command.ExecuteReader();
                 if (reader.HasRows)
                     while (reader.Read())
-                        balance = reader.GetInt32("credits");
+                        Balance = reader.GetInt32("credits");
                 else
-                    balance = 0;
+                    Balance = 0;
                 reader.Close();
             }
 
             var arguments = ctx.RawArgumentString.Split(' ');
             if (ctx.Command.Name.ToLower().Equals("help")) return Task.FromResult(1 == 1);
-            var buyPrice = Convert.ToInt32(arguments[argumentPosition]);
-            return Task.FromResult(balance >= buyPrice);
+            var buyPrice = Convert.ToInt32(arguments[ArgumentPosition]);
+            return Task.FromResult(Balance >= buyPrice);
         }
     }
 }

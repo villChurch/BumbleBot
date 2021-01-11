@@ -4,29 +4,29 @@ namespace BumbleBot.Utilities
 {
     public class RandomLevel
     {
-        public static readonly int RATIO_CHANCE_A = 75;
+        public static readonly int RatioChanceA = 75;
 
-        public static readonly int RATIO_CHANCE_B = 15;
+        public static readonly int RatioChanceB = 15;
 
         //                         ...
-        public static readonly int RATIO_CHANCE_N = 10;
+        public static readonly int RatioChanceN = 10;
 
-        public static readonly int RATIO_TOTAL = RATIO_CHANCE_A
-                                                 + RATIO_CHANCE_B
-                                                 + RATIO_CHANCE_N;
+        public static readonly int RatioTotal = RatioChanceA
+                                                 + RatioChanceB
+                                                 + RatioChanceN;
 
         public static int GetRandomLevel()
         {
             var random = new Random();
-            var x = random.Next(0, RATIO_TOTAL);
+            var x = random.Next(0, RatioTotal);
 
-            if ((x -= RATIO_CHANCE_A) < 0) // Test for A
+            if ((x -= RatioChanceA) < 0) // Test for A
             {
                 var randomLevel = new Random();
                 return randomLevel.Next(75, 100);
             }
 
-            if ((x -= RATIO_CHANCE_B) < 0) // Test for B
+            if ((x -= RatioChanceB) < 0) // Test for B
             {
                 var randomLevel = new Random();
                 return randomLevel.Next(25, 75);
