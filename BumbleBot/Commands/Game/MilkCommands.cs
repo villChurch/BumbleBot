@@ -46,8 +46,10 @@ namespace BumbleBot.Commands.Game
                     var jsonReader = new JsonTextReader(reader);
                     var serializer = new JsonSerializer();
                     var milkingResponse = serializer.Deserialize<MilkingResponse>(jsonReader);
-
-                    await ctx.Channel.SendMessageAsync(milkingResponse.Message).ConfigureAwait(false);
+                    await new DiscordMessageBuilder()
+                        .WithReply(ctx.Message.Id, true)
+                        .WithContent(milkingResponse.Message)
+                        .SendAsync(ctx.Channel);
                 }
             }
             catch (Exception ex)

@@ -51,9 +51,9 @@ namespace BumbleBot.Commands.Game
             embed.AddField("Number of Nubian goats", goats.FindAll(goat => goat.Breed == Breed.Nubian).Count.ToString(),
                 true);
             embed.AddField("Number of La Mancha goats",
-                goats.FindAll(goat => goat.Breed == Breed.LaMancha).Count.ToString(), true);
+                goats.FindAll(goat => goat.Breed == Breed.La_Mancha).Count.ToString(), true);
             embed.AddField("Number of Nigerian Dwarf goats",
-                goats.FindAll(goat => goat.Breed == Breed.NigerianDwarf).Count.ToString(), true);
+                goats.FindAll(goat => goat.Breed == Breed.Nigerian_Dwarf).Count.ToString(), true);
             embed.AddField("Number of Special goats",
                 goats.FindAll(goat => goat.BaseColour == BaseColour.Special).Count.ToString(), true);
             embed.AddField("Number of Chocolate goats",

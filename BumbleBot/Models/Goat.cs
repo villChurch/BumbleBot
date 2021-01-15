@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+// ReSharper disable InconsistentNaming
 
 namespace BumbleBot.Models
 {
@@ -12,8 +13,8 @@ namespace BumbleBot.Models
     public enum Breed
     {
         Nubian,
-        NigerianDwarf,
-        LaMancha,
+        Nigerian_Dwarf,
+        La_Mancha,
         Christmas,
         Minx,
         Bumble,

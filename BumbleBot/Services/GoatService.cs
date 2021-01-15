@@ -392,9 +392,9 @@ namespace BumbleBot.Services
             var goatColour = "";
 
             string goatName;
-            if (goat.Breed.Equals(Breed.LaMancha))
+            if (goat.Breed.Equals(Breed.La_Mancha))
                 goatName = "LM";
-            else if (goat.Breed.Equals(Breed.NigerianDwarf))
+            else if (goat.Breed.Equals(Breed.Nigerian_Dwarf))
                 goatName = "ND";
             else
                 goatName = "NB";
@@ -464,9 +464,9 @@ namespace BumbleBot.Services
             var goatColour = "";
 
             string goatName;
-            if (goat.Breed.Equals(Breed.LaMancha))
+            if (goat.Breed.Equals(Breed.La_Mancha))
                 goatName = "LM";
-            else if (goat.Breed.Equals(Breed.NigerianDwarf))
+            else if (goat.Breed.Equals(Breed.Nigerian_Dwarf))
                 goatName = "ND";
             else
                 goatName = "NB";
@@ -591,22 +591,29 @@ namespace BumbleBot.Services
             return goats;
         }
 
-        public List<int> ReturnUsersAdultGoatIdsInKiddingPen(ulong userId)
+        public (List<int>,Dictionary<int, string>) ReturnUsersAdultGoatIdsInKiddingPen(ulong userId)
         {
             var goatIds = new List<int>();
+            var dictionary = new Dictionary<int, string>();
             var ownedGoats = ReturnUsersGoats(userId);
             using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
             {
-                var query = "select goatId from cookingdoes where ready = 0";
+                var query = "select goatId, dueDate from cookingdoes where ready = 0";
                 var command = new MySqlCommand(query, connection);
                 connection.Open();
                 var reader = command.ExecuteReader();
                 if (reader.HasRows)
+                {
                     while (reader.Read())
+                    {
                         goatIds.Add(reader.GetInt32("goatId"));
+                        dictionary.Add(reader.GetInt32("goatId"), reader.GetString("dueDate"));
+                    }
+                }
+
             }
 
-            return ownedGoats.Select(goat => goat.Id).ToList().Where(id => goatIds.Contains(id)).ToList();
+            return (ownedGoats.Select(goat => goat.Id).ToList().Where(id => goatIds.Contains(id)).ToList(), dictionary);
         }
 
         public List<Goat> ReturnUsersKidsInKiddingPen(ulong userId)

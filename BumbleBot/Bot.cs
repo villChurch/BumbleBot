@@ -272,10 +272,13 @@ namespace BumbleBot
 
                     var interactivtiy = Client.GetInteractivity();
 
-                    var goatMsg = await e.Guild.GetChannel(goatSpawnChannelId).SendFileAsync(
-                            $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/Kids/{goatImageUrl}",
-                            embed: embed)
-                        .ConfigureAwait(false);
+                    var fileStream =
+                        File.OpenRead(
+                            $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/Kids/{goatImageUrl}");
+                    var goatMsg = await new DiscordMessageBuilder()
+                        .WithEmbed(embed)
+                        .WithFile(goatImageUrl, fileStream)
+                        .SendAsync(e.Guild.GetChannel(goatSpawnChannelId));
                     var msg = await interactivtiy.WaitForMessageAsync(x =>
                         x.Channel == e.Guild.GetChannel(goatSpawnChannelId)
                         && x.Content.ToLower().Trim() == "purchase", TimeSpan.FromSeconds(45)).ConfigureAwait(false);
@@ -355,7 +358,7 @@ namespace BumbleBot
             string goat;
             if (breed.Equals(Breed.Nubian))
                 goat = "NBkid";
-            else if (breed.Equals(Breed.NigerianDwarf))
+            else if (breed.Equals(Breed.Nigerian_Dwarf))
                 goat = "NDkid";
             else
                 goat = "LMkid";
@@ -494,10 +497,13 @@ namespace BumbleBot
 
                 var interactivtiy = Client.GetInteractivity();
 
-                var goatMsg = await e.Guild.GetChannel(goatSpawnChannelId).SendFileAsync(
-                        $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{randomGoat.FilePath}",
-                        embed: embed)
-                    .ConfigureAwait(false);
+                var fileStream =
+                    File.OpenRead(
+                        $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{randomGoat.FilePath}");
+                var goatMsg = await new DiscordMessageBuilder()
+                    .WithEmbed(embed)
+                    .WithFile(randomGoat.FilePath, fileStream)
+                    .SendAsync(e.Guild.GetChannel(goatSpawnChannelId));
                 var msg = await interactivtiy.WaitForMessageAsync(x =>
                     x.Channel == e.Guild.GetChannel(goatSpawnChannelId)
                     && x.Content.ToLower().Trim() == "purchase", TimeSpan.FromSeconds(45)).ConfigureAwait(false);
@@ -615,9 +621,13 @@ namespace BumbleBot
                 embed.AddField("Level", (specialGoat.Level - 1).ToString(), true);
 
                 var interactivtiy = Client.GetInteractivity();
-                var goatMsg = await e.Guild.GetChannel(goatSpawnChannelId).SendFileAsync(
+                var fileStream = File.OpenRead(
                     $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/Special Variations" +
-                    $"/{specialGoat.FilePath}", embed: embed).ConfigureAwait(false);
+                    $"/{specialGoat.FilePath}");
+                var goatMsg = await new DiscordMessageBuilder()
+                    .WithEmbed(embed)
+                    .WithFile(specialGoat.FilePath, fileStream)
+                    .SendAsync(e.Guild.GetChannel(goatSpawnChannelId));
 
                 var msg = await interactivtiy.WaitForMessageAsync(x =>
                     x.Channel == e.Guild.GetChannel(goatSpawnChannelId)

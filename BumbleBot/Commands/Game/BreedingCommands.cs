@@ -48,7 +48,8 @@ namespace BumbleBot.Commands.Game
                 }
                 else
                 {
-                    var breedingIds = GoatService.ReturnUsersAdultGoatIdsInKiddingPen(ctx.User.Id);
+                    var result = GoatService.ReturnUsersAdultGoatIdsInKiddingPen(ctx.User.Id);
+                    var breedingIds = result.Item1; //GoatService.ReturnUsersAdultGoatIdsInKiddingPen(ctx.User.Id);
                     var breedingGoats =
                         GoatService.ReturnUsersGoats(ctx.User.Id).Where(goat => breedingIds.Contains(goat.Id)).ToList();
                     var url = "http://williamspires.com/";
@@ -62,6 +63,7 @@ namespace BumbleBot.Commands.Game
                             ImageUrl = url + goat.FilePath.Replace(" ", "%20")
                         };
                         embed.AddField("Name", goat.Name);
+                        embed.AddField("Due Date", result.Item2[goat.Id], false);
                         embed.AddField("Level", goat.Level.ToString(), true);
                         embed.AddField("Experience", goat.Experience.ToString(), true);
                         embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed).Replace("_", " "), true);

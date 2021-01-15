@@ -105,8 +105,10 @@ namespace BumbleBot.Commands.Game
                     var serializer = new JsonSerializer();
                     var dailyResponse = serializer.Deserialize<DailyResponse>(jsonReader);
                     GoatService.UpdateGoatImagesForKidsThatAreAdults(ctx.User.Id);
-                    var interactivity = ctx.Client.GetInteractivity();
-                    await ctx.Channel.SendMessageAsync(dailyResponse.Message).ConfigureAwait(false);
+                    await new DiscordMessageBuilder()
+                        .WithReply(ctx.Message.Id, true)
+                        .WithContent(dailyResponse.Message)
+                        .SendAsync(ctx.Channel);
                 }
             }
             catch (Exception ex)
@@ -388,10 +390,14 @@ namespace BumbleBot.Commands.Game
                 embed.AddField("Breed", Enum.GetName(typeof(Breed), specialGoat.Breed).Replace("_", " "), true);
                 embed.AddField("Level", (specialGoat.Level - 1).ToString(), true);
 
-                var interactivtiy = ctx.Client.GetInteractivity();
-                var goatMsg = await ctx.Channel.SendFileAsync(
+                var fileStream = File.OpenRead(
                     $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/Special Variations" +
-                    $"/{specialGoat.FilePath}", embed: embed).ConfigureAwait(false);
+                    $"/{specialGoat.FilePath}");
+                var interactivtiy = ctx.Client.GetInteractivity();
+                var goatMsg = await new DiscordMessageBuilder()
+                    .WithEmbed(embed)
+                    .WithFile(specialGoat.FilePath, fileStream)
+                    .SendAsync(ctx.Channel);
 
                 var msg = await interactivtiy.WaitForMessageAsync(x => x.Channel == ctx.Channel
                                                                        && x.Content.ToLower().Trim() == "purchase",
@@ -526,10 +532,13 @@ namespace BumbleBot.Commands.Game
 
                 var interactivtiy = ctx.Client.GetInteractivity();
 
-                var goatMsg = await ctx.Channel.SendFileAsync(
-                        $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{randomGoat.FilePath}",
-                        embed: embed)
-                    .ConfigureAwait(false);
+                var fileStream =
+                    File.OpenRead(
+                        $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/{randomGoat.FilePath}");
+                var goatMsg = await new DiscordMessageBuilder()
+                    .WithEmbed(embed)
+                    .WithFile(randomGoat.FilePath, fileStream)
+                    .SendAsync(ctx.Channel);
                 var msg = await interactivtiy.WaitForMessageAsync(x => x.Channel == ctx.Channel
                                                                        && x.Content.ToLower().Trim() == "purchase",
                     TimeSpan.FromSeconds(45)).ConfigureAwait(false);
@@ -664,10 +673,11 @@ namespace BumbleBot.Commands.Game
 
                 var interactivtiy = ctx.Client.GetInteractivity();
 
-                var goatMsg = await ctx.Channel.SendFileAsync(
-                        $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/Kids/{goatImageUrl}",
-                        embed: embed)
-                    .ConfigureAwait(false);
+                var fileStream = File.OpenRead($"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/Kids/{goatImageUrl}");
+                var goatMsg = await new DiscordMessageBuilder()
+                    .WithEmbed(embed)
+                    .WithFile(goatImageUrl,fileStream)
+                    .SendAsync(ctx.Channel);
                 var msg = await interactivtiy.WaitForMessageAsync(x => x.Channel == ctx.Channel
                                                                        && x.Content.ToLower().Trim() == "purchase",
                     TimeSpan.FromSeconds(45)).ConfigureAwait(false);
@@ -748,7 +758,7 @@ namespace BumbleBot.Commands.Game
             string goat;
             if (breed.Equals(Breed.Nubian))
                 goat = "NBkid";
-            else if (breed.Equals(Breed.NigerianDwarf))
+            else if (breed.Equals(Breed.Nigerian_Dwarf))
                 goat = "NDkid";
             else
                 goat = "LMkid";
