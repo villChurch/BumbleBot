@@ -80,11 +80,7 @@ namespace BumbleBot.Commands.Game
             }
 
             number = random.Next(100);
-            //number = 69;
-            if (number == 69)
-                _ = SpawnSpecialGoat(ctx);
-            else
-                _ = SpawnRandomGoat(ctx);
+            _ = number == 69 ? Task.Run(async () => await SpawnSpecialGoat(ctx)) : Task.Run(async () => await SpawnRandomGoat(ctx));
         }
 
         [Command("daily")]
@@ -93,28 +89,34 @@ namespace BumbleBot.Commands.Game
         {
             try
             {
-                var uri = $"http://localhost:8080/daily/{ctx.User.Id}";
-                var request = (HttpWebRequest) WebRequest.Create(uri);
-                request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-
-                using (var response = (HttpWebResponse) await request.GetResponseAsync())
-                using (var stream = response.GetResponseStream())
-                using (var reader = new StreamReader(stream))
+                _ = Task.Run(async () =>
                 {
-                    var jsonReader = new JsonTextReader(reader);
-                    var serializer = new JsonSerializer();
-                    var dailyResponse = serializer.Deserialize<DailyResponse>(jsonReader);
-                    GoatService.UpdateGoatImagesForKidsThatAreAdults(ctx.User.Id);
-                    await new DiscordMessageBuilder()
-                        .WithReply(ctx.Message.Id, true)
-                        .WithContent(dailyResponse.Message)
-                        .SendAsync(ctx.Channel);
-                }
+                    var uri = $"http://localhost:8080/daily/{ctx.User.Id}";
+                    var request = (HttpWebRequest) WebRequest.Create(uri);
+                    request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+
+                    using (var response = (HttpWebResponse) await request.GetResponseAsync())
+                    using (var stream = response.GetResponseStream())
+                    using (var reader = new StreamReader(stream))
+                    {
+                        var jsonReader = new JsonTextReader(reader);
+                        var serializer = new JsonSerializer();
+                        var dailyResponse = serializer.Deserialize<DailyResponse>(jsonReader);
+                        GoatService.UpdateGoatImagesForKidsThatAreAdults(ctx.User.Id);
+                        if (dailyResponse != null)
+                            await new DiscordMessageBuilder()
+                                .WithReply(ctx.Message.Id, true)
+                                .WithContent(dailyResponse.Message)
+                                .SendAsync(ctx.Channel);
+                    }
+                });
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                await ctx.Channel.SendMessageAsync("Something went wrong while collecting your daily")
+                    .ConfigureAwait(false);
+                await Console.Out.WriteLineAsync(ex.Message);
+                await Console.Out.WriteLineAsync(ex.StackTrace);
             }
         }
 
@@ -236,136 +238,140 @@ namespace BumbleBot.Commands.Game
         {
             try
             {
-                var goats = new List<Goat>();
-                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                _ = Task.Run(async () =>
                 {
-                    var query = "Select * from goats where ownerID = ?ownerId";
-                    var command = new MySqlCommand(query, connection);
-                    command.Parameters.Add("?ownerId", MySqlDbType.VarChar).Value = ctx.Member.Id;
-                    connection.Open();
-                    var reader = command.ExecuteReader();
-                    if (reader.HasRows)
-                        while (reader.Read())
-                        {
-                            var goat = new Goat();
-                            goat.Id = reader.GetInt32("id");
-                            goat.Level = reader.GetInt32("level");
-                            goat.Name = reader.GetString("name");
-                            goat.Type = (Type) Enum.Parse(typeof(Type), reader.GetString("type"));
-                            goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
-                            goat.BaseColour =
-                                (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
-                            goat.LevelMulitplier = reader.GetDecimal("levelMultiplier");
-                            goat.Equiped = reader.GetBoolean("equipped");
-                            goat.Experience = reader.GetDecimal("experience");
-                            goat.FilePath = reader.GetString("imageLink");
-                            goats.Add(goat);
-                        }
-
-                    reader.Close();
-                }
-
-                if (goats.Count < 1)
-                {
-                    await ctx.Channel.SendMessageAsync("You don't currently own any goats that can be handled")
-                        .ConfigureAwait(false);
-                }
-                else
-                {
-                    var url = "http://williamspires.com/";
-                    var pages = new List<Page>();
-                    var interactivity = ctx.Client.GetInteractivity();
-                    var backward = DiscordEmoji.FromName(ctx.Client, ":arrow_backward:");
-                    var forward = DiscordEmoji.FromName(ctx.Client, ":arrow_forward:");
-                    var equipBarn = DiscordEmoji.FromName(ctx.Client, ":1barn:");
-                    foreach (var goat in goats)
+                    var goats = new List<Goat>();
+                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                     {
-                        var embed = new DiscordEmbedBuilder
-                        {
-                            Title = $"{goat.Id}",
-                            ImageUrl = url + goat.FilePath.Replace(" ", "%20")
-                        };
-                        embed.AddField("Name", goat.Name, true);
-                        embed.AddField("Level", goat.Level.ToString(), true);
-                        embed.AddField("Experience", goat.Experience.ToString(), true);
-                        var page = new Page
-                        {
-                            Embed = embed
-                        };
-                        pages.Add(page);
+                        var query = "Select * from goats where ownerID = ?ownerId";
+                        var command = new MySqlCommand(query, connection);
+                        command.Parameters.Add("?ownerId", MySqlDbType.VarChar).Value = ctx.Member.Id;
+                        connection.Open();
+                        var reader = command.ExecuteReader();
+                        if (reader.HasRows)
+                            while (reader.Read())
+                            {
+                                var goat = new Goat();
+                                goat.Id = reader.GetInt32("id");
+                                goat.Level = reader.GetInt32("level");
+                                goat.Name = reader.GetString("name");
+                                goat.Type = (Type) Enum.Parse(typeof(Type), reader.GetString("type"));
+                                goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                                goat.BaseColour =
+                                    (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                                goat.LevelMulitplier = reader.GetDecimal("levelMultiplier");
+                                goat.Equiped = reader.GetBoolean("equipped");
+                                goat.Experience = reader.GetDecimal("experience");
+                                goat.FilePath = reader.GetString("imageLink");
+                                goats.Add(goat);
+                            }
+
+                        reader.Close();
                     }
 
-                    var pageCounter = 0;
-                    var msg = await ctx.Channel.SendMessageAsync(embed: pages[pageCounter].Embed).ConfigureAwait(false);
-                    SetEquipTimer();
-                    while (equipTimerrunning)
+                    if (goats.Count < 1)
                     {
-                        await msg.CreateReactionAsync(backward).ConfigureAwait(false);
-                        await msg.CreateReactionAsync(forward).ConfigureAwait(false);
-                        await msg.CreateReactionAsync(equipBarn).ConfigureAwait(false);
-
-                        var result = await interactivity.WaitForReactionAsync(x => x.Channel == ctx.Channel &&
-                                x.User == ctx.User
-                                && (x.Emoji == backward || x.Emoji == forward || x.Emoji == equipBarn),
-                            TimeSpan.FromMinutes(4));
-
-                        if (result.TimedOut)
+                        await ctx.Channel.SendMessageAsync("You don't currently own any goats that can be handled")
+                            .ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        var url = "http://williamspires.com/";
+                        var pages = new List<Page>();
+                        var interactivity = ctx.Client.GetInteractivity();
+                        var backward = DiscordEmoji.FromName(ctx.Client, ":arrow_backward:");
+                        var forward = DiscordEmoji.FromName(ctx.Client, ":arrow_forward:");
+                        var equipBarn = DiscordEmoji.FromName(ctx.Client, ":1barn:");
+                        foreach (var goat in goats)
                         {
-                            equipTimerrunning = false;
-                        }
-                        else if (result.Result.Emoji == backward)
-                        {
-                            if (pageCounter - 1 < 0)
-                                pageCounter = pages.Count - 1;
-                            else
-                                pageCounter--;
-                            await msg.DeleteReactionAsync(backward, ctx.User).ConfigureAwait(false);
-                            await msg.ModifyAsync(embed: pages[pageCounter].Embed).ConfigureAwait(false);
-                        }
-                        else if (result.Result.Emoji == forward)
-                        {
-                            if (pageCounter + 1 >= pages.Count)
-                                pageCounter = 0;
-                            else
-                                pageCounter++;
-                            await msg.DeleteReactionAsync(forward, ctx.User).ConfigureAwait(false);
-                            await msg.ModifyAsync(embed: pages[pageCounter].Embed).ConfigureAwait(false);
-                        }
-                        else if (result.Result.Emoji == equipBarn)
-                        {
-                            if (!int.TryParse(pages[pageCounter].Embed.Title, out var id))
+                            var embed = new DiscordEmbedBuilder
                             {
-                                await ctx.Channel
-                                    .SendMessageAsync("Something went wrong while trying to handle this goat.")
-                                    .ConfigureAwait(false);
-                                return;
-                            }
-
-                            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                                Title = $"{goat.Id}",
+                                ImageUrl = url + goat.FilePath.Replace(" ", "%20")
+                            };
+                            embed.AddField("Name", goat.Name, true);
+                            embed.AddField("Level", goat.Level.ToString(), true);
+                            embed.AddField("Experience", goat.Experience.ToString(), true);
+                            var page = new Page
                             {
-                                var query = "Update goats set equipped = 0 where ownerID = ?ownerId";
-                                var command = new MySqlCommand(query, connection);
-                                command.Parameters.Add("?ownerId", MySqlDbType.VarChar).Value = ctx.User.Id;
-                                connection.Open();
-                                command.ExecuteNonQuery();
-                            }
+                                Embed = embed
+                            };
+                            pages.Add(page);
+                        }
 
-                            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                        var pageCounter = 0;
+                        var msg = await ctx.Channel.SendMessageAsync(embed: pages[pageCounter].Embed).ConfigureAwait(false);
+                        SetEquipTimer();
+                        while (equipTimerrunning)
+                        {
+                            await msg.CreateReactionAsync(backward).ConfigureAwait(false);
+                            await msg.CreateReactionAsync(forward).ConfigureAwait(false);
+                            await msg.CreateReactionAsync(equipBarn).ConfigureAwait(false);
+
+                            var result = await interactivity.WaitForReactionAsync(x => x.Channel == ctx.Channel &&
+                                    x.User == ctx.User
+                                    && (x.Emoji == backward || x.Emoji == forward || x.Emoji == equipBarn),
+                                TimeSpan.FromMinutes(4));
+
+                            if (result.TimedOut)
                             {
-                                var query = "Update goats set equipped = 1 where id = ?id";
-                                var command = new MySqlCommand(query, connection);
-                                command.Parameters.Add("?id", MySqlDbType.Int32).Value = id;
-                                connection.Open();
-                                command.ExecuteNonQuery();
+                                equipTimerrunning = false;
                             }
+                            else if (result.Result.Emoji == backward)
+                            {
+                                if (pageCounter - 1 < 0)
+                                    pageCounter = pages.Count - 1;
+                                else
+                                    pageCounter--;
+                                await msg.DeleteReactionAsync(backward, ctx.User).ConfigureAwait(false);
+                                await msg.ModifyAsync(embed: pages[pageCounter].Embed).ConfigureAwait(false);
+                            }
+                            else if (result.Result.Emoji == forward)
+                            {
+                                if (pageCounter + 1 >= pages.Count)
+                                    pageCounter = 0;
+                                else
+                                    pageCounter++;
+                                await msg.DeleteReactionAsync(forward, ctx.User).ConfigureAwait(false);
+                                await msg.ModifyAsync(embed: pages[pageCounter].Embed).ConfigureAwait(false);
+                            }
+                            else if (result.Result.Emoji == equipBarn)
+                            {
+                                if (!int.TryParse(pages[pageCounter].Embed.Title, out var id))
+                                {
+                                    await ctx.Channel
+                                        .SendMessageAsync("Something went wrong while trying to handle this goat.")
+                                        .ConfigureAwait(false);
+                                    return;
+                                }
 
-                            await ctx.Channel.SendMessageAsync("Goat is now in hand.").ConfigureAwait(false);
-                            //pages.RemoveAt(pageCounter);
-                            await msg.DeleteAllReactionsAsync().ConfigureAwait(false);
-                            equipTimerrunning = false;
+                                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                                {
+                                    var query = "Update goats set equipped = 0 where ownerID = ?ownerId";
+                                    var command = new MySqlCommand(query, connection);
+                                    command.Parameters.Add("?ownerId", MySqlDbType.VarChar).Value = ctx.User.Id;
+                                    connection.Open();
+                                    command.ExecuteNonQuery();
+                                }
+
+                                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                                {
+                                    var query = "Update goats set equipped = 1 where id = ?id";
+                                    var command = new MySqlCommand(query, connection);
+                                    command.Parameters.Add("?id", MySqlDbType.Int32).Value = id;
+                                    connection.Open();
+                                    command.ExecuteNonQuery();
+                                }
+
+                                await ctx.Channel.SendMessageAsync("Goat is now in hand.").ConfigureAwait(false);
+                                //pages.RemoveAt(pageCounter);
+                                await msg.DeleteAllReactionsAsync().ConfigureAwait(false);
+                                equipTimerrunning = false;
+                            }
                         }
                     }
-                }
+                });
+                
             }
             catch (Exception ex)
             {

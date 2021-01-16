@@ -1,5 +1,6 @@
+using System;
 using System.Diagnostics;
-using System.Net.NetworkInformation;
+using System.Reflection;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
@@ -22,21 +23,49 @@ namespace BumbleBot.Commands.AdminCommands
                 .SendAsync(ctx.Channel);
         }
 
-        [Command("status")]
-        [Description("Show bot status")]
-        [RequireUserPermissions(Permissions.KickMembers)]
+        [Command("info")]
+        [Description("Return information about the bot")]
         [Hidden]
-        public async Task ShowBotStatus(CommandContext ctx)
+        public async Task GetBotInforamtion(CommandContext ctx)
         {
-            PerformanceCounter cpuCounter;
-            PerformanceCounter ramCounter;
+            var ccv = typeof(Bot)
+                          .GetTypeInfo()
+                          .Assembly
+                          ?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                          ?.InformationalVersion ??
+                      typeof(Bot)
+                          .GetTypeInfo()
+                          .Assembly
+                          .GetName()
+                          .Version?.ToString(3);
 
-            cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
-            ramCounter = new PerformanceCounter("Memory", "Available MBytes");
-            await new DiscordMessageBuilder()
-                .WithReply(ctx.Message.Id, true)
-                .WithContent($"CPU usage - {cpuCounter.NextValue()}%, RAM usabe - {ramCounter.NextValue()} MB")
-                .SendAsync(ctx.Channel);
+            var dsv = ctx.Client.VersionString;
+            var ncv = System.Environment.Version.ToString();
+            var runTimeVer = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
+            var rtv = System.Runtime.InteropServices.RuntimeEnvironment.GetSystemVersion();
+            var embed = new DiscordEmbedBuilder()
+            {
+                Title = "About Bumblebot",
+                Color = DiscordColor.Aquamarine,
+                Footer = new DiscordEmbedBuilder.EmbedFooter
+                {
+                   Text = "Bumblebot is made by VillChurch#2599 (<@!272151652344266762>) and Epona142#6828 (<@!243807523554066433>)"
+                }
+            };
+            embed.AddField("Bot Version", Formatter.Bold(ccv), true);
+            embed.AddField("DSharpPlus Version", Formatter.Bold(dsv), true);
+            embed.AddField("Net Core version", Formatter.Bold(ncv), true);
+            embed.AddField("Net Core full version name", Formatter.Bold(runTimeVer), true);
+            embed.AddField("System version", Formatter.Bold(rtv), true);
+            
+            var upt = DateTime.Now - Process.GetCurrentProcess().StartTime;
+            string ups;
+            if (upt.Days > 0)
+                ups = $@"{upt:%d} days, {upt:hh\:mm\:ss}";
+            else ups = upt.ToString(@"hh\:mm\:ss");
+
+            embed.AddField("Uptime", Formatter.InlineCode(ups), true);
+            await ctx.Channel.SendMessageAsync(embed).ConfigureAwait(false);
         }
     }
 }

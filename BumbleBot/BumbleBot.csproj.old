@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">anycpu</Platform>
+    <ProjectGuid>{ECB14916-ED77-48DD-BD48-C07090213212}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>BumbleBot</RootNamespace>
+    <AssemblyName>BumbleBot</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <LangVersion>preview</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|anycpu' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ExternalConsole>true</ExternalConsole>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|anycpu' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ExternalConsole>true</ExternalConsole>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="mscorlib" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.ComponentModel" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Design" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Commands\AdminCommands\AdminCommands.cs" />
+    <Compile Include="Commands\Game\CaveCommands.cs" />
+    <Compile Include="Models\Cave.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Models\Goat.cs" />
+    <Compile Include="Models\Farmer.cs" />
+    <Compile Include="Bot.cs" />
+    <Compile Include="ConfigJson.cs" />
+    <Compile Include="Commands\Game\GameCommands.cs" />
+    <Compile Include="Utilities\DBUtils.cs" />
+    <Compile Include="Utilities\RandomLevel.cs" />
+    <Compile Include="Commands\QuizCommands\Quiz.cs" />
+    <Compile Include="Commands\GifsAndPhotos\GifCommand.cs" />
+    <Compile Include="Attributes\OwnerOrPermission.cs" />
+    <Compile Include="Commands\GifsAndPhotos\KidPhotos.cs" />
+    <Compile Include="Commands\GifsAndPhotos\Minx.cs" />
+    <Compile Include="Commands\GifsAndPhotos\Zteam.cs" />
+    <Compile Include="Commands\GifsAndPhotos\pony.cs" />
+    <Compile Include="Commands\GifsAndPhotos\Bumble.cs" />
+    <Compile Include="Commands\GifsAndPhotos\Ana.cs" />
+    <Compile Include="Commands\AdminCommands\ConfigCommands.cs" />
+    <Compile Include="Services\AssholeService.cs" />
+    <Compile Include="Services\GoatService.cs" />
+    <Compile Include="Commands\Game\FarmShop.cs" />
+    <Compile Include="Services\FarmerService.cs" />
+    <Compile Include="Commands\Game\Purchase.cs" />
+    <Compile Include="Commands\Game\MilkCommands.cs" />
+    <Compile Include="Models\MilkingResponse.cs" />
+    <Compile Include="Models\ExpiryResponse.cs" />
+    <Compile Include="Commands\Game\GoatCommands.cs" />
+    <Compile Include="Models\TriviaQuestions.cs" />
+    <Compile Include="Services\TriviaServices.cs" />
+    <Compile Include="Commands\Trivia\MainTriviaCommands.cs" />
+    <Compile Include="Models\DailyResponse.cs" />
+    <Compile Include="Commands\Game\GrazingCommands.cs" />
+    <Compile Include="Commands\Game\BreedingCommands.cs" />
+    <Compile Include="Commands\Game\KiddingPen.cs" />
+    <Compile Include="Commands\Game\Trading.cs" />
+    <Compile Include="Commands\Game\Dairy.cs" />
+    <Compile Include="Services\DairyService.cs" />
+    <Compile Include="Models\Dairy.cs" />
+    <Compile Include="Attributes\InDmChannel.cs" />
+    <Compile Include="Attributes\HasEnoughCredits.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <None Include="..\.editorconfig" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+</Project>

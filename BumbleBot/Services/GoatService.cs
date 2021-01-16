@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using BumbleBot.Models;
 using BumbleBot.Utilities;
 using MySql.Data.MySqlClient;
@@ -14,6 +15,199 @@ namespace BumbleBot.Services
         private readonly DbUtils dBUtils = new DbUtils();
         private readonly string deathPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
+        public int GetNumberOfShowContestants()
+        {
+            var numberOfContestants = 0;
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "select count(*) as contestants from showGoats";
+                var command = new MySqlCommand(query, connection);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        numberOfContestants = reader.GetInt32("contestants");
+                    }
+                }
+            }
+            return numberOfContestants;
+        }
+        public void ResetContest()
+        {
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "delete from showGoats";
+                var command = new MySqlCommand(query, connection);
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public Dictionary<int, int> GetContestsVotes()
+        {
+            var dictionary = new Dictionary<int, int>();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "select * from showGoats";
+                var command = new MySqlCommand(query, connection);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        dictionary.Add(reader.GetInt32("id"), reader.GetInt32("votes"));
+                    }
+                }
+            }
+
+            return dictionary;
+        }
+
+        public (int, ulong) GetShowWinner()
+        {
+            var goatId = 0;
+            ulong ownerId = 0;
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "SELECT * FROM showGoats order BY votes DESC LIMIT 1";
+                var command = new MySqlCommand(query, connection);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goatId = reader.GetInt32("goatId");
+                        ownerId = reader.GetUInt64("ownerId");
+                    }
+                }
+                reader.Close();
+            }
+
+            return (goatId, ownerId);
+        }
+        public void IncreaseContestantsVote(int contestantId, int votesToAdd)
+        {
+            int votes = 0;
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "select votes from showGoats where id = ?contestantId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?contestantId", MySqlDbType.Int32).Value = contestantId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        votes = reader.GetInt32("votes");
+                    }
+                }
+            }
+            votes += votesToAdd;
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "Update showGoats Set votes = ?votes where id = ?contestantId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?votes", MySqlDbType.Int32).Value = votes;
+                command.Parameters.Add("?contestantId", MySqlDbType.Int32).Value = contestantId;
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
+        public bool DoesShowGoatExistByContestantId(int contestantId)
+        {
+            bool exists;
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "select * from showGoats where id = ?contestantId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?contestantId", MySqlDbType.Int32).Value = contestantId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                exists = reader.HasRows;
+                reader.Close();
+            }
+            return exists;
+        }
+        public List<Goat> GetAllGoats()
+        {
+            var goats = new List<Goat>();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                var query = "select * from goats";
+                var command = new MySqlCommand(query, connection);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                    {
+                        var goat = new Goat();
+                        goat.Name = reader.GetString("name");
+                        goat.Id = reader.GetInt32("id");
+                        goat.Level = reader.GetInt32("level");
+                        goat.LevelMulitplier = reader.GetDecimal("levelMultiplier");
+                        goat.Experience = reader.GetDecimal("experience");
+                        goat.FilePath = reader.GetString("imageLink");
+                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                        goat.BaseColour = (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                        goat.Type = (Type) Enum.Parse(typeof(Type), reader.GetString("type"));
+                        goats.Add(goat);
+                    }
+            }
+
+            return goats;
+        }
+        public (List<int>, Dictionary<int, int>) GetAllShowGoatIds()
+        {
+            var goatIds = new List<int>();
+            var goatDictionary = new Dictionary<int, int>();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "select * from showGoats";
+                var command = new MySqlCommand(query, connection);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    goatIds.Add(reader.GetInt32("goatId"));
+                    goatDictionary.Add(reader.GetInt32("goatId"),reader.GetInt32("id"));
+                }
+                reader.Close();
+            }
+
+            return (goatIds, goatDictionary);
+        }
+        public bool DoesUserHaveGoatShowing(ulong ownerId)
+        {
+            var hasShowGoats = false;
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "select * from showGoats where ownerId = ?ownerId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("ownerId", MySqlDbType.VarChar).Value = ownerId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                hasShowGoats = reader.HasRows;
+                reader.Close();
+            }
+            return hasShowGoats;
+        }
+        public void AddGoatToShow(int goatId, ulong ownerId)
+        {
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "insert into showGoats(goatId, ownerId) values (?goatId, ?ownerId)";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goatId;
+                command.Parameters.Add("?ownerId", MySqlDbType.VarChar).Value = ownerId;
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
         public (bool, string) CheckExpAgainstNextLevel(ulong userId, decimal expToAdd)
         {
             //n =  ln(FV / PV)ln(1 + r)

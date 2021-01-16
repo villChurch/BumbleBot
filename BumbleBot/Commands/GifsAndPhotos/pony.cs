@@ -160,8 +160,8 @@ namespace BumbleBot.Commands.GifsAndPhotos
                     foreach (var gifKey in ponyPics.Keys) sb.AppendLine(gifKey + " - " + ponyPics[gifKey]);
                     var gifPages =
                         interactivity.GeneratePagesInEmbed(sb.ToString(), SplitType.Line, new DiscordEmbedBuilder());
-                    await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, gifPages)
-                        .ConfigureAwait(false);
+                    _ = Task.Run(async () => await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, gifPages)
+                        .ConfigureAwait(false));
                 }
             }
             catch (Exception ex)

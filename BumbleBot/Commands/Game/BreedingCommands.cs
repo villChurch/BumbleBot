@@ -75,7 +75,7 @@ namespace BumbleBot.Commands.Game
                         pages.Add(page);
                     }
 
-                    await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false);
+                    _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false));
                 }
             }
             catch (Exception ex)

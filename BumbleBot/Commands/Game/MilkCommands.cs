@@ -88,8 +88,8 @@ namespace BumbleBot.Commands.Game
                     var interactivity = ctx.Client.GetInteractivity();
                     var expiryPages =
                         interactivity.GeneratePagesInEmbed(sb.ToString(), SplitType.Line, new DiscordEmbedBuilder());
-                    await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, expiryPages)
-                        .ConfigureAwait(false);
+                    _ = Task.Run(async () => await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, expiryPages)
+                        .ConfigureAwait(false));
                 }
                 else
                 {

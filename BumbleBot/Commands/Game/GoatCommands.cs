@@ -121,7 +121,7 @@ namespace BumbleBot.Commands.Game
                             pages.Add(page);
                         }
 
-                        await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false);
+                        _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false));
                     }
                     else if (parameter.ToLower().Equals("breed"))
                     {
@@ -148,7 +148,7 @@ namespace BumbleBot.Commands.Game
                             pages.Add(page);
                         }
 
-                        await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false);
+                        _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false));
                     }
                     else if (parameter.ToLower().Equals("colour"))
                     {
@@ -175,7 +175,7 @@ namespace BumbleBot.Commands.Game
                             pages.Add(page);
                         }
 
-                        await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false);
+                        _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false));
                     }
                 }
             }
@@ -216,7 +216,7 @@ namespace BumbleBot.Commands.Game
                     pages.Add(page);
                 }
 
-                await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false);
+                _ = Task.Run(async () => await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false));
             }
             catch (Exception ex)
             {
@@ -321,7 +321,7 @@ namespace BumbleBot.Commands.Game
                     pages.Add(page);
                 }
 
-                await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false);
+                _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false));
             }
             catch (Exception ex)
             {
