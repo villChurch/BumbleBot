@@ -273,9 +273,10 @@ namespace BumbleBot.Commands.Game
                 {
                     GoatService.DeleteGoat(goatId);
                     var goat = goats.First(g => g.Id == goatId);
-                    FarmerService.AddCreditsToFarmer(ctx.User.Id, (int) Math.Ceiling(goat.Level * 0.75));
+                    var creditsToAdd = goat.Type == Type.Adult ? (int)Math.Ceiling(goat.Level * 1.35) : (int)Math.Ceiling(goat.Level * 0.75);
+                    FarmerService.AddCreditsToFarmer(ctx.User.Id, creditsToAdd);
                     await ctx.Channel.SendMessageAsync(
-                        $"You have sold {goat.Name} to market for {(int) Math.Ceiling(goat.Level * 0.75)} " +
+                        $"You have sold {goat.Name} to market for {creditsToAdd} " +
                         "credits").ConfigureAwait(false);
                 }
                 else
