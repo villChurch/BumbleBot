@@ -86,7 +86,7 @@ namespace BumbleBot.Commands.Game
         }
 
         [Command("add")]
-        [Description("Move a goat to the kidding pen")]
+        [Description("Move a goat to the shelter")]
         public async Task MoveGoatToKiddingPen(CommandContext ctx, [Description("id of goat to move")] int goatId)
         {
             try
@@ -94,6 +94,7 @@ namespace BumbleBot.Commands.Game
                 if (FarmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
                 {
                     var goats = GoatService.ReturnUsersGoats(ctx.User.Id);
+                    var goatsBreeding = GoatService.ReturnUsersAdultGoatIdsInKiddingPen(ctx.User.Id);
 
                     if (goats.Where(goat => goat.Id == goatId).ToList().Count == 0)
                     {
@@ -110,6 +111,10 @@ namespace BumbleBot.Commands.Game
                     else if (goats.Find(goat => goat.Id == goatId).BaseColour == BaseColour.Special)
                     {
                         await ctx.Channel.SendMessageAsync("You cannot breed special goats").ConfigureAwait(false);
+                    }
+                    else if (goatsBreeding.Item2.ContainsKey(goatId))
+                    {
+                        await ctx.Channel.SendMessageAsync("This goat is already in the shelter").ConfigureAwait(false);
                     }
                     else
                     {
