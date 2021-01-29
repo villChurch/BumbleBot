@@ -42,7 +42,7 @@ namespace BumbleBot.Commands.Game
 
             var embed = new DiscordEmbedBuilder()
             {
-                Title = $"{((DiscordMember) ctx.User).Nickname}'s Goat statistics",
+                Title = $"{((DiscordMember) ctx.User).DisplayName}'s Goat statistics",
                 Color = DiscordColor.Aquamarine
             };
             embed.AddField("Number of goats owned", goats.Count.ToString(), true);

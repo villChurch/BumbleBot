@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using DSharpPlus;
@@ -42,12 +43,48 @@ namespace BumbleBot.Commands.Game
                     Color =  DiscordColor.Aquamarine
                 };
                 embed.AddField("Capacity",
-                    $"{slotUpgradePrice} credits. Upgrades soft cheese cave capacity to {cave.Slots * 1000} " +
+                    $"{slotUpgradePrice} credits. Upgrades soft cheese cave capacity to {(cave.Slots + 1) * 500} " +
                     $"lbs by using command {Formatter.InlineCode($"cave upgrade capacity {slotUpgradePrice}")}");
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
         }
 
+        [Command("upgrade")]
+        [Description("Upgrade your cave")]
+        [HasEnoughCredits(1)]
+        public async Task UpgradeCave(CommandContext ctx, string item, int price)
+        {
+            if (!DairyService.DoesDairyHaveACave(ctx.User.Id))
+            {
+                await ctx.Channel.SendMessageAsync("You do not own a cave").ConfigureAwait(false);
+            }
+            else if (item.ToLower().Equals("capacity"))
+            {
+                var cave = DairyService.GetUsersCave(ctx.User.Id);
+                var slotUpgradePrice = (3250 * cave.Slots);
+                if (price == slotUpgradePrice)
+                {
+                    DairyService.IncreaseCaveSlots(ctx.User.Id, cave.Slots + 1);
+                    FarmerService.DeductCreditsFromFarmer(ctx.User.Id, slotUpgradePrice);
+                    await ctx.Channel
+                        .SendMessageAsync(
+                            $"You have upgraded your caves soft cheese capacity to {(cave.Slots + 1) * 500}lbs")
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    await ctx.Channel
+                        .SendMessageAsync(
+                            $"The cost to upgrade the capacity of your cave is {slotUpgradePrice} not {price}")
+                        .ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                await ctx.Channel.SendMessageAsync($"There is no upgrade option for {item}").ConfigureAwait(false);
+            }
+        }
+        
         [Command("sell")]
         [Description("Sell the contents of your cave")]
         public async Task SellHardCheeseInCave(CommandContext ctx)
@@ -81,6 +118,7 @@ namespace BumbleBot.Commands.Game
             else
             {
                 var dairy = DairyService.GetUsersDairy(ctx.User.Id);
+                var cave = DairyService.GetUsersCave(ctx.User.Id);
                 if (amount % 10 != 0)
                 {
                     await ctx.Channel.SendMessageAsync("Soft Cheese has to be added to the cave in a ratio of 10:1, " +
@@ -92,6 +130,13 @@ namespace BumbleBot.Commands.Game
                     await ctx.Channel
                         .SendMessageAsync(
                             $"You only have {dairy.SoftCheese} lbs of soft cheese which is more than the {amount} lbs you tried to add")
+                        .ConfigureAwait(false);
+                }
+                else if ((cave.SoftCheese + amount) > (cave.Slots * 500))
+                {
+                    await ctx.Channel
+                        .SendMessageAsync(
+                            $"There is not enough room in your cave to add soft cheese at the moment. Please upgrade your cave capacity.")
                         .ConfigureAwait(false);
                 }
                 else
@@ -115,13 +160,12 @@ namespace BumbleBot.Commands.Game
             using (var response = (HttpWebResponse) await request.GetResponseAsync())
             using (var stream = response.GetResponseStream())
             {
-                if (stream != null)
-                    using (var reader = new StreamReader(stream))
-                    {
-                        var stringResponse = await reader.ReadToEndAsync();
+                using (var reader = new StreamReader(stream))
+                {
+                    var stringResponse = await reader.ReadToEndAsync();
 
-                        await ctx.Channel.SendMessageAsync(stringResponse).ConfigureAwait(false);
-                    }
+                    await ctx.Channel.SendMessageAsync(stringResponse).ConfigureAwait(false);
+                }
             }
         }
     }

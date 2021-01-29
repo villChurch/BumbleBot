@@ -9,6 +9,18 @@ namespace BumbleBot.Services
     {
         private readonly DbUtils dBUtils = new DbUtils();
 
+        public void IncreaseCaveSlots(ulong userId, int slots)
+        {
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "update dairycave set slots = ?slots where ownerID = ?userId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?slots", MySqlDbType.Int32).Value = slots;
+                command.Parameters.Add("?userId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
         public void DeductAllHardCheeseFromDairy(ulong userId)
         {
             using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
