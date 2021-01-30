@@ -40,13 +40,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\.editorconfig" />
+    <None Remove="DB\**" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Commands\Game\BotSurvey.cs" />
     <Compile Remove="Commands\GifsAndPhotos\._GifCommand (copy).cs" />
     <Compile Remove="Commands\GifsAndPhotos\GifCommand (copy).cs" />
+    <Compile Remove="DB\**" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="DB\" />
+    <EmbeddedResource Remove="DB\**" />
   </ItemGroup>
 </Project>
