@@ -152,12 +152,23 @@ namespace BumbleBot
                 {
                     var random = new Random();
                     var number = random.Next(5);
-                    if (number == 3 && AreChristmasSpawnsEnabled())
-                        _ = SpawnChristmasGoat(e);
-                    else if (random.Next(0, 100) == 69)
-                        _ = SpawnSpecialGoat(e);
-                    else
-                        _ = SpawnGoat(e);
+                    switch (number)
+                    {
+                        case 3 when AreChristmasSpawnsEnabled():
+                            _ = SpawnChristmasGoat(e);
+                            break;
+                        case 3 when AreTaillessSpawnsEnabled():
+                            _ = SpawnSpecialTaillessGoat(e);
+                            break;
+                        default:
+                        {
+                            if (random.Next(0, 100) == 69)
+                                _ = SpawnSpecialGoat(e);
+                            else
+                                _ = SpawnGoat(e);
+                            break;
+                        }
+                    }
                     messageCount = 0;
                     gpm++;
                 }
@@ -732,6 +743,130 @@ namespace BumbleBot
             goat.Name = "Special Goat";
 
             return goat;
+        }
+        
+        private bool AreTaillessSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                var query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "taillessEnabled";
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                        enabled = reader.GetBoolean("boolValue");
+            }
+
+            return enabled;
+        }
+        
+        private async Task SpawnSpecialTaillessGoat(MessageCreateEventArgs e)
+        {
+            try
+            {
+                var specialGoat = new Goat();
+                specialGoat.Breed = Breed.Tailless;
+                specialGoat.BaseColour = BaseColour.Special;
+                specialGoat.Level = new Random().Next(76, 100);
+                specialGoat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, specialGoat.Level - 1));
+                specialGoat.Name = "Tailless Goat";
+                specialGoat.FilePath = "taillesskid.png";
+                var embed = new DiscordEmbedBuilder
+                {
+                    Title = $"{specialGoat.Name} has become available, type purchase to add her to your herd",
+                    Color = DiscordColor.Aquamarine,
+                    ImageUrl = $"attachment://{specialGoat.FilePath}"
+                };
+                embed.AddField("Cost", (specialGoat.Level - 1).ToString());
+                embed.AddField("Colour", Enum.GetName(typeof(BaseColour), specialGoat.BaseColour));
+                embed.AddField("Breed", Enum.GetName(typeof(Breed), specialGoat.Breed)?.Replace("_", " "), true);
+                embed.AddField("Level", (specialGoat.Level - 1).ToString(), true);
+
+                var fileStream = File.OpenRead(
+                    $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/Special Variations" +
+                    $"/{specialGoat.FilePath}");
+                var interactivity = Client.GetInteractivity();
+                var goatMsg = await new DiscordMessageBuilder()
+                    .WithEmbed(embed)
+                    .WithFile(specialGoat.FilePath, fileStream)
+                    .SendAsync(e.Channel);
+
+                var msg = await interactivity.WaitForMessageAsync(x => x.Channel == e.Channel
+                                                                       && x.Content.ToLower().Trim() == "purchase",
+                    TimeSpan.FromSeconds(45)).ConfigureAwait(false);
+                await goatMsg.DeleteAsync();
+                var goatService = new GoatService();
+                if (msg.TimedOut)
+                {
+                    await e.Channel.SendMessageAsync($"No one decided to purchase {specialGoat.Name}")
+                        .ConfigureAwait(false);
+                }
+                else if (!goatService.CanGoatsFitInBarn(msg.Result.Author.Id, 1))
+                {
+                    var member = await e.Guild.GetMemberAsync(msg.Result.Author.Id);
+                    await e.Channel
+                        .SendMessageAsync(
+                            $"Unfortunately {member.DisplayName} your barn is full and the goat has gone back to market!")
+                        .ConfigureAwait(false);
+                }
+                else if (!goatService.CanFarmerAffordGoat(specialGoat.Level - 1, msg.Result.Author.Id))
+                {
+                    var member = await e.Guild.GetMemberAsync(msg.Result.Author.Id);
+                    await e.Channel
+                        .SendMessageAsync(
+                            $"Unfortunately {member.DisplayName} you can't afford this goat and the it has gone back to market!")
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    await msg.Result.DeleteAsync();
+                    try
+                    {
+                        using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                        {
+                            var query =
+                                "INSERT INTO goats (level, name, type, breed, baseColour, ownerID, experience, imageLink) " +
+                                "VALUES (?level, ?name, ?type, ?breed, ?baseColour, ?ownerID, ?exp, ?imageLink)";
+                            var command = new MySqlCommand(query, connection);
+                            command.Parameters.Add("?level", MySqlDbType.Int32).Value = specialGoat.Level - 1;
+                            command.Parameters.Add("?name", MySqlDbType.VarChar, 255).Value = specialGoat.Name;
+                            command.Parameters.Add("?type", MySqlDbType.VarChar).Value = "Kid";
+                            command.Parameters.Add("?breed", MySqlDbType.VarChar).Value =
+                                Enum.GetName(typeof(Breed), specialGoat.Breed);
+                            command.Parameters.Add("?baseColour", MySqlDbType.VarChar).Value =
+                                Enum.GetName(typeof(BaseColour), specialGoat.BaseColour);
+                            command.Parameters.Add("?ownerID", MySqlDbType.VarChar).Value = msg.Result.Author.Id;
+                            command.Parameters.Add("?exp", MySqlDbType.Decimal).Value =
+                                (int) Math.Ceiling(10 * Math.Pow(1.05, specialGoat.Level - 1));
+                            command.Parameters.Add("?imageLink", MySqlDbType.VarChar).Value =
+                                $"Goat_Images/Special Variations/{specialGoat.FilePath}";
+                            connection.Open();
+                            command.ExecuteNonQuery();
+                        }
+
+                        var fs = new FarmerService();
+                        fs.DeductCreditsFromFarmer(msg.Result.Author.Id, specialGoat.Level - 1);
+
+                        await e.Channel.SendMessageAsync("Congrats " +
+                                                           $"{e.Guild.GetMemberAsync(msg.Result.Author.Id).Result.DisplayName} you purchased " +
+                                                           $"{specialGoat.Name} for {(specialGoat.Level - 1).ToString()} credits")
+                            .ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Out.WriteLine(ex.Message);
+                        Console.Out.WriteLine(ex.StackTrace);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Out.WriteLine(ex.Message);
+                Console.Out.WriteLine(ex.StackTrace);
+            }
         }
     }
 }

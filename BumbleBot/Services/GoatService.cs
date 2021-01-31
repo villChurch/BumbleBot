@@ -350,6 +350,35 @@ namespace BumbleBot.Services
             return goat.Breed == Breed.Bumble;
         }
 
+        public bool IsGoatTaillessByGoatId(int goatId)
+        {
+            var goat = new Goat();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                var query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?id", MySqlDbType.Int32).Value = goatId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                    {
+                        goat.Name = reader.GetString("name");
+                        goat.Id = reader.GetInt32("id");
+                        goat.Level = reader.GetInt32("level");
+                        goat.LevelMulitplier = reader.GetDecimal("levelMultiplier");
+                        goat.Experience = reader.GetDecimal("experience");
+                        goat.FilePath = reader.GetString("imageLink");
+                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                        goat.BaseColour = (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                    }
+
+                reader.Close();
+            }
+
+            return goat.Breed == Breed.Tailless;
+        }
+        
         public bool IsGoatZenByGoatId(int goatId)
         {
             var goat = new Goat();
@@ -582,6 +611,10 @@ namespace BumbleBot.Services
             {
                 return "Special Variations/ZenyattaAdult.png";
             }
+            else if (IsGoatTaillessByGoatId(goat.Id))
+            {
+                return "Special Variations/taillessadult.png";
+            }
 
             var goatColour = "";
 
@@ -653,6 +686,10 @@ namespace BumbleBot.Services
             else if (IsGoatZenByGoatId(goat.Id))
             {
                 return "Special Variations/ZenyattaAdult.png";
+            }
+            else if (IsGoatTaillessByGoatId(goat.Id))
+            {
+                return "Special Variations/taillessadult.png";
             }
 
             var goatColour = "";

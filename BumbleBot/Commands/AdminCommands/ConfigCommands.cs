@@ -17,6 +17,26 @@ namespace BumbleBot.Commands.AdminCommands
     {
         private readonly DbUtils dbUtils = new DbUtils();
 
+        [Command("tailless")]
+        [Aliases("ts")]
+        [Description("Disable or enable tailless spawns")]
+        [OwnerOrPermission(Permissions.KickMembers)]
+        public async Task SetTaillessSpawnVariable(CommandContext ctx, bool enabled)
+        {
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "update config SET boolValue = ?value where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?value", MySqlDbType.Int16).Value = enabled;
+                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "taillessEnabled";
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+
+            var enabledOrDisabled = enabled ? "enabled" : "disabled";
+            await ctx.Channel.SendMessageAsync($"Tailless spawns have been {enabledOrDisabled}.").ConfigureAwait(false);
+        }
+        
         [Command("goatspawns")]
         [Aliases("gs", "gsc")]
         [Description("Sets the channel for goats to spawn in")]
