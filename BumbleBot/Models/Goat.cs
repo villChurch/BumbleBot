@@ -18,7 +18,9 @@ namespace BumbleBot.Models
         Christmas,
         Minx,
         Bumble,
-        Zenyatta
+        Zenyatta,
+        Tailless,
+        Valentines
     }
 
     public enum BaseColour

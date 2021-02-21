@@ -99,7 +99,7 @@ namespace BumbleBot.Commands.Game
                 {
                     using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                     {
-                        var query = "Update goats Set ownerID = ?recipientId where id = ?goatId";
+                        var query = "Update goats Set ownerID = ?recipientId where id = ?goatId and equipped = 0";
                         var command = new MySqlCommand(query, connection);
                         command.Parameters.Add("?recipientId", MySqlDbType.VarChar).Value = recipient.Id;
                         command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goat.Id;
