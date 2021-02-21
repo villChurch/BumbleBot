@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
@@ -31,6 +32,24 @@ namespace BumbleBot.Commands.Game
         private GoatService GoatService { get; }
         private FarmerService FarmerService { get; }
 
+        [Command("refresh")]
+        [Description("Update goat images and type for goats that haven't grown")]
+        public async Task RefreshGoats(CommandContext ctx)
+        {
+            GoatService.UpdateGoatImagesForKidsThatAreAdults(ctx.User.Id);
+            await ctx.Channel.SendMessageAsync("Goats have been updated").ConfigureAwait(false);
+        }
+
+        [Command("refresh")]
+        [RequirePermissions(Permissions.KickMembers)]
+        [Hidden]
+        public async Task RefreshGoats(CommandContext ctx, DiscordMember member)
+        {
+            GoatService.UpdateGoatImagesForKidsThatAreAdults(member.Id);
+            await ctx.Channel.SendMessageAsync($"Goats have been updated for {member.DisplayName}")
+                .ConfigureAwait(false);
+        }
+        
         [Command("stats")]
         [Aliases("statistics")]
         [Description("show statistics relating to goats you own")]
