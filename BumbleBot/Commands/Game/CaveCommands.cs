@@ -146,7 +146,9 @@ namespace BumbleBot.Commands.Game
                         await ctx.Channel.SendMessageAsync(
                             "Unfortunately something has gone wrong in the cheese making process");
                     else
-                        _ = SendAndPostResponse(ctx, $"http://localhost:8080/dairy/cave/{ctx.User.Id}/add/softcheese/{amount}");
+                        _ = Task.Run(async () =>
+                            await SendAndPostResponse(ctx, $"http://localhost:8080/dairy/cave/{ctx.User.Id}/add/softcheese/{amount}")
+                            );
                 }
             }
         }

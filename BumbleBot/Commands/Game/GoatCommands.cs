@@ -41,7 +41,7 @@ namespace BumbleBot.Commands.Game
         }
 
         [Command("refresh")]
-        [RequirePermissions(Permissions.KickMembers)]
+        // [RequirePermissions(Permissions.KickMembers)]
         [Hidden]
         public async Task RefreshGoats(CommandContext ctx, DiscordMember member)
         {
