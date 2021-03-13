@@ -408,6 +408,27 @@ namespace BumbleBot.Services
             return goat.Breed == Breed.Zenyatta;
         }
 
+        private bool IsShamrockGoat(int goatId)
+        {
+            var goat = new Goat();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "select breed from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?id", MySqlDbType.VarChar).Value = goatId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                    {
+                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                    }
+                reader.Close();
+            }
+
+            return goat.Breed == Breed.Shamrock;
+        }
+
         private bool IsChristmasGoat(int goatId)
         {
             var goat = new Goat();
@@ -630,6 +651,15 @@ namespace BumbleBot.Services
                 if (goat.FilePath.Contains("Roses"))
                     return "Valentine_Special_Variations/RosesAdult.png";
             }
+            else if (IsShamrockGoat(goat.Id))
+            {
+                if (goat.FilePath.EndsWith("ShamrockKid.png"))
+                    return "Shamrock_Special_Variations/ShamrockAdult.png";
+                if (goat.FilePath.Contains("Leprechaun"))
+                    return "Shamrock_Special_Variations/LeprechaunAdult.png";
+                if (goat.FilePath.Contains("KissMe"))
+                    return "Shamrock_Special_Variations/KissMeAdult.png";
+            }
             else if (IsGoatBumbleByGoatId(goat.Id))
             {
                 return "Special Variations/BumbleAdult.png";
@@ -714,6 +744,15 @@ namespace BumbleBot.Services
                     return "Valentine_Special_Variations/CupidAdult.png";
                 if (goat.FilePath.Contains("Roses"))
                     return "Valentine_Special_Variations/RosesAdult.png";
+            }
+            else if (IsShamrockGoat(goat.Id))
+            {
+                if (goat.FilePath.EndsWith("ShamrockKid.png"))
+                    return "Shamrock_Special_Variations/ShamrockAdult.png";
+                if (goat.FilePath.Contains("Leprechaun"))
+                    return "Shamrock_Special_Variations/LeprechaunAdult.png";
+                if (goat.FilePath.Contains("KissMe"))
+                    return "Shamrock_Special_Variations/KissMeAdult.png";
             }
             else if (IsGoatBumbleByGoatId(goat.Id))
             {

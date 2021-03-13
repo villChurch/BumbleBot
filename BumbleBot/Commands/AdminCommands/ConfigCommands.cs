@@ -17,6 +17,24 @@ namespace BumbleBot.Commands.AdminCommands
     {
         private readonly DbUtils dbUtils = new DbUtils();
 
+        [Command("shamrock")]
+        [Description("Disable or enable shamrock spawns")]
+        [OwnerOrPermission(Permissions.KickMembers)]
+        public async Task SetShamrockSpawnVariable(CommandContext ctx, bool enabled)
+        {
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "update config SET boolValue = ?value where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?value", MySqlDbType.Int16).Value = enabled;
+                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "paddysSpecials";
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+            var enabledOrDisabled = enabled ? "enabled" : "disabled";
+            await ctx.Channel.SendMessageAsync($"Shamrock spawns have been {enabledOrDisabled}.")
+                .ConfigureAwait(false);
+        }
         [Command("valentine")]
         [Aliases("valentines")]
         [Description("Disable or enable valentine spawns")]
