@@ -208,6 +208,25 @@ namespace BumbleBot.Services
                 command.ExecuteNonQuery();
             }
         }
+
+        public void GiveGoatExp(Goat goat, decimal expToAdd)
+        {
+            var startingExp = goat.Experience;
+            var newLevel =
+                (int) Math.Floor(Math.Log((double) ((startingExp + expToAdd) / 10)) / Math.Log(1.05));
+            var newExp = startingExp + expToAdd;
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                var query =
+                    "Update goats Set level = ?level, experience = ?experience where id = ?goatId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?level", MySqlDbType.Int32).Value = newLevel;
+                command.Parameters.Add("?experience", MySqlDbType.Decimal).Value = newExp;
+                command.Parameters.Add("?goatId", MySqlDbType.VarChar, 40).Value = goat.Id;
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
         public (bool, string) CheckExpAgainstNextLevel(ulong userId, decimal expToAdd)
         {
             //n =  ln(FV / PV)ln(1 + r)
@@ -413,7 +432,7 @@ namespace BumbleBot.Services
             var goat = new Goat();
             using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
             {
-                const string query = "select breed from goats where id = ?id";
+                const string query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
                 command.Parameters.Add("?id", MySqlDbType.VarChar).Value = goatId;
                 connection.Open();
