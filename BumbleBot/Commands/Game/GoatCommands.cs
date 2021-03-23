@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using BumbleBot.Models;
 using BumbleBot.Services;
@@ -32,6 +34,38 @@ namespace BumbleBot.Commands.Game
         private GoatService GoatService { get; }
         private FarmerService FarmerService { get; }
 
+        [Command("prefix")]
+        public async Task PrefixGoats(CommandContext ctx, [RemainingText] string herdName)
+        {
+            _ = Task.Run(async () =>
+                await SendAndPostResponse(ctx, $"http://localhost:8080/goat/herd/rename/{ctx.User.Id}/{herdName}"));
+        }
+
+        [Command("rprefix")]
+        [Description("Removes prefix/herd name from goats")]
+        public async Task RemovePrefixFromGaots(CommandContext ctx, [RemainingText] string prefix)
+        {
+            _ = Task.Run(async () =>
+                await SendAndPostResponse(ctx, $"http://localhost:8080/goat/herd/prefix/remove/{ctx.User.Id}/{prefix}"));
+        }
+        private static async Task SendAndPostResponse(CommandContext ctx, string url)
+        {
+            // send and post response from api here
+            var request = (HttpWebRequest) WebRequest.Create(url);
+            request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+
+            using (var response = (HttpWebResponse) await request.GetResponseAsync())
+            using (var stream = response.GetResponseStream())
+            {
+                using (var reader = new StreamReader(stream))
+                {
+                    var stringResponse = await reader.ReadToEndAsync();
+
+                    await ctx.Channel.SendMessageAsync(stringResponse).ConfigureAwait(false);
+                }
+            }
+        }
+        
         [Command("refresh")]
         [Description("Update goat images and type for goats that haven't grown")]
         public async Task RefreshGoats(CommandContext ctx)
