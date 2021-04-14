@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using BumbleBot.Attributes;
+using BumbleBot.Commands;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
@@ -18,6 +19,8 @@ using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
+using DSharpPlus.SlashCommands;
+using DSharpPlus.SlashCommands.EventArgs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -113,6 +116,9 @@ namespace BumbleBot
                 Services = Services
             };
 
+            var slash = Client.UseSlashCommands();
+            slash.RegisterCommands<SlashHandle>(565016829131751425);
+            slash.SlashCommandErrored += SlashOnSlashCommandErrored;
             Commands = Client.UseCommandsNext(commandsConfig);
 
             Commands.CommandExecuted += Commands_CommandExecuted;
@@ -125,6 +131,60 @@ namespace BumbleBot
             await Task.Delay(-1);
         }
 
+        
+        private async Task SlashOnSlashCommandErrored(SlashCommandsExtension sender, SlashCommandErrorEventArgs e)
+        {
+            e.Context.Client.Logger.Log(LogLevel.Error, "BumbleBot",
+                $"{e.Context.User.Username} tried executing '{e.Context.CommandName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}",
+                DateTime.Now);
+
+            if (e.Exception is ChecksFailedException ex)
+            {
+                var failed = ex.FailedChecks;
+                var test = failed.Any(x => x is HasEnoughCredits);
+                if (test)
+                {
+                    var embed = new DiscordEmbedBuilder
+                    {
+                        Title = "Lack of funds",
+                        Description = "You do not have enough credits to perform this action",
+                        Color = DiscordColor.Aquamarine
+                    };
+                    await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                        new DiscordInteractionResponseBuilder().AddEmbed(embed)).ConfigureAwait(false);
+                }
+                else
+                {
+                    var emoji = DiscordEmoji.FromName(e.Context.Client, ":no_entry:");
+
+                    var embed = new DiscordEmbedBuilder
+                    {
+                        Title = "Access denied or run criteria not met",
+                        Description = $"{emoji} You do not have the permissions required to execute this command, " +
+                                      "or the pre-checks for this command have failed.",
+                        Color = new DiscordColor(0xFF0000) // red
+                    };
+                    await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                        new DiscordInteractionResponseBuilder().AddEmbed(embed)).ConfigureAwait(false);
+                }
+            }
+            else if (e.Exception is CommandNotFoundException cnfex)
+            {
+                var embed = new DiscordEmbedBuilder
+                {
+                    Title = "Command not found",
+                    Description = "I do not know this command. See g?help for a list of commands I know.",
+                    Color = new DiscordColor(0xFF0000) // red
+                };
+                await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder().AddEmbed(embed)).ConfigureAwait(false);
+            }
+            else
+            {
+                Console.Out.WriteLine(e.Exception.Message);
+                Console.Out.WriteLine(e.Exception.StackTrace);
+            }
+        }
         private Task OnClientReady(DiscordClient client, ReadyEventArgs e)
         {
             client.Logger.Log(LogLevel.Information, "BumbleBot", "Client is ready to process events.", DateTime.Now);
@@ -155,6 +215,10 @@ namespace BumbleBot
                     var number = random.Next(5);
                     switch (number)
                     {
+                        case 0 when AreSpringSpawnsEnabled():
+                            var springGoatToSpawn = GenerateSpecialSpringGoatToSpawn();
+                            _ = Task.Run(() => SpawnGoatFromGoatObject(e, springGoatToSpawn.Item1, springGoatToSpawn.Item2));
+                            break;
                         case 1 when AreChristmasSpawnsEnabled():
                             _ = Task.Run(() =>SpawnChristmasGoat(e));
                             break;
@@ -621,6 +685,27 @@ namespace BumbleBot
 
             return enabled;
         }
+
+        private bool AreSpringSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?param", "springSpecials");
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                    {
+                        enabled = reader.GetBoolean("boolValue");
+                    }
+                reader.Close();
+            }
+
+            return enabled;
+        }
         private bool AreValentinesSpawnsEnabled()
         {
             var enabled = false;
@@ -934,6 +1019,28 @@ namespace BumbleBot
             specialGoat.FilePath = paddysGoats[rnd.Next(0,3)];
             var filePath =
                 $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/Shamrock_Special_Variations/" +
+                $"/{specialGoat.FilePath}";
+            return (specialGoat, filePath);
+        }
+
+        private (Goat, string) GenerateSpecialSpringGoatToSpawn()
+        {
+            var specialGoat = new Goat();
+            specialGoat.Breed = Breed.Spring;
+            specialGoat.BaseColour = BaseColour.Special;
+            specialGoat.Level = new Random().Next(76, 100);
+            specialGoat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, specialGoat.Level - 1));
+            specialGoat.Name = "Spring Goat";
+            var springGoats = new List<String>()
+            {
+                "GardenKid.png",
+                "SpringNubianKid.png",
+                "SpringKiddingKid.png"
+            };
+            var rnd = new Random();
+            specialGoat.FilePath = springGoats[rnd.Next(0, 3)];
+            var filePath =
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/Spring Specials/" +
                 $"/{specialGoat.FilePath}";
             return (specialGoat, filePath);
         }
