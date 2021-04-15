@@ -212,10 +212,10 @@ namespace BumbleBot
                 if (messageCount > 10 && gpm <= 0)
                 {
                     var random = new Random();
-                    var number = random.Next(5);
+                    var number = random.Next(0, 5);
                     switch (number)
                     {
-                        case 0 when AreSpringSpawnsEnabled():
+                        case 0 or 1 when AreSpringSpawnsEnabled():
                             var springGoatToSpawn = GenerateSpecialSpringGoatToSpawn();
                             _ = Task.Run(() => SpawnGoatFromGoatObject(e, springGoatToSpawn.Item1, springGoatToSpawn.Item2));
                             break;
