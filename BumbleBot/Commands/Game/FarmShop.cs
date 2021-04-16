@@ -52,6 +52,8 @@ namespace BumbleBot.Commands.Game
                         "Cost 10,000 - Purchases a Dairy which can be used to make products from milk");
                 embed.AddField("Oats",
                     "Cost 250 - Will provide a boost to your goats milk output next time they're milked");
+                embed.AddField("Alfalfa",
+                    "Cost 500 - Will give goats an exp boost when daily is used");
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
         }

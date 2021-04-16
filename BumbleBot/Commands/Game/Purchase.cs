@@ -164,6 +164,60 @@ namespace BumbleBot.Commands.Game
             }
         }
 
+        [Command("alfalfa")]
+        [HasEnoughCredits(0)]
+        [Description("purchase some alfalfa")]
+        public async Task PurchaseAlfalfa(CommandContext ctx, int cost)
+        {
+            if (cost < 500)
+            {
+                await ctx.Channel.SendMessageAsync("Alfalfa costs 500 credits.").ConfigureAwait(false);
+            }
+            else
+            {
+                var hasAlfalfa = false;
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    var query = "select amount from items where ownerId = ?ownerId and name = ?item";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.AddWithValue("?ownerId", ctx.User.Id);
+                    command.Parameters.AddWithValue("?item", "alfalfa");
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            hasAlfalfa = reader.GetInt16("amount") > 0;
+                        }
+                    }
+                    reader.Close();
+                }
+
+                if (hasAlfalfa)
+                {
+                    await ctx.Channel.SendMessageAsync("You already have alfalfa.").ConfigureAwait(false);
+                }
+                else
+                {
+                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                    {
+                        var query = "insert into items (name, amount, ownerId) values (?item, 1, ?ownerId) on duplicate key update amount = 1";
+                        var command = new MySqlCommand(query, connection);
+                        command.Parameters.AddWithValue("?ownerId", ctx.User.Id);
+                        command.Parameters.AddWithValue("?item", "alfalfa");
+                        connection.Open();
+                        command.ExecuteNonQuery();
+                    }
+
+                    await ctx.Channel
+                        .SendMessageAsync(
+                            "Alfalfa has been purchased for 500 credits and will be used next time you run daily.")
+                        .ConfigureAwait(false);
+                }
+            }
+        }
+        
         [Command("oats")]
         [HasEnoughCredits(0)]
         [Description("purchase some oats")]
