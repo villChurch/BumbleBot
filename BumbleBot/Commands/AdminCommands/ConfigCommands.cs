@@ -17,6 +17,24 @@ namespace BumbleBot.Commands.AdminCommands
     {
         private readonly DbUtils dbUtils = new DbUtils();
 
+        [Command("dazzle")]
+        [Description(("Disable or enable Dazzle spawns"))]
+        [OwnerOrPermission(Permissions.KickMembers)]
+        public async Task SetDazzleSpawnVariable(CommandContext ctx, bool enabled)
+        {
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "update config SET boolValue = ?value where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?value", enabled);
+                command.Parameters.AddWithValue("?param", "bestestGoat");
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+            var enabledOrDisabled = enabled ? "enabled" : "disabled";
+            await ctx.Channel.SendMessageAsync($"Dazzle spawns have been {enabledOrDisabled}.")
+                .ConfigureAwait(false); 
+        }
         [Command("spring")]
         [Description("Disable or enable spring spawns")]
         [OwnerOrPermission(Permissions.KickMembers)]

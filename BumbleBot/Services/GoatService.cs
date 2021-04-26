@@ -427,6 +427,27 @@ namespace BumbleBot.Services
             return goat.Breed == Breed.Zenyatta;
         }
 
+        public bool IsBestGoatByGoatId(int goatId)
+        {
+            var goat = new Goat();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                var query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?id", goatId);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                    {
+                     goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));   
+                    }
+                reader.Close();
+            }
+
+            return goat.Breed == Breed.Dazzle;
+        }
+
         private bool IsShamrockGoat(int goatId)
         {
             var goat = new Goat();
@@ -726,6 +747,10 @@ namespace BumbleBot.Services
             {
                 return "Special Variations/taillessadult.png";
             }
+            else if (IsBestGoatByGoatId(goat.Id))
+            {
+                return "Special Variations/DazzleSpecialAdult.png";
+            }
 
             var goatColour = "";
 
@@ -828,6 +853,10 @@ namespace BumbleBot.Services
             else if (IsGoatTaillessByGoatId(goat.Id))
             {
                 return "Special Variations/taillessadult.png";
+            }
+            else if (IsBestGoatByGoatId(goat.Id))
+            {
+                return "Special Variations/DazzleSpecialAdult.png";
             }
 
             var goatColour = "";

@@ -117,7 +117,7 @@ namespace BumbleBot
             };
 
             var slash = Client.UseSlashCommands();
-            slash.RegisterCommands<SlashHandle>(565016829131751425);
+            slash.RegisterCommands<SlashHandle>();
             slash.SlashCommandErrored += SlashOnSlashCommandErrored;
             Commands = Client.UseCommandsNext(commandsConfig);
 
@@ -218,6 +218,10 @@ namespace BumbleBot
                         case 0 or 1 when AreSpringSpawnsEnabled():
                             var springGoatToSpawn = GenerateSpecialSpringGoatToSpawn();
                             _ = Task.Run(() => SpawnGoatFromGoatObject(e, springGoatToSpawn.Item1, springGoatToSpawn.Item2));
+                            break;
+                        case 0 or 1 when AreDazzleSpawnsEnabled():
+                            var bestGoat = GenerateBestestGoatToSpawn();
+                            _ = Task.Run(() => SpawnGoatFromGoatObject(e, bestGoat.Item1, bestGoat.Item2));
                             break;
                         case 1 when AreChristmasSpawnsEnabled():
                             _ = Task.Run(() =>SpawnChristmasGoat(e));
@@ -706,6 +710,28 @@ namespace BumbleBot
 
             return enabled;
         }
+
+        private bool AreDazzleSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?param", "bestestGoat");
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                    {
+                        enabled = reader.GetBoolean("boolValue");
+                    }
+                reader.Close();
+                connection.Close();
+            }
+
+            return enabled;
+        }
         private bool AreValentinesSpawnsEnabled()
         {
             var enabled = false;
@@ -1043,6 +1069,21 @@ namespace BumbleBot
                 $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/Spring Specials/" +
                 $"/{specialGoat.FilePath}";
             return (specialGoat, filePath);
+        }
+
+        private (Goat, string) GenerateBestestGoatToSpawn()
+        {
+            var bestGoat = new Goat();
+            bestGoat.Breed = Breed.Dazzle;
+            bestGoat.BaseColour = BaseColour.Special;
+            bestGoat.Level = new Random().Next(76, 100);
+            bestGoat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, bestGoat.Level - 1));
+            bestGoat.Name = "Dazzle aka bestest goat of them all";
+            bestGoat.FilePath = "DazzleSpecialKid.png";
+            var filePath =
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/" +
+                $"/{bestGoat.FilePath}";
+            return (bestGoat, filePath);
         }
         private async Task SpawnGoatFromGoatObject(MessageCreateEventArgs e, Goat goatToSpawn, string fullFilePath)
         {
