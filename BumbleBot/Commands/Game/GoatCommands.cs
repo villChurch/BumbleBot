@@ -75,7 +75,7 @@ namespace BumbleBot.Commands.Game
         }
 
         [Command("refresh")]
-        // [RequirePermissions(Permissions.KickMembers)]
+        [RequirePermissions(Permissions.KickMembers)]
         [Hidden]
         public async Task RefreshGoats(CommandContext ctx, DiscordMember member)
         {
@@ -289,19 +289,31 @@ namespace BumbleBot.Commands.Game
                 var goats = GoatService.ReturnUsersGoats(ctx.User.Id);
                 if (goats.Any(x => x.Id == goatId))
                 {
-                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                    var goat = goats.Where(x => x.Id == goatId && x.Breed == Breed.Dazzle);
+                    var rnd = new Random();
+                    var randomNum = rnd.Next(3);
+                    if (goat.Any() && randomNum != 1)
                     {
-                        var query = "Update goats Set name = ?newName where id = ?goatId";
-                        var command = new MySqlCommand(query, connection);
-                        command.Parameters.Add("?newName", MySqlDbType.VarChar).Value = newName;
-                        command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goatId;
-                        connection.Open();
-                        command.ExecuteNonQuery();
+                        await ctx.Channel
+                            .SendMessageAsync($"Unfortunately Dazzle follows her own rules and refuses to be renamed at the moment. Try again later.")
+                            .ConfigureAwait(false);
                     }
+                    else
+                    {
+                        using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                        {
+                            var query = "Update goats Set name = ?newName where id = ?goatId";
+                            var command = new MySqlCommand(query, connection);
+                            command.Parameters.Add("?newName", MySqlDbType.VarChar).Value = newName;
+                            command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goatId;
+                            connection.Open();
+                            command.ExecuteNonQuery();
+                        }
 
-                    var changedGoat = goats.Where(x => x.Id == goatId);
-                    await ctx.Channel.SendMessageAsync($"{changedGoat.First().Name} has been renamed to {newName}")
-                        .ConfigureAwait(false);
+                        var changedGoat = goats.Where(x => x.Id == goatId);
+                        await ctx.Channel.SendMessageAsync($"{changedGoat.First().Name} has been renamed to {newName}")
+                            .ConfigureAwait(false);
+                    }
                 }
                 else
                 {
