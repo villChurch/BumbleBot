@@ -129,7 +129,7 @@ namespace BumbleBot.Commands.Game
                 {
                     await ctx.Channel
                         .SendMessageAsync(
-                            $"You only have {dairy.SoftCheese} lbs of soft cheese which is more than the {amount} lbs you tried to add")
+                            $"You only have {dairy.SoftCheese} lbs of soft cheese which is less than the {amount} lbs you tried to add")
                         .ConfigureAwait(false);
                 }
                 else if ((cave.SoftCheese + amount) > (cave.Slots * 500))
@@ -143,12 +143,18 @@ namespace BumbleBot.Commands.Game
                 {
                     var random = new Random();
                     if (random.Next(0, 70) == 50)
+                    {
+                        DairyService.RemoveSoftCheeseFromPlayer(ctx.User.Id, amount);
                         await ctx.Channel.SendMessageAsync(
                             "Unfortunately something has gone wrong in the cheese making process");
+                    }
                     else
+                    {
                         _ = Task.Run(async () =>
-                            await SendAndPostResponse(ctx, $"http://localhost:8080/dairy/cave/{ctx.User.Id}/add/softcheese/{amount}")
-                            );
+                            await SendAndPostResponse(ctx,
+                                $"http://localhost:8080/dairy/cave/{ctx.User.Id}/add/softcheese/{amount}")
+                        );
+                    }
                 }
             }
         }

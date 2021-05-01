@@ -158,6 +158,7 @@ namespace BumbleBot.Services
         public void RemoveSoftCheeseFromPlayer(ulong userId, int? softCheese)
         {
             if (null == softCheese)
+            {
                 using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {
                     var query = "update dairy set softcheese = 0 where ownerID = ?userId";
@@ -166,8 +167,22 @@ namespace BumbleBot.Services
                     connection.Open();
                     command.ExecuteNonQuery();
                 }
+            }
             else
+            {
                 Console.Out.WriteLine($"Soft cheese amount was not null it was {softCheese}");
+                var currentSoftCheese = GetUsersDairy(userId).SoftCheese;
+                var newSoftCheese = currentSoftCheese - softCheese;
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    const string query = "update dairy set softcheese = ?softCheese where ownerID = ?userId";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.AddWithValue("?softCheese", newSoftCheese);
+                    command.Parameters.AddWithValue("?userId", userId);
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
         }
 
         public void DeleteSoftCheeseFromExpiryTable(ulong userId)

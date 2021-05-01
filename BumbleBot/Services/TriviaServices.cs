@@ -45,17 +45,17 @@ namespace BumbleBot.Services
 
         private void StartTriviaTimer(object source, ElapsedEventArgs e, CommandContext ctx, DiscordChannel channel)
         {
-            triviaQuestionTimer = new Timer(60000); //120000);
+            triviaQuestionTimer = new Timer(30000); //120000);
             triviaQuestionTimer.Start();
             triviaQuestionTimer.Elapsed += (sender, ee) => TriviaTimerHandler(sender, ee, ctx, channel);
             timer.Stop();
             timer.Dispose();
-            _ = AskQuestion(ctx, channel);
+            _ = Task.Run(() => AskQuestion(ctx, channel));
         }
 
         private void TriviaTimerHandler(object source, ElapsedEventArgs e, CommandContext ctx, DiscordChannel channel)
         {
-            _ = AskQuestion(ctx, channel);
+            _ = Task.Run(() => AskQuestion(ctx, channel));
             QuestionTimerRunning = false;
         }
 

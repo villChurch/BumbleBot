@@ -30,7 +30,7 @@ namespace BumbleBot.Commands.Trivia
         }
 
         [Command("random")]
-        [OwnerOrPermission(Permissions.KickMembers)]
+        [Description("Asks a random trivia question")]
         public async Task GetRandomQuestion(CommandContext ctx)
         {
             await TriviaServices.AskQuestion(ctx, ctx.Channel);
