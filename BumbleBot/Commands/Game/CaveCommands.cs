@@ -3,7 +3,6 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using BumbleBot.Attributes;
-using BumbleBot.Models;
 using BumbleBot.Services;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;

@@ -21,7 +21,6 @@ using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
@@ -80,8 +79,7 @@ namespace BumbleBot
                 AutoReconnect = true,
                 MinimumLogLevel = LogLevel.Debug
             };
-
-            // var shardClient = new DiscordShardedClient(config);
+            
             Client = new DiscordClient(config);
             Client.Ready += OnClientReady;
             Client.GuildAvailable += Client_GuildAvailable;
@@ -134,9 +132,10 @@ namespace BumbleBot
         
         private async Task SlashOnSlashCommandErrored(SlashCommandsExtension sender, SlashCommandErrorEventArgs e)
         {
-            e.Context.Client.Logger.Log(LogLevel.Error, "BumbleBot",
-                $"{e.Context.User.Username} tried executing '{e.Context.CommandName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}",
-                DateTime.Now);
+            e.Context.Client.Logger.Log(LogLevel.Error,
+                "{Username} tried executing '{CommandName}' but it errored: {Type}: {Message}",
+                e.Context.User.Username, e.Context.CommandName ?? "<unknown command>",
+                e.Exception.GetType(), e.Exception.Message);
 
             if (e.Exception is ChecksFailedException ex)
             {
@@ -168,7 +167,7 @@ namespace BumbleBot
                         new DiscordInteractionResponseBuilder().AddEmbed(embed)).ConfigureAwait(false);
                 }
             }
-            else if (e.Exception is CommandNotFoundException cnfex)
+            else if (e.Exception is CommandNotFoundException)
             {
                 var embed = new DiscordEmbedBuilder
                 {
@@ -187,7 +186,7 @@ namespace BumbleBot
         }
         private Task OnClientReady(DiscordClient client, ReadyEventArgs e)
         {
-            client.Logger.Log(LogLevel.Information, "BumbleBot", "Client is ready to process events.", DateTime.Now);
+            client.Logger.Log(LogLevel.Information, "Client is ready to process events");
             StartTimer(); // start timer
             return Task.CompletedTask;
         }
@@ -206,7 +205,7 @@ namespace BumbleBot
                         goatSpawnChannelId = reader.GetUInt64("stringResponse");
             }
 
-            if (!e.Author.IsBot && e.Channel.ParentId != 725504404995964948) //e.Guild.Id == guildId && 
+            if (!e.Author.IsBot && e.Channel.ParentId != 725504404995964948)
             {
                 messageCount++;
                 if (messageCount > 10 && gpm <= 0)
@@ -335,8 +334,8 @@ namespace BumbleBot
                     var baseColour = rnd.Next(0, 5);
                     var randomGoat = new Goat();
                     randomGoat.BaseColour = (BaseColour) Enum.Parse(typeof(BaseColour),
-                        Enum.GetName(typeof(BaseColour), baseColour));
-                    randomGoat.Breed = (Breed) Enum.Parse(typeof(Breed), Enum.GetName(typeof(Breed), breed));
+                        Enum.GetName(typeof(BaseColour), baseColour) ?? throw new InvalidOperationException());
+                    randomGoat.Breed = (Breed) Enum.Parse(typeof(Breed), Enum.GetName(typeof(Breed), breed) ?? throw new InvalidOperationException());
                     randomGoat.Type = Type.Kid;
                     randomGoat.Level = RandomLevel.GetRandomLevel();
                     randomGoat.LevelMulitplier = 1;
@@ -352,7 +351,7 @@ namespace BumbleBot
                     };
                     embed.AddField("Cost", randomGoat.Level - 1 + " credits");
                     embed.AddField("Colour", Enum.GetName(typeof(BaseColour), randomGoat.BaseColour));
-                    embed.AddField("Breed", Enum.GetName(typeof(Breed), randomGoat.Breed).Replace("_", " "), true);
+                    embed.AddField("Breed", Enum.GetName(typeof(Breed), randomGoat.Breed)?.Replace("_", " "), true);
                     embed.AddField("Level", (randomGoat.Level - 1).ToString(), true);
 
                     var interactivtiy = Client.GetInteractivity();
@@ -463,50 +462,34 @@ namespace BumbleBot
             return $"{goat}{colour}.png";
         }
 
-        private bool DoesUserHaveCharacter(ulong discordId)
-        {
-            var hasCharacter = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
-            {
-                var query = "select * from farmers where DiscordID = ?discordID";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?discordID", MySqlDbType.VarChar, 40).Value = discordId;
-                connection.Open();
-                var reader = command.ExecuteReader();
-                hasCharacter = reader.HasRows;
-                reader.Close();
-            }
-
-            return hasCharacter;
-        }
-
         private Task Client_GuildAvailable(DiscordClient client, GuildCreateEventArgs e)
         {
-            client.Logger.Log(LogLevel.Information, "BumbleBot", $"Guild available: {e.Guild.Name}", DateTime.Now);
+            client.Logger.Log(LogLevel.Information, "Guild available: {Name}", e.Guild.Name);
             return Task.CompletedTask;
         }
 
         private Task Client_ClientError(DiscordClient client, ClientErrorEventArgs e)
         {
-            client.Logger.Log(LogLevel.Error, "BumbleBot",
-                $"Exception occured: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+            client.Logger.Log(LogLevel.Error,
+                "Exception occured: {Type}: {Message}", e.Exception.GetType(), e.Exception.Message);
 
             return Task.CompletedTask;
         }
 
         private Task Commands_CommandExecuted(CommandsNextExtension sender, CommandExecutionEventArgs e)
         {
-            e.Context.Client.Logger.Log(LogLevel.Information, "BumbleBot",
-                $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
+            e.Context.Client.Logger.Log(LogLevel.Information,
+                "{Username} successfully executed '{Command}'", e.Context.User.Username, e.Command.QualifiedName);
 
             return Task.CompletedTask;
         }
 
         private async Task Commands_CommandErrored(CommandsNextExtension sender, CommandErrorEventArgs e)
         {
-            e.Context.Client.Logger.Log(LogLevel.Error, "BumbleBot",
-                $"{e.Context.User.Username} tried executing '{e.Command?.QualifiedName ?? "<unknown command>"}' but it errored: {e.Exception.GetType()}: {e.Exception.Message ?? "<no message>"}",
-                DateTime.Now);
+            e.Context.Client.Logger.Log(LogLevel.Error,
+                "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                e.Context.User.Username, e.Command?.QualifiedName ?? "<unknown command>",
+                e.Exception.GetType(), e.Exception.Message);
 
             if (e.Exception is ChecksFailedException ex)
             {
@@ -536,7 +519,7 @@ namespace BumbleBot
                     await e.Context.RespondAsync("", embed: embed);
                 }
             }
-            else if (e.Exception is CommandNotFoundException cnfex)
+            else if (e.Exception is CommandNotFoundException)
             {
                 if (e.Context.Message.Content.Contains("??") || e.Context.Message.Content.Contains("?!"))
                     return; // for when people do ?????!?....
@@ -577,7 +560,7 @@ namespace BumbleBot
                 };
                 embed.AddField("Cost", (randomGoat.Level - 1).ToString());
                 embed.AddField("Colour", Enum.GetName(typeof(BaseColour), randomGoat.BaseColour));
-                embed.AddField("Breed", Enum.GetName(typeof(Breed), randomGoat.Breed).Replace("_", " "), true);
+                embed.AddField("Breed", Enum.GetName(typeof(Breed), randomGoat.Breed)?.Replace("_", " "), true);
                 embed.AddField("Level", (randomGoat.Level - 1).ToString(), true);
 
                 var interactivtiy = Client.GetInteractivity();
@@ -780,7 +763,7 @@ namespace BumbleBot
                 };
                 embed.AddField("Cost", (specialGoat.Level - 1).ToString());
                 embed.AddField("Colour", Enum.GetName(typeof(BaseColour), specialGoat.BaseColour));
-                embed.AddField("Breed", Enum.GetName(typeof(Breed), specialGoat.Breed).Replace("_", " "), true);
+                embed.AddField("Breed", Enum.GetName(typeof(Breed), specialGoat.Breed)?.Replace("_", " "), true);
                 embed.AddField("Level", (specialGoat.Level - 1).ToString(), true);
 
                 var interactivtiy = Client.GetInteractivity();

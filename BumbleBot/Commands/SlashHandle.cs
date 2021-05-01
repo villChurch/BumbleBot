@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using BumbleBot.Models;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
 using DSharpPlus;
