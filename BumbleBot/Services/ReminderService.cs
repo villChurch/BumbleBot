@@ -24,7 +24,7 @@ namespace BumbleBot.Services
         {
             discordClient = client;
             timer = new Timer();
-            timer.Interval = 10000; // 30 seconds
+            timer.Interval = 60000; // 60 seconds
             timer.Elapsed += CheckForAndSendReminders;
             timer.AutoReset = true;
             timer.Enabled = true;
