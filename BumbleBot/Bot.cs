@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using BumbleBot.Attributes;
 using BumbleBot.Commands;
+using BumbleBot.Converter;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
@@ -77,7 +78,8 @@ namespace BumbleBot
                 Token = configJson.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
-                MinimumLogLevel = LogLevel.Debug
+                MinimumLogLevel = LogLevel.Debug,
+                Intents = DiscordIntents.All
             };
             
             Client = new DiscordClient(config);
@@ -92,6 +94,7 @@ namespace BumbleBot
                 .AddTransient<GoatService>()
                 .AddTransient<FarmerService>()
                 .AddTransient<DairyService>()
+                .AddSingleton<ReminderService>()
                 .BuildServiceProvider(true);
 
 #pragma warning disable IDE0058 // Expression value is never used
@@ -122,6 +125,7 @@ namespace BumbleBot
             Commands.CommandExecuted += Commands_CommandExecuted;
             Commands.CommandErrored += Commands_CommandErrored;
 
+            Commands.RegisterConverter(new ReminderTimeConverter());
             Commands.RegisterCommands(Assembly.GetExecutingAssembly());
 
             await Client.ConnectAsync();
@@ -188,6 +192,7 @@ namespace BumbleBot
         {
             client.Logger.Log(LogLevel.Information, "Client is ready to process events");
             StartTimer(); // start timer
+            ReminderService.StartReminderTimer(client);
             return Task.CompletedTask;
         }
 
