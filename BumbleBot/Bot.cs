@@ -14,6 +14,7 @@ using BumbleBot.Services;
 using BumbleBot.Utilities;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.CommandsNext.Exceptions;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -226,6 +227,11 @@ namespace BumbleBot
                         case 0 or 1 when AreDazzleSpawnsEnabled():
                             var bestGoat = GenerateBestestGoatToSpawn();
                             _ = Task.Run(() => SpawnGoatFromGoatObject(e, bestGoat.Item1, bestGoat.Item2));
+                            break;
+                        case 0 or 1 when AreMemberSpawnsEnabled():
+                            var memberGoatToSpawn = GenerateMemberSpecialGoatToSpawn();
+                            _ = Task.Run(() =>
+                                SpawnGoatFromGoatObject(e, memberGoatToSpawn.Item1, memberGoatToSpawn.Item2));
                             break;
                         case 1 when AreChristmasSpawnsEnabled():
                             _ = Task.Run(() =>SpawnChristmasGoat(e));
@@ -500,6 +506,8 @@ namespace BumbleBot
             {
                 var failed = ex.FailedChecks;
                 var test = failed.Any(x => x is HasEnoughCredits);
+                var test2 = failed.Any(x => x is CooldownAttribute)
+                            && ex.Command.Parent.Name.ToLower().Trim().Equals("stick");
                 if (test)
                 {
                     var embed = new DiscordEmbedBuilder
@@ -508,7 +516,11 @@ namespace BumbleBot
                         Description = "You do not have enough credits to perform this action",
                         Color = DiscordColor.Aquamarine
                     };
-                    await e.Context.RespondAsync("", embed: embed);
+                    await e.Context.RespondAsync("", embed: embed).ConfigureAwait(false);
+                }
+                else if (test2)
+                {
+                    await e.Context.RespondAsync($"Don't abuse Mr Stick").ConfigureAwait(false);
                 }
                 else
                 {
@@ -659,6 +671,28 @@ namespace BumbleBot
             return "SantaKid.png";
         }
 
+        private bool AreMemberSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "memberSpecials";
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        enabled = reader.GetBoolean("boolValue");
+                    }
+                }
+                reader.Close();
+                connection.Close();
+            }
+            return enabled;
+        }
         private bool ArePaddysSpawnsEnabled()
         {
             var enabled = false;
@@ -1072,6 +1106,27 @@ namespace BumbleBot
                 $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/" +
                 $"/{bestGoat.FilePath}";
             return (bestGoat, filePath);
+        }
+
+        private (Goat, string) GenerateMemberSpecialGoatToSpawn()
+        {
+            var memberGoat = new Goat();
+            memberGoat.Breed = Breed.MemberSpecial;
+            memberGoat.BaseColour = BaseColour.Special;
+            memberGoat.Level = new Random().Next(76, 100);
+            memberGoat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, memberGoat.Level - 1));
+            memberGoat.Name = "Member Special";
+            var memberGoats = new List<String>()
+            {
+                "MemberSpecialEponaKid.png",
+                "MemberSpecialGiuhKid.png",
+                "MemberSpecialKimdolKid.png"
+            };
+            memberGoat.FilePath = memberGoats[new Random().Next(0, 3)];
+            var filePath =
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}/Goat_Images/" +
+                $"{memberGoat.FilePath}";
+            return (memberGoat, filePath);
         }
         private async Task SpawnGoatFromGoatObject(MessageCreateEventArgs e, Goat goatToSpawn, string fullFilePath)
         {

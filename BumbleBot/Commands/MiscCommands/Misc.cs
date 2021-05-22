@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using BumbleBot.Models;
 using BumbleBot.Utilities;
@@ -44,24 +45,72 @@ namespace BumbleBot.Commands.MiscCommands
             private DbUtils dbUtils = new DbUtils();
             [GroupCommand]
             [Description("Shake mr stick at someone")]
-            [Cooldown(3, 60, CooldownBucketType.User)]
+            [Cooldown(1, 60,CooldownBucketType.User)]
             public async Task ShakeMrStick(CommandContext ctx, DiscordMember member)
             {
+                var memberId = member.Id;
+                var ctxMemberId = ctx.Member.Id;
+                var unoReversal = false;
+                if (memberId == 746852216400248963)
+                {
+                    ctxMemberId = memberId;
+                    memberId = ctx.Member.Id;
+                    unoReversal = true;
+                }
                 using (var con = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                 {
                     const string query =
                         "Insert into sticked (recipientId, stickerId, messageLink) values (?recipientId, ?stickerId, ?messageLink)";
                     var command = new MySqlCommand(query, con);
-                    command.Parameters.AddWithValue("?recipientId", member.Id);
-                    command.Parameters.AddWithValue("?stickerId", ctx.Member.Id);
+                    command.Parameters.AddWithValue("?recipientId", memberId);
+                    command.Parameters.AddWithValue("?stickerId", ctxMemberId);
                     command.Parameters.AddWithValue("?messageLink", ctx.Message.JumpLink.ToString());
                     con.Open();
                     command.ExecuteNonQuery();
                     await con.CloseAsync();
                 }
+
+                var stickCount = 1;
+                using (var con = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                {
+                    const string query =
+                        "select COUNT(*) as stickCount from sticked where recipientId = ?recipientId";
+                    var command = new MySqlCommand(query, con);
+                    command.Parameters.AddWithValue("?recipientId", memberId);
+                    con.Open();
+                    var reader = command.ExecuteReader();
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            stickCount = reader.GetInt32("stickCount");
+                        }
+                    }
+                }
                 var mrStick = DiscordEmoji.FromName(ctx.Client, ":mrstick:");
-                await ctx.Channel.SendMessageAsync($"{ctx.Member.Mention} shakes {mrStick} at {member.Mention}.")
-                    .ConfigureAwait(false);
+                var timesOrTime = stickCount > 1 ? "times" : "time";
+                if (unoReversal)
+                {
+                    var unoReverseEmoji = DiscordEmoji.TryFromName(ctx.Client, ":reverse:", out DiscordEmoji unoReverso);
+                    if (unoReverseEmoji)
+                    {
+                        await ctx.Channel
+                            .SendMessageAsync(
+                                $"{member.Mention} shakes {mrStick} at {ctx.Member.Mention}. They have now been shown Mr Stick {stickCount} {timesOrTime} {unoReverso}")
+                            .ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await new DiscordMessageBuilder()
+                            .WithContent($"{member.Mention} shakes {mrStick} at {ctx.Member.Mention}. They have now been shown Mr Stick {stickCount} {timesOrTime}")
+                            .SendAsync(ctx.Channel).ConfigureAwait(false);   
+                    }
+                }
+                else
+                {
+                    await ctx.Channel.SendMessageAsync($"{ctx.Member.Mention} shakes {mrStick} at {member.Mention}. They have now been shown Mr Stick {stickCount} {timesOrTime}")
+                        .ConfigureAwait(false);
+                }
             }
 
             [Command("show")]

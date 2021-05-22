@@ -23,7 +23,8 @@ namespace BumbleBot.Models
         Valentines,
         Shamrock,
         Spring,
-        Dazzle
+        Dazzle,
+        MemberSpecial
     }
 
     public enum BaseColour

@@ -447,6 +447,28 @@ namespace BumbleBot.Services
             return goat.Breed == Breed.Dazzle;
         }
 
+        public bool IsMemberSpecialByGoatId(int goatId)
+        {
+            var goat = new Goat();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?id", goatId);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                    {
+                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                    }
+
+                reader.Close();
+            }
+
+            return goat.Breed == Breed.MemberSpecial;
+        }
+
         private bool IsShamrockGoat(int goatId)
         {
             var goat = new Goat();
@@ -750,6 +772,15 @@ namespace BumbleBot.Services
             {
                 return "Special Variations/DazzleSpecialAdult.png";
             }
+            else if (IsMemberSpecialByGoatId(goat.Id))
+            {
+                if (goat.FilePath.EndsWith("MemberSpecialKimdolKid.png"))
+                    return "MemberSpecialKimdolAdult.png";
+                if (goat.FilePath.EndsWith("MemberSpecialGiuhKid.png"))
+                    return "MemberSpecialGiuhAdult.png";
+                if (goat.FilePath.EndsWith("MemberSpecialEponaKid.png"))
+                    return "MemberSpecialEponaAdult.png";
+            }
 
             var goatColour = "";
 
@@ -856,6 +887,15 @@ namespace BumbleBot.Services
             else if (IsBestGoatByGoatId(goat.Id))
             {
                 return "Special Variations/DazzleSpecialAdult.png";
+            }
+            else if (IsMemberSpecialByGoatId(goat.Id))
+            {
+                if (goat.FilePath.EndsWith("MemberSpecialKimdolKid.png"))
+                    return "MemberSpecialKimdolAdult.png";
+                if (goat.FilePath.EndsWith("MemberSpecialGiuhKid.png"))
+                    return "MemberSpecialGiuhAdult.png";
+                if (goat.FilePath.EndsWith("MemberSpecialEponaKid.png"))
+                    return "MemberSpecialEponaAdult.png";
             }
 
             var goatColour = "";
