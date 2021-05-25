@@ -23,47 +23,108 @@ namespace BumbleBot.Commands.Game
         public async Task CampaignCommand(CommandContext ctx, int goatId, int bet)
         {
             var goats = goatService.ReturnUsersGoats(ctx.User.Id);
+            if (bet != 100)
+            {
+                await ctx.Channel.SendMessageAsync($"Campaign costs 100 credits to enter not {bet} credits.")
+                    .ConfigureAwait(false);
+                return;
+            }
             if (!goats.Exists(g => g.Id == goatId))
             {
                 await ctx.Channel.SendMessageAsync($"You do not own a goat with id {goatId}")
                     .ConfigureAwait(false);
                 return;
             }
-            if (bet < 100)
-            {
-                await ctx.Channel.SendMessageAsync("The minimum fee is 100 credits").ConfigureAwait(false);
-                return;
-            }
-
-            if (bet % 100 != 0)
-            {
-                await ctx.Channel.SendMessageAsync("Fee must be a multiple of 100").ConfigureAwait(false);
-                return;
-            }
             var goat = goats.Find(g => g.Id == goatId);
-            var xpTopEnd = 10 * (bet/100);
-            var xpLowEnd = 3 * (bet / 100);
             Random rnd = new Random();
-            var expGainedIfWin = rnd.Next(xpLowEnd, xpTopEnd + 1);
-            if (rnd.Next(0, 2) == 1)
+            var scenarioNumber = rnd.Next(0, 10);
+            var expToAdd = 0;
+            switch (scenarioNumber)
             {
-                farmerService.AddCreditsToFarmer(ctx.User.Id, bet);
-                goatService.GiveGoatExp(goat, expGainedIfWin);
-                await ctx.Channel.SendMessageAsync(
-                    $"{goat?.Name} did well at the show, and earned a prize of {bet * 2} credits." +
-                    $" She also gained {expGainedIfWin} XP from the event").ConfigureAwait(false);
+                case 0:
+                    farmerService.AddCreditsToFarmer(ctx.User.Id, 1000);
+                    expToAdd = rnd.Next(600, 1000) + 1;
+                    goatService.GiveGoatExp(goat, expToAdd);
+                    await ctx.Channel.SendMessageAsync($"{goat?.Name} won Grand Champion, congratulations!" +
+                                                       $" She earned {expToAdd} XP and a prize of 1000 credits.")
+                        .ConfigureAwait(false);
+                    break;
+                case 1:
+                    farmerService.AddCreditsToFarmer(ctx.User.Id, 500);
+                    expToAdd = rnd.Next(600, 1000) + 1;
+                    goatService.GiveGoatExp(goat, expToAdd);
+                    await ctx.Channel
+                        .SendMessageAsync(
+                            $"{goat?.Name} won Best in Show, congratulations! She earned {expToAdd} XP and a prize of 500 credits.")
+                        .ConfigureAwait(false);
+                    break;
+                case 2:
+                    expToAdd = rnd.Next(600, 1000) + 1;
+                    goatService.GiveGoatExp(goat, expToAdd);
+                    await ctx.Channel
+                        .SendMessageAsync($"{goat?.Name} won Best of Breed, congratulations! She earned {expToAdd} XP")
+                        .ConfigureAwait(false);
+                    break;
+                case 3:
+                    expToAdd = rnd.Next(250, 600) + 1;
+                    goatService.GiveGoatExp(goat, expToAdd);
+                    await ctx.Channel
+                        .SendMessageAsync(
+                            $"{goat?.Name} did really well at the show, placing in the top three. She earned {expToAdd} XP.")
+                        .ConfigureAwait(false);
+                    break;
+                case 4:
+                    expToAdd = rnd.Next(250, 600) + 1;
+                    goatService.GiveGoatExp(goat, expToAdd);
+                    await ctx.Channel
+                        .SendMessageAsync(
+                            $"{goat?.Name} did her best at the show, placing in the top five. She earned {expToAdd} XP.")
+                        .ConfigureAwait(false);
+                    break;
+                case 5:
+                    expToAdd = rnd.Next(250, 600) + 1;
+                    goatService.GiveGoatExp(goat, expToAdd);
+                    await ctx.Channel.SendMessageAsync(
+                            $"{goat?.Name} did her best at the show, placing in the top ten. She earned {expToAdd} XP.")
+                        .ConfigureAwait(false);
+                    break;
+                case 6:
+                    expToAdd = rnd.Next(0, 250) + 1;
+                    goatService.GiveGoatExp(goat, expToAdd);
+                    await ctx.Channel
+                        .SendMessageAsync(
+                            $"{goat?.Name} tried her best at the show, but did not place. She earned {expToAdd} XP.")
+                        .ConfigureAwait(false);
+                    break;
+                case 7:
+                    expToAdd = rnd.Next(0, 60) + 1;
+                    goatService.GiveGoatExp(goat, expToAdd * -1);
+                    await ctx.Channel
+                        .SendMessageAsync(
+                            $"{goat?.Name} tried her best at the show, but became a little upset and did not place. " +
+                            $"She lost {expToAdd} XP from the stress.")
+                        .ConfigureAwait(false);
+                    break;
+                case 8:
+                    expToAdd = rnd.Next(60, 150) + 1;
+                    goatService.GiveGoatExp(goat, expToAdd * -1);
+                    await ctx.Channel
+                        .SendMessageAsync(
+                            $"{goat?.Name} tried her best at the show, but became agitated and did not place. She lost {expToAdd} XP from the stress.")
+                        .ConfigureAwait(false);
+                    break;
+                default:
+                    expToAdd = rnd.Next(150, 250) + 1;
+                    farmerService.DeductCreditsFromFarmer(ctx.User.Id, 100);
+                    goatService.GiveGoatExp(goat, expToAdd * -1);
+                    await ctx.Channel
+                        .SendMessageAsync(
+                            $"{goat?.Name} did not enjoy the show at all, became very sick and was scratched." +
+                            $" She lost {expToAdd} XP from the stress and cost you 100 credits in veterinary fees.")
+                        .ConfigureAwait(false);
+                    break;
             }
-            else
-            {
-                farmerService.DeductCreditsFromFarmer(ctx.User.Id, bet);
-                var expLost = rnd.Next(1, 51);
-                goatService.GiveGoatExp(goat, (expLost * -1));
-                await ctx.Channel
-                    .SendMessageAsync(
-                        $"{goat?.Name} did poorly at the show, and cost you {bet} credits in show fees. " +
-                        $"She also lost {expLost} XP due to the stress")
-                    .ConfigureAwait(false);
-            }
+            goatService.UpdateGoatImagesForKidsThatAreAdults(ctx.User.Id);
         }
     }
 }
