@@ -36,7 +36,7 @@ namespace BumbleBot.Commands.Game
                 return;
             }
             var goat = goats.Find(g => g.Id == goatId);
-            Random rnd = new Random();
+            var rnd = new Random();
             var scenarioNumber = rnd.Next(0, 40);
             var expToAdd = 0;
             switch (scenarioNumber)

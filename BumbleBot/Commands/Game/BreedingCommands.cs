@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -12,6 +13,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace BumbleBot.Commands.Game
 {
@@ -65,8 +67,8 @@ namespace BumbleBot.Commands.Game
                         embed.AddField("Name", goat.Name);
                         embed.AddField("Due Date", result.Item2[goat.Id], false);
                         embed.AddField("Level", goat.Level.ToString(), true);
-                        embed.AddField("Experience", goat.Experience.ToString(), true);
-                        embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed).Replace("_", " "), true);
+                        embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
+                        embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
                         embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
                         var page = new Page
                         {
@@ -80,8 +82,10 @@ namespace BumbleBot.Commands.Game
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
             }
         }
 
@@ -101,14 +105,14 @@ namespace BumbleBot.Commands.Game
                         await ctx.Channel.SendMessageAsync($"It appears you don't own a goat with id {goatId}")
                             .ConfigureAwait(false);
                     }
-                    else if (goats.Find(goat => goat.Id == goatId).Level < 100)
+                    else if (goats.Find(goat => goat.Id == goatId)?.Level < 100)
                     {
                         await ctx.Channel
                             .SendMessageAsync(
                                 "This goat is not yet an adult and only adults can be moved to the shelter")
                             .ConfigureAwait(false);
                     }
-                    else if (goats.Find(goat => goat.Id == goatId).BaseColour == BaseColour.Special)
+                    else if (goats.Find(goat => goat.Id == goatId)?.BaseColour == BaseColour.Special)
                     {
                         await ctx.Channel.SendMessageAsync("You cannot breed special goats").ConfigureAwait(false);
                     }
@@ -127,7 +131,7 @@ namespace BumbleBot.Commands.Game
                         using (var stream = response.GetResponseStream())
                         using (var reader = new StreamReader(stream))
                         {
-                            var stringResponse = reader.ReadToEnd();
+                            var stringResponse = await reader.ReadToEndAsync();
 
                             await ctx.Channel.SendMessageAsync(stringResponse).ConfigureAwait(false);
                         }
@@ -141,8 +145,10 @@ namespace BumbleBot.Commands.Game
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
             }
         }
     }

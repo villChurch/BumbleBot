@@ -9,6 +9,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace BumbleBot.Commands.Game
 {
@@ -171,8 +172,10 @@ namespace BumbleBot.Commands.Game
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
             }
         }
 
@@ -234,8 +237,10 @@ namespace BumbleBot.Commands.Game
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
             }
         }
 
@@ -257,7 +262,7 @@ namespace BumbleBot.Commands.Game
                 else
                 {
                     var kids = GoatService.ReturnUsersKidsInKiddingPen(ctx.User.Id);
-                    var url = "http://williamspires.com/";
+                    var url = "https://williamspires.com/";
                     var pages = new List<Page>();
                     var interactivity = ctx.Client.GetInteractivity();
                     foreach (var goat in kids)
@@ -269,7 +274,7 @@ namespace BumbleBot.Commands.Game
                         };
                         embed.AddField("Name", goat.Name);
                         embed.AddField("Level", goat.Level.ToString(), true);
-                        embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed).Replace("_", " "), true);
+                        embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
                         embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
                         var page = new Page
                         {
@@ -283,8 +288,10 @@ namespace BumbleBot.Commands.Game
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
             }
         }
     }

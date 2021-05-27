@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using BumbleBot.Models;
@@ -8,6 +9,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
+using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 
 namespace BumbleBot.Commands.Game
@@ -15,7 +17,7 @@ namespace BumbleBot.Commands.Game
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class Trading : BaseCommandModule
     {
-        private readonly DbUtils dBUtils = new DbUtils();
+        private readonly DbUtils dBUtils = new();
 
         public Trading(FarmerService farmerService, GoatService goatService)
         {
@@ -67,7 +69,7 @@ namespace BumbleBot.Commands.Game
         {
             try
             {
-                var url = "http://williamspires.com/";
+                var url = "https://williamspires.com/";
                 var interactivity = ctx.Client.GetInteractivity();
                 var embed = new DiscordEmbedBuilder
                 {
@@ -76,8 +78,8 @@ namespace BumbleBot.Commands.Game
                 };
                 embed.AddField("Name", goat.Name);
                 embed.AddField("Level", goat.Level.ToString(), true);
-                embed.AddField("Experience", goat.Experience.ToString(), true);
-                embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed).Replace("_", " "), true);
+                embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
+                embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
                 embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
                 var message = await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
                 //white_check_mark
@@ -128,8 +130,10 @@ namespace BumbleBot.Commands.Game
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -13,6 +14,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Type = BumbleBot.Models.Type;
 
@@ -43,7 +45,7 @@ namespace BumbleBot.Commands.Game
 
         [Command("rprefix")]
         [Description("Removes prefix/herd name from goats")]
-        public async Task RemovePrefixFromGaots(CommandContext ctx, [RemainingText] string prefix)
+        public async Task RemovePrefixFromGoats(CommandContext ctx, [RemainingText] string prefix)
         {
             _ = Task.Run(async () =>
                 await SendAndPostResponse(ctx, $"http://localhost:8080/goat/herd/prefix/remove/{ctx.User.Id}/{prefix}"));
@@ -149,93 +151,101 @@ namespace BumbleBot.Commands.Game
                 }
                 else
                 {
-                    if (parameter.ToLower().Equals("level"))
+                    switch (parameter.ToLower())
                     {
-                        var goats = GoatService.ReturnUsersGoats(ctx.User.Id).OrderByDescending(x => x.Level);
-                        var url = "http://williamspires.com/";
-                        var pages = new List<Page>();
-                        var interactivity = ctx.Client.GetInteractivity();
-                        foreach (var goat in goats)
+                        case "level":
                         {
-                            var embed = new DiscordEmbedBuilder
+                            var goats = GoatService.ReturnUsersGoats(ctx.User.Id).OrderByDescending(x => x.Level);
+                            var url = "https://williamspires.com/";
+                            var pages = new List<Page>();
+                            var interactivity = ctx.Client.GetInteractivity();
+                            foreach (var goat in goats)
                             {
-                                Title = $"{goat.Id}",
-                                ImageUrl = url + Uri.EscapeUriString(goat.FilePath) //.Replace(" ", "%20")
-                            };
-                            embed.AddField("Name", goat.Name);
-                            embed.AddField("Level", goat.Level.ToString(), true);
-                            embed.AddField("Experience", goat.Experience.ToString(), true);
-                            embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
-                            embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
-                            var page = new Page
-                            {
-                                Embed = embed
-                            };
-                            pages.Add(page);
-                        }
+                                var embed = new DiscordEmbedBuilder
+                                {
+                                    Title = $"{goat.Id}",
+                                    ImageUrl = url + Uri.EscapeUriString(goat.FilePath) //.Replace(" ", "%20")
+                                };
+                                embed.AddField("Name", goat.Name);
+                                embed.AddField("Level", goat.Level.ToString(), true);
+                                embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
+                                embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
+                                embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
+                                var page = new Page
+                                {
+                                    Embed = embed
+                                };
+                                pages.Add(page);
+                            }
 
-                        _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false));
-                    }
-                    else if (parameter.ToLower().Equals("breed"))
-                    {
-                        var goats = GoatService.ReturnUsersGoats(ctx.User.Id).OrderBy(x => x.Breed);
-                        var url = "http://williamspires.com/";
-                        var pages = new List<Page>();
-                        var interactivity = ctx.Client.GetInteractivity();
-                        foreach (var goat in goats)
+                            _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false));
+                            break;
+                        }
+                        case "breed":
                         {
-                            var embed = new DiscordEmbedBuilder
+                            var goats = GoatService.ReturnUsersGoats(ctx.User.Id).OrderBy(x => x.Breed);
+                            var url = "https://williamspires.com/";
+                            var pages = new List<Page>();
+                            var interactivity = ctx.Client.GetInteractivity();
+                            foreach (var goat in goats)
                             {
-                                Title = $"{goat.Id}",
-                                ImageUrl = url + Uri.EscapeUriString(goat.FilePath) //.Replace(" ", "%20")
-                            };
-                            embed.AddField("Name", goat.Name);
-                            embed.AddField("Level", goat.Level.ToString(), true);
-                            embed.AddField("Experience", goat.Experience.ToString(), true);
-                            embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
-                            embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
-                            var page = new Page
-                            {
-                                Embed = embed
-                            };
-                            pages.Add(page);
-                        }
+                                var embed = new DiscordEmbedBuilder
+                                {
+                                    Title = $"{goat.Id}",
+                                    ImageUrl = url + Uri.EscapeUriString(goat.FilePath) //.Replace(" ", "%20")
+                                };
+                                embed.AddField("Name", goat.Name);
+                                embed.AddField("Level", goat.Level.ToString(), true);
+                                embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
+                                embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
+                                embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
+                                var page = new Page
+                                {
+                                    Embed = embed
+                                };
+                                pages.Add(page);
+                            }
 
-                        _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false));
-                    }
-                    else if (parameter.ToLower().Equals("colour"))
-                    {
-                        var goats = GoatService.ReturnUsersGoats(ctx.User.Id).OrderBy(x => x.BaseColour);
-                        var url = "http://williamspires.com/";
-                        var pages = new List<Page>();
-                        var interactivity = ctx.Client.GetInteractivity();
-                        foreach (var goat in goats)
+                            _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false));
+                            break;
+                        }
+                        case "colour":
                         {
-                            var embed = new DiscordEmbedBuilder
+                            var goats = GoatService.ReturnUsersGoats(ctx.User.Id).OrderBy(x => x.BaseColour);
+                            var url = "https://williamspires.com/";
+                            var pages = new List<Page>();
+                            var interactivity = ctx.Client.GetInteractivity();
+                            foreach (var goat in goats)
                             {
-                                Title = $"{goat.Id}",
-                                ImageUrl = url + Uri.EscapeUriString(goat.FilePath) //.Replace(" ", "%20")
-                            };
-                            embed.AddField("Name", goat.Name);
-                            embed.AddField("Level", goat.Level.ToString(), true);
-                            embed.AddField("Experience", goat.Experience.ToString(), true);
-                            embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
-                            embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
-                            var page = new Page
-                            {
-                                Embed = embed
-                            };
-                            pages.Add(page);
-                        }
+                                var embed = new DiscordEmbedBuilder
+                                {
+                                    Title = $"{goat.Id}",
+                                    ImageUrl = url + Uri.EscapeUriString(goat.FilePath) //.Replace(" ", "%20")
+                                };
+                                embed.AddField("Name", goat.Name);
+                                embed.AddField("Level", goat.Level.ToString(), true);
+                                embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
+                                embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
+                                embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
+                                var page = new Page
+                                {
+                                    Embed = embed
+                                };
+                                pages.Add(page);
+                            }
 
-                        _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false));
+                            _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages).ConfigureAwait(false));
+                            break;
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                Console.WriteLine(ex.StackTrace);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
             }
         }
 
@@ -247,7 +257,7 @@ namespace BumbleBot.Commands.Game
             {
                 var goats = GoatService.ReturnUsersGoats(ctx.User.Id);
 
-                var url = "http://williamspires.com/";
+                var url = "https://williamspires.com/";
                 var pages = new List<Page>();
                 var interactivity = ctx.Client.GetInteractivity();
                 foreach (var goat in goats)
@@ -259,8 +269,8 @@ namespace BumbleBot.Commands.Game
                     };
                     embed.AddField("Name", goat.Name);
                     embed.AddField("Level", goat.Level.ToString(), true);
-                    embed.AddField("Experience", goat.Experience.ToString(), true);
-                    embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed).Replace("_", " "), true);
+                    embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
+                    embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
                     embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
                     var page = new Page
                     {
@@ -273,8 +283,10 @@ namespace BumbleBot.Commands.Game
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
             }
         }
 
@@ -322,8 +334,10 @@ namespace BumbleBot.Commands.Game
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
             }
         }
 
@@ -352,8 +366,10 @@ namespace BumbleBot.Commands.Game
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
             }
         }
 
@@ -365,7 +381,7 @@ namespace BumbleBot.Commands.Game
             {
                 var goats = GoatService.ReturnUsersDeadGoats(ctx.User.Id);
 
-                var url = "http://williamspires.com/";
+                var url = "https://williamspires.com/";
                 var pages = new List<Page>();
                 var interactivity = ctx.Client.GetInteractivity();
                 foreach (var goat in goats)
@@ -377,8 +393,8 @@ namespace BumbleBot.Commands.Game
                     };
                     embed.AddField("Name", goat.Name);
                     embed.AddField("Level", goat.Level.ToString(), true);
-                    embed.AddField("Experience", goat.Experience.ToString(), true);
-                    embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed).Replace("_", " "), true);
+                    embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
+                    embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
                     embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
                     var page = new Page
                     {
@@ -391,8 +407,10 @@ namespace BumbleBot.Commands.Game
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
             }
         }
     }

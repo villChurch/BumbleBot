@@ -5,6 +5,7 @@ using BumbleBot.Services;
 using BumbleBot.Utilities;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 
 namespace BumbleBot.Commands.Game
@@ -64,7 +65,6 @@ namespace BumbleBot.Commands.Game
             }
             else
             {
-                var farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
                 using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                 {
                     var query = "insert into kiddingpens (ownerId) values (?discordId)";
@@ -274,8 +274,10 @@ namespace BumbleBot.Commands.Game
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.StackTrace);
-                Console.Out.WriteLine(ex.Message);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
             }
         }
     }

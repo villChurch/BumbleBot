@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using BumbleBot.Models;
@@ -10,6 +11,7 @@ using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 
 namespace BumbleBot.Commands.Game
@@ -57,7 +59,7 @@ namespace BumbleBot.Commands.Game
                 }
                 else
                 {
-                    var url = "http://williamspires.com/";
+                    var url = "https://williamspires.com/";
                     var pages = new List<Page>();
                     var interactivity = ctx.Client.GetInteractivity();
                     foreach (var goat in goatsInPasture)
@@ -69,8 +71,8 @@ namespace BumbleBot.Commands.Game
                         };
                         embed.AddField("Name", goat.Name);
                         embed.AddField("Level", goat.Level.ToString(), true);
-                        embed.AddField("Experience", goat.Experience.ToString(), true);
-                        embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed).Replace("_", " "), true);
+                        embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
+                        embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
                         embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
                         var page = new Page
                         {
@@ -84,15 +86,17 @@ namespace BumbleBot.Commands.Game
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
             }
         }
 
         [Command("remove")]
         [Description("Remove one or more goats from pasture")]
         public async Task RemoveFromPasture(CommandContext ctx,
-            [RemainingText] [Description("IDs of goats to move to pasture seperated by a space")]
+            [RemainingText] [Description("IDs of goats to move to pasture separated by a space")]
             string goatIDs)
         {
             try
@@ -100,6 +104,7 @@ namespace BumbleBot.Commands.Game
                 var ids = new List<int>();
                 var goats = GoatService.ReturnUsersGoats(ctx.User.Id);
                 var ownedGoatIds = goats.Select(goat => goat.Id).ToList();
+                // ReSharper disable once RedundantAssignment
                 var notYours = ids.Where(id => !ownedGoatIds.Contains(id)).ToList();
                 var removeAll = false;
                 if(goatIDs.ToLower().Trim().Equals("all"))
@@ -149,8 +154,10 @@ namespace BumbleBot.Commands.Game
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
             }
         }
 
@@ -165,6 +172,7 @@ namespace BumbleBot.Commands.Game
                 var ids = new List<int>();
                 var goats = GoatService.ReturnUsersGoats(ctx.User.Id);
                 var ownedGoatIds = goats.Select(goat => goat.Id).ToList();
+                // ReSharper disable once RedundantAssignment
                 var notYours = ids.Where(id => !ownedGoatIds.Contains(id)).ToList();
                 var isBestCommand = false;
                 if (goatIDs.ToLower().Trim().Equals("best"))
@@ -179,7 +187,7 @@ namespace BumbleBot.Commands.Game
                 notYours = ids.Where(id => !ownedGoatIds.Contains(id)).ToList();
                 if (isBestCommand)
                 {
-                    goats.OrderByDescending(x => x.Level);
+                    var orderByDescending = goats.OrderByDescending(x => x.Level).ToList();
                     var pastureSize = FarmerService.ReturnFarmerInfo(ctx.User.Id).Grazingspace;
                     using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                     {
@@ -191,7 +199,7 @@ namespace BumbleBot.Commands.Game
                     }
                     for (var i = 0; i < pastureSize; i++)
                     {
-                        if (i >= goats.Count)
+                        if (i >= orderByDescending.Count)
                         {
                             i = pastureSize;
                         }
@@ -201,7 +209,7 @@ namespace BumbleBot.Commands.Game
                             {
                                 var query = "replace into grazing (goatId, farmerId) Values (?goatId, ?farmerId)";
                                 var command = new MySqlCommand(query, connection);
-                                command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goats[i].Id;
+                                command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = orderByDescending[i].Id;
                                 command.Parameters.Add("?farmerId", MySqlDbType.VarChar).Value = ctx.User.Id;
                                 connection.Open();
                                 command.ExecuteNonQuery();
@@ -217,10 +225,9 @@ namespace BumbleBot.Commands.Game
                 }
                 else
                 {
-                    var grazingSize = 0;
                     var currentlyGrazing = 0;
                     var farmer = FarmerService.ReturnFarmerInfo(ctx.User.Id);
-                    grazingSize = farmer.Grazingspace;
+                    var grazingSize = farmer.Grazingspace;
                     using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                     {
                         var query = "select COUNT(*) as goatsGrazing from grazing where farmerId = ?farmerId";
@@ -268,16 +275,17 @@ namespace BumbleBot.Commands.Game
                     }
                 }
             }
-            catch (FormatException fe)
+            catch (FormatException)
             {
                 await ctx.Channel.SendMessageAsync("It appears you have entered a non numeric value for a goat id")
                     .ConfigureAwait(false);
-                Console.Out.WriteLine(fe.StackTrace);
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
             }
         }
     }
