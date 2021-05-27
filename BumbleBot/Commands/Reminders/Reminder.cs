@@ -36,7 +36,7 @@ namespace BumbleBot.Commands.Reminders
                 return;
             }
 
-            if (duration > TimeSpan.FromDays(365)) // 1 year is the maximum
+            if (duration > TimeSpan.FromDays(365))
             {
                 await ctx.Channel.SendMessageAsync("Maximum allowed time span to set a reminder is 1 year.");
                 return;
