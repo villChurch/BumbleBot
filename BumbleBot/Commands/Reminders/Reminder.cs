@@ -35,13 +35,6 @@ namespace BumbleBot.Commands.Reminders
                     "Reminder text must to be no longer than 128 characters, not empty and not whitespace.");
                 return;
             }
-#if !DEBUG
-            if (duration < TimeSpan.FromSeconds(30))
-            {
-                await ctx.ElevatedRespondAsync("Minimum required time span to set a reminder is 30 seconds.");
-                return;
-            }
-#endif
 
             if (duration > TimeSpan.FromDays(365)) // 1 year is the maximum
             {
