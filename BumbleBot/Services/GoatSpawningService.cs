@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using BumbleBot.Models;
 using BumbleBot.Utilities;
 using DSharpPlus;
 using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity.Extensions;
 using MySql.Data.MySqlClient;
 using Type = BumbleBot.Models.Type;
@@ -16,8 +14,7 @@ namespace BumbleBot.Services
     public class GoatSpawningService
     {
         private readonly DbUtils dbUtils = new();
-        private ulong goatSpawnChannelId = 762230405784272916;
-         public (Goat, string) GenerateSpecialPaddyGoatToSpawn()
+        public (Goat, string) GenerateSpecialPaddyGoatToSpawn()
         {
              var specialGoat = new Goat();
              specialGoat.Breed = Breed.Shamrock;

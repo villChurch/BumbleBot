@@ -23,9 +23,9 @@ namespace BumbleBot.Commands.Game
         public async Task CampaignCommand(CommandContext ctx, int goatId, int bet)
         {
             var goats = goatService.ReturnUsersGoats(ctx.User.Id);
-            if (bet != 100)
+            if (bet != 1000)
             {
-                await ctx.Channel.SendMessageAsync($"Campaign costs 100 credits to enter not {bet} credits.")
+                await ctx.Channel.SendMessageAsync($"Campaign costs 1000 credits to enter not {bet} credits.")
                     .ConfigureAwait(false);
                 return;
             }
