@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Net;
 using System.Threading.Tasks;
 using System.Timers;
 using BumbleBot.Attributes;
@@ -15,6 +17,7 @@ using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
 using Type = BumbleBot.Models.Type;
 
 namespace BumbleBot.Commands.Game
@@ -92,6 +95,45 @@ namespace BumbleBot.Commands.Game
             }
         }
 
+        [Command("daily")]
+        [Description("Collect your daily reward")]
+        public async Task CollectDaily(CommandContext ctx)
+        {
+            try
+            {
+                _ = Task.Run(async () =>
+                {
+                    var uri = $"http://localhost:8080/daily/{ctx.User.Id}";
+                    var request = (HttpWebRequest) WebRequest.Create(uri);
+                    request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+
+                    using (var response = (HttpWebResponse) await request.GetResponseAsync())
+                    using (var stream = response.GetResponseStream())
+                    using (var reader = new StreamReader(stream))
+                    {
+                        var jsonReader = new JsonTextReader(reader);
+                        var serializer = new JsonSerializer();
+                        var dailyResponse = serializer.Deserialize<DailyResponse>(jsonReader);
+                        GoatService.UpdateGoatImagesForKidsThatAreAdults(ctx.User.Id);
+                        if (dailyResponse != null)
+                            await new DiscordMessageBuilder()
+                                .WithReply(ctx.Message.Id, true)
+                                .WithContent(dailyResponse.Message)
+                                .SendAsync(ctx.Channel);
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                await ctx.Channel.SendMessageAsync("Something went wrong while collecting your daily")
+                    .ConfigureAwait(false);
+                ctx.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                    ctx.User.Username, ctx.Command?.QualifiedName ?? "<unknown command>",
+                    ex.GetType(), ex.Message);
+            }
+        }
+        
         [Command("profile")]
         [Description("Shows your game profile")]
         public async Task ShowProfile(CommandContext ctx)
