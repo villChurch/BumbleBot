@@ -29,15 +29,17 @@ namespace BumbleBot.Commands.Game
         private Timer equipTimer;
         private bool equipTimerrunning;
 
-        public GameCommands(GoatService goatService, FarmerService farmerService)
+        public GameCommands(GoatService goatService, FarmerService farmerService, GoatSpawningService goatSpawningService)
         {
-            this.GoatService = goatService;
-            this.FarmerService = farmerService;
+            GoatService = goatService;
+            FarmerService = farmerService;
+            GoatSpawningService = goatSpawningService;
         }
 
         private FarmerService FarmerService { get; }
         private GoatService GoatService { get; }
-
+        
+        private GoatSpawningService GoatSpawningService { get; }
 
         private void SetEquipTimer()
         {
@@ -52,6 +54,56 @@ namespace BumbleBot.Commands.Game
             equipTimerrunning = false;
             equipTimer.Stop();
             equipTimer.Dispose();
+        }
+
+        [Command("spawn")]
+        [Hidden]
+        [OwnerOrPermission(Permissions.KickMembers)]
+        public async Task SpawnGoat(CommandContext ctx)
+        {
+            await ctx.Message.DeleteAsync();
+            var random = new Random();
+                    var number = random.Next(0, 5);
+                    switch (number)
+                    {
+                        case 0 or 1 when GoatSpawningService.AreSpringSpawnsEnabled():
+                            var springGoatToSpawn = GoatSpawningService.GenerateSpecialSpringGoatToSpawn();
+                            _ = Task.Run(() => GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, springGoatToSpawn.Item1, springGoatToSpawn.Item2, ctx.Client));
+                            break;
+                        case 0 or 1 when GoatSpawningService.AreDazzleSpawnsEnabled():
+                            var bestGoat = GoatSpawningService.GenerateBestestGoatToSpawn();
+                            _ = Task.Run(() => GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, bestGoat.Item1, bestGoat.Item2, ctx.Client));
+                            break;
+                        case 0 or 1 when GoatSpawningService.AreMemberSpawnsEnabled():
+                            var memberGoatToSpawn = GoatSpawningService.GenerateMemberSpecialGoatToSpawn();
+                            _ = Task.Run(() =>
+                                GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, memberGoatToSpawn.Item1, memberGoatToSpawn.Item2, ctx.Client));
+                            break;
+                        case 1 when GoatSpawningService.AreChristmasSpawnsEnabled():
+                            var christmasGoat = GoatSpawningService.GenerateChristmasSpecialToSpawn();
+                            _ = Task.Run(() => GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, christmasGoat.Item1, christmasGoat.Item2, ctx.Client));
+                            break;
+                        case 2 when GoatSpawningService.AreTaillessSpawnsEnabled():
+                            var taillessGoat = GoatSpawningService.GenerateTaillessSpecialGoatToSpawn();
+                            _ = Task.Run(() =>
+                                GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, taillessGoat.Item1, taillessGoat.Item2, ctx.Client));
+                            break;
+                        case 3 when GoatSpawningService.AreValentinesSpawnsEnabled():
+                            var valentinesGoat = GoatSpawningService.GenerateValentinesGoatToSpawn();
+                            _ = Task.Run(() => GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, valentinesGoat.Item1, valentinesGoat.Item2, ctx.Client));
+                            break;
+                        case 4 when GoatSpawningService.ArePaddysSpawnsEnabled():
+                            var goat = GoatSpawningService.GenerateSpecialPaddyGoatToSpawn();
+                            _ = Task.Run(() => GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, goat.Item1, goat.Item2, ctx.Client));
+                            break;
+                        default:
+                        {
+                            _ = random.Next(0, 100) == 69 ? Task.Run(() => 
+                                GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, GoatSpawningService.GenerateSpecialGoatToSpawn(), ctx.Client))
+                                : Task.Run(() => GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, GoatSpawningService.GenerateNormalGoatToSpawn(), ctx.Client));
+                            break;
+                        }
+                    }
         }
 
         [Command("givec")]
