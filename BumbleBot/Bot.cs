@@ -41,8 +41,6 @@ namespace BumbleBot
         public InteractivityConfiguration Interactivity { get; private set; }
         private IServiceProvider Services { get; set; }
 
-        private readonly GoatSpawningService goatSpawningService = new();
-
         private void StartTimer()
         {
             timer = new Timer {Interval = 60000 * 5};
@@ -193,7 +191,7 @@ namespace BumbleBot
             return Task.CompletedTask;
         }
 
-        private Task Client_MessageCreated(DiscordClient client, MessageCreateEventArgs e)
+        private async Task Client_MessageCreated(DiscordClient client, MessageCreateEventArgs e)
         {
             using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
             {
@@ -207,14 +205,17 @@ namespace BumbleBot
                         reader.GetUInt64("stringResponse");
             }
 
-            if (!e.Author.IsBot && e.Channel.ParentId != 725504404995964948)
+            if (!e.Author.IsBot && e.Guild.Id == 565016829131751425 && e.Channel.ParentId != 725504404995964948) //798239862989127691)
             {
                 messageCount++;
                 if (messageCount > 10 && gpm <= 0)
                 {
+                    var goatSpawningService = new GoatSpawningService();
                     var random = new Random();
                     var number = random.Next(0, 5);
-                    var spawnChannel = e.Guild.GetChannel(762230405784272916);
+                    ulong goatSpawnChannelId = 774294357057732608;
+                    var guildList = await e.Guild.GetChannelsAsync().ConfigureAwait(false);
+                    var spawnChannel = e.Guild.GetChannel(goatSpawnChannelId);
                     switch (number)
                     {
                         case 0 or 1 when goatSpawningService.AreSpringSpawnsEnabled():
@@ -265,7 +266,7 @@ namespace BumbleBot
                 var goatService = new GoatService();
                 var hasGoatLevelled = goatService.CheckExpAgainstNextLevel(e.Message.Author.Id, (decimal) 0.5);
                 if (hasGoatLevelled.Item1)
-                    Task.Run(async () =>
+                    await Task.Run(async () =>
                         {
                             var channelList = await e.Guild.GetChannelsAsync();
                             if (channelList.Any(x => x.Id == 774294465942257715))
@@ -319,7 +320,7 @@ namespace BumbleBot
                     }
 
                     if (!currentResponse.Equals("empty"))
-                        Task.Run(async () =>
+                        await Task.Run(async () =>
                         {
                             _ = await e.Channel.SendMessageAsync($"{currentResponse}").ConfigureAwait(false);
                         });
@@ -327,12 +328,9 @@ namespace BumbleBot
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
-                return Task.CompletedTask;
+                await Console.Out.WriteLineAsync(ex.Message);
+                await Console.Out.WriteLineAsync(ex.StackTrace);
             }
-
-            return Task.CompletedTask;
         }
 
         private Task Client_GuildAvailable(DiscordClient client, GuildCreateEventArgs e)
