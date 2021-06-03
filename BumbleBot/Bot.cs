@@ -103,7 +103,8 @@ namespace BumbleBot
                 PaginationBehaviour = PaginationBehaviour.WrapAround,
 
                 // default timeout for other actions to 5 minutes
-                Timeout = TimeSpan.FromMinutes(5)
+                Timeout = TimeSpan.FromMinutes(5),
+                ResponseBehavior = InteractionResponseBehavior.Ack
             });
 #pragma warning restore IDE0058 // Expression value is never used
 

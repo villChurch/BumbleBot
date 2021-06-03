@@ -366,7 +366,7 @@ namespace BumbleBot.Services
                 var url = "https://williamspires.com/";
                 var embed = new DiscordEmbedBuilder
                 {
-                    Title = $"{goatToSpawn.Name} has become available, type purchase to add her to your herd",
+                    Title = $"{goatToSpawn.Name} has become available, click purchase below to add her to your herd",
                     Color = DiscordColor.Aquamarine,
                     ImageUrl = url + Uri.EscapeUriString(goatToSpawn.FilePath) //.Replace(" ", "%20")
                 };
@@ -376,10 +376,17 @@ namespace BumbleBot.Services
                 embed.AddField("Level", (goatToSpawn.Level - 1).ToString(), true);
                 
                 var interactivity = client.GetInteractivity();
+                var sellEmoji = DiscordEmoji.FromName(client, ":dollar:");
+                var purchaseButton = new DiscordButtonComponent(ButtonStyle.Success, "purchase", "Purchase Goat", 
+                    false, new DiscordComponentEmoji(sellEmoji));
                 var goatMsg = await new DiscordMessageBuilder()
                     .WithEmbed(embed)
+                    .AddComponents(purchaseButton)
                     .SendAsync(channel);
-                
+
+                var buttonResult = await interactivity
+                    .WaitForButtonAsync(goatMsg, purchaseButton.CustomId, TimeSpan.FromSeconds(45))
+                    .ConfigureAwait(false);
                 var msg = await interactivity.WaitForMessageAsync(x => x.Channel == channel
                 && x.Content.ToLower().Trim() == "purchase", TimeSpan.FromSeconds(45)).ConfigureAwait(false);
                 await goatMsg.DeleteAsync();
