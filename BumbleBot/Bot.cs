@@ -118,7 +118,7 @@ namespace BumbleBot
             };
 
             var slash = Client.UseSlashCommands();
-            slash.RegisterCommands<SlashHandle>();
+            slash.RegisterCommands<SlashHandle>(798239862477815819);
             slash.SlashCommandErrored += SlashOnSlashCommandErrored;
             Commands = Client.UseCommandsNext(commandsConfig);
 
