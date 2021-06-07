@@ -50,16 +50,6 @@ namespace BumbleBot.Commands.ButtonCommands
             equipTimer.Dispose();
         }
 
-        [Command("dashboard")]
-        public async Task PostDashboardLink(CommandContext ctx)
-        {
-            var linkButton = new DiscordLinkButtonComponent("https://bumble.williamspires.com", "Bumble stats");
-            await new DiscordMessageBuilder()
-                .WithContent("To view bumble bots dashboard click this button")
-                .AddComponents(linkButton)
-                .SendAsync(ctx.Channel).ConfigureAwait(false);
-        }
-        
         [Command("tb")]
         public async Task TestButtonCommand(CommandContext ctx)
         {
