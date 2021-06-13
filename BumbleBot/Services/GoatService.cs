@@ -414,6 +414,32 @@ namespace BumbleBot.Services
             return msg;
         }
 
+        private string KillGoat(Goat goat, ulong userId)
+        {
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                var query = "insert into deadgoats (goatid, baseColour, breed, level, name, ownerID, imageLink) " +
+                            "values (?goatid, ?baseColour, ?breed, ?level, ?name, ?ownerID, ?imageLink)";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?goatId", MySqlDbType.Int32).Value = goat.Id;
+                command.Parameters.Add("?breed", MySqlDbType.VarChar).Value = Enum.GetName(typeof(Breed), goat.Breed);
+                command.Parameters.Add("?baseColour", MySqlDbType.VarChar).Value =
+                    Enum.GetName(typeof(BaseColour), goat.BaseColour);
+                command.Parameters.Add("?level", MySqlDbType.Int32).Value = goat.Level;
+                command.Parameters.Add("?name", MySqlDbType.VarChar).Value = goat.Name;
+                command.Parameters.Add("?imageLink", MySqlDbType.VarChar).Value = goat.FilePath;
+                command.Parameters.Add("?ownerId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+
+            DeleteGoat(goat.Id);
+            var lines = File.ReadLines(deathPath + "/deaths.txt").ToList();
+            var rnd = new Random();
+            var msg =
+                $"Oh no! Your goat has unfortunately died from {lines.ElementAt(rnd.Next(0, lines.Count))} - rest in peace {goat.Name}";
+            return msg;
+        }
         private (int, decimal) GetCurrentLevelAndExpOfGoat(ulong userId)
         {
             var goatsLevel = 0;
@@ -455,6 +481,7 @@ namespace BumbleBot.Services
                     {
                         var goat = new Goat();
                         goat.Id = reader.GetInt32("id");
+                        goat.Experience = reader.GetDecimal("experience");
                         goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
                         goat.BaseColour = (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
                         goat.FilePath = reader.GetString("imageLink");
@@ -464,9 +491,22 @@ namespace BumbleBot.Services
                 reader.Close();
             }
 
-            goats.ForEach(goat => UpdateGoatImage(goat));
+            goats.ForEach(UpdateGoatImage);
         }
 
+        public String CheckForNegativeExp(int goatId, ulong userId)
+        {
+            var goats = ReturnUsersGoats(userId);
+            var goat = goats.Find(g => g.Id == goatId);
+            if (goat != null && goat.Experience < 0)
+            {
+                goat.Level = 0;
+                goat.Experience = 0;
+                return KillGoat(goat, userId);
+            }
+
+            return "";
+        }
         private void UpdateGoatImage(Goat goat)
         {
             using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
