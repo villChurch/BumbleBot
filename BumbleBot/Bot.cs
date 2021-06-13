@@ -192,146 +192,171 @@ namespace BumbleBot
             return Task.CompletedTask;
         }
 
-        private async Task Client_MessageCreated(DiscordClient client, MessageCreateEventArgs e)
+        private Task Client_MessageCreated(DiscordClient client, MessageCreateEventArgs e)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
-            {
-                var query = "select stringResponse from config where paramName = ?paramName";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?paramName", MySqlDbType.VarChar).Value = "spawnChannel";
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                        reader.GetUInt64("stringResponse");
-            }
-
-            if (!e.Author.IsBot && e.Guild.Id == 565016829131751425 && e.Channel.ParentId != 725504404995964948) //798239862989127691)
-            {
-                messageCount++;
-                if (messageCount > 10 && gpm <= 0)
-                {
-                    var goatSpawningService = new GoatSpawningService();
-                    var random = new Random();
-                    var number = random.Next(0, 5);
-                    ulong goatSpawnChannelId = 774294357057732608;
-                    var guildList = await e.Guild.GetChannelsAsync().ConfigureAwait(false);
-                    var spawnChannel = e.Guild.GetChannel(goatSpawnChannelId);
-                    switch (number)
-                    {
-                        case 0 or 1 when goatSpawningService.AreSpringSpawnsEnabled():
-                            var springGoatToSpawn = goatSpawningService.GenerateSpecialSpringGoatToSpawn();
-                            _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild, springGoatToSpawn.Item1, springGoatToSpawn.Item2, client));
-                            break;
-                        case 0 or 1 when goatSpawningService.AreDazzleSpawnsEnabled():
-                            var bestGoat = goatSpawningService.GenerateBestestGoatToSpawn();
-                            _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild, bestGoat.Item1, bestGoat.Item2, client));
-                            break;
-                        case 0 or 1 when goatSpawningService.AreMemberSpawnsEnabled():
-                            var memberGoatToSpawn = goatSpawningService.GenerateMemberSpecialGoatToSpawn();
-                            _ = Task.Run(() =>
-                                goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild, memberGoatToSpawn.Item1, memberGoatToSpawn.Item2, client));
-                            break;
-                        case 1 when goatSpawningService.AreChristmasSpawnsEnabled():
-                            var christmasGoat = goatSpawningService.GenerateChristmasSpecialToSpawn();
-                            _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild, christmasGoat.Item1, christmasGoat.Item2, client));
-                            break;
-                        case 2 when goatSpawningService.AreTaillessSpawnsEnabled():
-                            var taillessGoat = goatSpawningService.GenerateTaillessSpecialGoatToSpawn();
-                            _ = Task.Run(() =>
-                                goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild, taillessGoat.Item1, taillessGoat.Item2, client));
-                            break;
-                        case 3 when goatSpawningService.AreValentinesSpawnsEnabled():
-                            var valentinesGoat = goatSpawningService.GenerateValentinesGoatToSpawn();
-                            _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild, valentinesGoat.Item1, valentinesGoat.Item2, client));
-                            break;
-                        case 4 when goatSpawningService.ArePaddysSpawnsEnabled():
-                            var goat = goatSpawningService.GenerateSpecialPaddyGoatToSpawn();
-                            _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild, goat.Item1, goat.Item2, client));
-                            break;
-                        default:
-                        {
-                            _ = random.Next(0, 100) == 69 ? Task.Run(() => 
-                                goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild, goatSpawningService.GenerateSpecialGoatToSpawn(), client))
-                                : Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild, goatSpawningService.GenerateNormalGoatToSpawn(), client));
-                            break;
-                        }
-                    }
-                    messageCount = 0;
-                    gpm++;
-                }
-            }
-
-            try
-            {
-                var goatService = new GoatService();
-                var hasGoatLevelled = goatService.CheckExpAgainstNextLevel(e.Message.Author.Id, (decimal) 0.5);
-                if (hasGoatLevelled.Item1)
-                    await Task.Run(async () =>
-                        {
-                            var channelList = await e.Guild.GetChannelsAsync();
-                            if (channelList.Any(x => x.Id == 774294465942257715))
-                            {
-                                var channel = e.Guild.GetChannel(774294465942257715);
-                                _ = await channel.SendMessageAsync($"{e.Author.Mention} {hasGoatLevelled.Item2}")
-                                    .ConfigureAwait(false);
-                            }
-                        }
-                    );
-
-                var assholeMode = false;
-                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
-                {
-                    var query = "Select boolValue from config where paramName = ?paramName";
-                    var command = new MySqlCommand(query, connection);
-                    command.Parameters.Add("?paramName", MySqlDbType.VarChar, 2550).Value = "assholeMode";
-                    connection.Open();
-                    var reader = command.ExecuteReader();
-                    if (reader.HasRows)
-                        while (reader.Read())
-                            assholeMode = reader.GetBoolean("boolValue");
-                    reader.Close();
-                }
-
-                var mrStick = DiscordEmoji.FromName(client, ":mrstick:");
-                if (assholeMode && e.Message.Content.Equals(mrStick))
+            _ = Task.Run(async () =>
                 {
                     using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                     {
-                        var query = "Update config SET boolValue = ?boolValue where paramName = ?paramName";
+                        var query = "select stringResponse from config where paramName = ?paramName";
                         var command = new MySqlCommand(query, connection);
-                        command.Parameters.Add("?boolValue", MySqlDbType.Int16).Value = 0;
-                        command.Parameters.Add("?paramName", MySqlDbType.VarChar).Value = "assholeMode";
-                        connection.Open();
-                        command.ExecuteNonQuery();
-                    }
-
-                    var currentResponse = "";
-                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
-                    {
-                        var query = "Select stringResponse from config where paramName = ?paramName";
-                        var command = new MySqlCommand(query, connection);
-                        command.Parameters.Add("?paramName", MySqlDbType.VarChar).Value = "assholeResponse";
+                        command.Parameters.Add("?paramName", MySqlDbType.VarChar).Value = "spawnChannel";
                         connection.Open();
                         var reader = command.ExecuteReader();
                         if (reader.HasRows)
                             while (reader.Read())
-                                currentResponse = reader.GetString("stringResponse");
-                        reader.Close();
+                                reader.GetUInt64("stringResponse");
                     }
 
-                    if (!currentResponse.Equals("empty"))
-                        await Task.Run(async () =>
+                    if (!e.Author.IsBot && e.Guild.Id == 565016829131751425 &&
+                        e.Channel.ParentId != 725504404995964948) //798239862989127691)
+                    {
+                        messageCount++;
+                        if (messageCount > 10 && gpm <= 0)
                         {
-                            _ = await e.Channel.SendMessageAsync($"{currentResponse}").ConfigureAwait(false);
-                        });
-                }
-            }
-            catch (Exception ex)
-            {
-                await Console.Out.WriteLineAsync(ex.Message);
-                await Console.Out.WriteLineAsync(ex.StackTrace);
-            }
+                            var goatSpawningService = new GoatSpawningService();
+                            var random = new Random();
+                            var number = random.Next(0, 5);
+                            ulong goatSpawnChannelId = 774294357057732608;
+                            var guildList = await e.Guild.GetChannelsAsync().ConfigureAwait(false);
+                            var spawnChannel = e.Guild.GetChannel(goatSpawnChannelId);
+                            switch (number)
+                            {
+                                case 0 or 1 when goatSpawningService.AreSpringSpawnsEnabled():
+                                    var springGoatToSpawn = goatSpawningService.GenerateSpecialSpringGoatToSpawn();
+                                    _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel,
+                                        e.Guild, springGoatToSpawn.Item1, springGoatToSpawn.Item2, client));
+                                    break;
+                                case 0 or 1 when goatSpawningService.AreDazzleSpawnsEnabled():
+                                    var bestGoat = goatSpawningService.GenerateBestestGoatToSpawn();
+                                    _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel,
+                                        e.Guild, bestGoat.Item1, bestGoat.Item2, client));
+                                    break;
+                                case 0 or 1 when goatSpawningService.AreMemberSpawnsEnabled():
+                                    var memberGoatToSpawn = goatSpawningService.GenerateMemberSpecialGoatToSpawn();
+                                    _ = Task.Run(() =>
+                                        goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild,
+                                            memberGoatToSpawn.Item1, memberGoatToSpawn.Item2, client));
+                                    break;
+                                case 1 when goatSpawningService.AreDairySpecialSpawnsEnabled():
+                                    var dairySpecial = goatSpawningService.GenerateSpecialDairyGoatToSpawn();
+                                    _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel,
+                                        e.Guild,
+                                        dairySpecial.Item1, dairySpecial.Item2, client));
+                                    break;
+                                case 1 when goatSpawningService.AreChristmasSpawnsEnabled():
+                                    var christmasGoat = goatSpawningService.GenerateChristmasSpecialToSpawn();
+                                    _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel,
+                                        e.Guild, christmasGoat.Item1, christmasGoat.Item2, client));
+                                    break;
+                                case 2 when goatSpawningService.AreTaillessSpawnsEnabled():
+                                    var taillessGoat = goatSpawningService.GenerateTaillessSpecialGoatToSpawn();
+                                    _ = Task.Run(() =>
+                                        goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild,
+                                            taillessGoat.Item1, taillessGoat.Item2, client));
+                                    break;
+                                case 3 when goatSpawningService.AreValentinesSpawnsEnabled():
+                                    var valentinesGoat = goatSpawningService.GenerateValentinesGoatToSpawn();
+                                    _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel,
+                                        e.Guild, valentinesGoat.Item1, valentinesGoat.Item2, client));
+                                    break;
+                                case 4 when goatSpawningService.ArePaddysSpawnsEnabled():
+                                    var goat = goatSpawningService.GenerateSpecialPaddyGoatToSpawn();
+                                    _ = Task.Run(() =>
+                                        goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild, goat.Item1,
+                                            goat.Item2, client));
+                                    break;
+                                default:
+                                {
+                                    _ = random.Next(0, 100) == 69
+                                        ? Task.Run(() =>
+                                            goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild,
+                                                goatSpawningService.GenerateSpecialGoatToSpawn(), client))
+                                        : Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel,
+                                            e.Guild, goatSpawningService.GenerateNormalGoatToSpawn(), client));
+                                    break;
+                                }
+                            }
+
+                            messageCount = 0;
+                            gpm++;
+                        }
+                    }
+
+                    try
+                    {
+                        var goatService = new GoatService();
+                        var hasGoatLevelled = goatService.CheckExpAgainstNextLevel(e.Message.Author.Id, (decimal) 0.5);
+                        if (hasGoatLevelled.Item1)
+                            await Task.Run(async () =>
+                                {
+                                    var channelList = await e.Guild.GetChannelsAsync();
+                                    if (channelList.Any(x => x.Id == 774294465942257715))
+                                    {
+                                        var channel = e.Guild.GetChannel(774294465942257715);
+                                        _ = await channel
+                                            .SendMessageAsync($"{e.Author.Mention} {hasGoatLevelled.Item2}")
+                                            .ConfigureAwait(false);
+                                    }
+                                }
+                            );
+
+                        var assholeMode = false;
+                        using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                        {
+                            var query = "Select boolValue from config where paramName = ?paramName";
+                            var command = new MySqlCommand(query, connection);
+                            command.Parameters.Add("?paramName", MySqlDbType.VarChar, 2550).Value = "assholeMode";
+                            connection.Open();
+                            var reader = command.ExecuteReader();
+                            if (reader.HasRows)
+                                while (reader.Read())
+                                    assholeMode = reader.GetBoolean("boolValue");
+                            reader.Close();
+                        }
+
+                        var mrStick = DiscordEmoji.FromName(client, ":mrstick:");
+                        if (assholeMode && e.Message.Content.Equals(mrStick))
+                        {
+                            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                            {
+                                var query = "Update config SET boolValue = ?boolValue where paramName = ?paramName";
+                                var command = new MySqlCommand(query, connection);
+                                command.Parameters.Add("?boolValue", MySqlDbType.Int16).Value = 0;
+                                command.Parameters.Add("?paramName", MySqlDbType.VarChar).Value = "assholeMode";
+                                connection.Open();
+                                command.ExecuteNonQuery();
+                            }
+
+                            var currentResponse = "";
+                            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                            {
+                                var query = "Select stringResponse from config where paramName = ?paramName";
+                                var command = new MySqlCommand(query, connection);
+                                command.Parameters.Add("?paramName", MySqlDbType.VarChar).Value = "assholeResponse";
+                                connection.Open();
+                                var reader = command.ExecuteReader();
+                                if (reader.HasRows)
+                                    while (reader.Read())
+                                        currentResponse = reader.GetString("stringResponse");
+                                reader.Close();
+                            }
+
+                            if (!currentResponse.Equals("empty"))
+                                await Task.Run(async () =>
+                                {
+                                    _ = await e.Channel.SendMessageAsync($"{currentResponse}")
+                                        .ConfigureAwait(false);
+                                });
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        await Console.Out.WriteLineAsync(ex.Message);
+                        await Console.Out.WriteLineAsync(ex.StackTrace);
+                    }
+                });
+            return Task.CompletedTask;
         }
 
         private Task Client_GuildAvailable(DiscordClient client, GuildCreateEventArgs e)

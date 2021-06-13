@@ -17,6 +17,25 @@ namespace BumbleBot.Commands.AdminCommands
     {
         private readonly DbUtils dbUtils = new DbUtils();
 
+        [Command("dairyspecial")]
+        [Description("Disable or enabeld dairy special spawns")]
+        [OwnerOrPermission(Permissions.KickMembers)]
+        public async Task SetDairySpecialSpawnVariable(CommandContext ctx, bool enabled)
+        {
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "update config SET boolValue = ?value where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?value", enabled);
+                command.Parameters.AddWithValue("?param", "dairySpecials");
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+            var enabledOrDisabled = enabled ? "enabled" : "disabled";
+            await ctx.Channel.SendMessageAsync($"Dairy special spawns have been {enabledOrDisabled}.")
+                .ConfigureAwait(false); 
+        }
+        
         [Command("memberspecial")]
         [Description("Disable or enabled member special spawns")]
         [OwnerOrPermission(Permissions.KickMembers)]
