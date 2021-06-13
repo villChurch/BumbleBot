@@ -376,6 +376,11 @@ namespace BumbleBot.Commands.Game
                     break;
             }
             _goatService.UpdateGoatImagesForKidsThatAreAdults(ctx.User.Id);
+            var negResult = _goatService.CheckForNegativeExp(goatId, ctx.User.Id);
+            if (!string.IsNullOrEmpty(negResult))
+            {
+                await ctx.Channel.SendMessageAsync(negResult);
+            }
         }
     }
 }
