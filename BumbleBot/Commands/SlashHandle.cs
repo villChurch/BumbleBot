@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
 using DSharpPlus;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.Attributes;
 using MySql.Data.MySqlClient;
 
 namespace BumbleBot.Commands
@@ -22,7 +23,9 @@ namespace BumbleBot.Commands
         {
             var milk = farmerService.ReturnFarmerInfo(ctx.User.Id).Milk;
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent($"You currently have {milk} lbs of milk."))
+                    new DiscordInteractionResponseBuilder()
+                        .WithContent($"You currently have {milk} lbs of milk.")
+                        .AsEphemeral(true))
                 .ConfigureAwait(false);
         }
 

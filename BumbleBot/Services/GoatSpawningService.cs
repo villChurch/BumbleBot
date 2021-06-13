@@ -366,7 +366,7 @@ namespace BumbleBot.Services
                 var url = "https://williamspires.com/";
                 var embed = new DiscordEmbedBuilder
                 {
-                    Title = $"{goatToSpawn.Name} has become available, type purchase to add her to your herd",
+                    Title = $"{goatToSpawn.Name} has become available, click purchase below to add her to your herd",
                     Color = DiscordColor.Aquamarine,
                     ImageUrl = url + Uri.EscapeUriString(goatToSpawn.FilePath) //.Replace(" ", "%20")
                 };
@@ -376,31 +376,40 @@ namespace BumbleBot.Services
                 embed.AddField("Level", (goatToSpawn.Level - 1).ToString(), true);
                 
                 var interactivity = client.GetInteractivity();
+                var sellEmoji = DiscordEmoji.FromName(client, ":dollar:");
+                var purchaseButton = new DiscordButtonComponent(ButtonStyle.Success, "purchase", "Purchase", 
+                    false, new DiscordComponentEmoji(sellEmoji));
                 var goatMsg = await new DiscordMessageBuilder()
                     .WithEmbed(embed)
+                    .AddComponents(purchaseButton)
                     .SendAsync(channel);
-                
-                var msg = await interactivity.WaitForMessageAsync(x => x.Channel == channel
-                && x.Content.ToLower().Trim() == "purchase", TimeSpan.FromSeconds(45)).ConfigureAwait(false);
-                await goatMsg.DeleteAsync();
+
+                var buttonResult = await interactivity
+                    .WaitForButtonAsync(goatMsg, TimeSpan.FromSeconds(45))
+                    .ConfigureAwait(false);
                 var goatService = new GoatService();
-                if (msg.TimedOut)
+                if (buttonResult.TimedOut)
                 {
+                    await goatMsg.DeleteAsync();
                     await channel
                         .SendMessageAsync($"No one decided to purchase {goatToSpawn.Name}")
                         .ConfigureAwait(false);
                 }
-                else if (!goatService.CanGoatsFitInBarn(msg.Result.Author.Id, 1))
+                else if (!goatService.CanGoatsFitInBarn(buttonResult.Result.User.Id, 1))
                 {
-                    var member = await guild.GetMemberAsync(msg.Result.Author.Id);
+                    await buttonResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                    await buttonResult.Result.Message.DeleteAsync();
+                    var member = await guild.GetMemberAsync(buttonResult.Result.User.Id);
                     await channel
                         .SendMessageAsync(
                             $"Unfortunately {member.DisplayName} your barn is full and the goat has gone back to market!")
                         .ConfigureAwait(false);
                 }
-                else if (!goatService.CanFarmerAffordGoat(goatToSpawn.Level - 1, msg.Result.Author.Id))
+                else if (!goatService.CanFarmerAffordGoat(goatToSpawn.Level - 1, buttonResult.Result.User.Id))
                 {
-                    var member = await guild.GetMemberAsync(msg.Result.Author.Id);
+                    await buttonResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                    await buttonResult.Result.Message.DeleteAsync();
+                    var member = await guild.GetMemberAsync(buttonResult.Result.User.Id);
                     await channel
                         .SendMessageAsync(
                             $"Unfortunately {member.DisplayName} you can't afford this goat and the it has gone back to market!")
@@ -408,7 +417,8 @@ namespace BumbleBot.Services
                 }
                 else
                 {
-                    await msg.Result.DeleteAsync();
+                    await buttonResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                    await buttonResult.Result.Message.DeleteAsync();
                     using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                     {
                         var query = 
@@ -422,7 +432,7 @@ namespace BumbleBot.Services
                             Enum.GetName(typeof(Breed), goatToSpawn.Breed);
                         command.Parameters.Add("?baseColour", MySqlDbType.VarChar).Value =
                             Enum.GetName(typeof(BaseColour), goatToSpawn.BaseColour);
-                        command.Parameters.Add("?ownerID", MySqlDbType.VarChar).Value = msg.Result.Author.Id;
+                        command.Parameters.Add("?ownerID", MySqlDbType.VarChar).Value = buttonResult.Result.User.Id;
                         command.Parameters.Add("?exp", MySqlDbType.Decimal).Value =
                             (int) Math.Ceiling(10 * Math.Pow(1.05, goatToSpawn.Level - 1));
                         command.Parameters.Add("?imageLink", MySqlDbType.VarChar).Value = goatToSpawn.FilePath;
@@ -430,10 +440,10 @@ namespace BumbleBot.Services
                         command.ExecuteNonQuery();
                     }
                     var fs = new FarmerService();
-                    fs.DeductCreditsFromFarmer(msg.Result.Author.Id, goatToSpawn.Level - 1);
+                    fs.DeductCreditsFromFarmer(buttonResult.Result.User.Id, goatToSpawn.Level - 1);
 
                     await channel.SendMessageAsync("Congrats " +
-                                                   $"{guild.GetMemberAsync(msg.Result.Author.Id).Result.DisplayName} you purchased " +
+                                                   $"{guild.GetMemberAsync(buttonResult.Result.User.Id).Result.DisplayName} you purchased " +
                                                    $"{goatToSpawn.Name} for {(goatToSpawn.Level - 1).ToString()} credits")
                         .ConfigureAwait(false);
                 }
