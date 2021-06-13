@@ -84,6 +84,11 @@ namespace BumbleBot.Commands.Game
                             GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, memberGoatToSpawn.Item1,
                                 memberGoatToSpawn.Item2, ctx.Client));
                         break;
+                    case 1 when GoatSpawningService.AreDairySpecialSpawnsEnabled():
+                        var dairySpecial = GoatSpawningService.GenerateSpecialDairyGoatToSpawn();
+                        _ = Task.Run(() => GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild,
+                            dairySpecial.Item1, dairySpecial.Item2, ctx.Client));
+                        break;
                     case 1 when GoatSpawningService.AreChristmasSpawnsEnabled():
                         var christmasGoat = GoatSpawningService.GenerateChristmasSpecialToSpawn();
                         _ = Task.Run(() => GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild,

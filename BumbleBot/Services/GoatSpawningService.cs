@@ -14,6 +14,27 @@ namespace BumbleBot.Services
     public class GoatSpawningService
     {
         private readonly DbUtils dbUtils = new();
+
+        public (Goat, string) GenerateSpecialDairyGoatToSpawn()
+        {
+            var specialGoat = new Goat();
+            specialGoat.Breed = Breed.DairySpecial;
+            specialGoat.BaseColour = BaseColour.Special;
+            specialGoat.Level = new Random().Next(76, 100);
+            specialGoat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, specialGoat.Level - 1));
+            specialGoat.Name = "Dairy Special";
+            var dairySpecials = new List<string>()
+            {
+                "/Goat_Images/Dairy_Specials/CheeseKid.png",
+                "/Goat_Images/Dairy_Specials/MilkerKid.png",
+                "/Goat_Images/Dairy_Specials/MilkshakeKid.png"
+            };
+            var rnd = new Random();
+            specialGoat.FilePath = dairySpecials[rnd.Next(0, dairySpecials.Count)];
+            var filePath =
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{specialGoat.FilePath}";
+            return (specialGoat, filePath);
+        }
         public (Goat, string) GenerateSpecialPaddyGoatToSpawn()
         {
              var specialGoat = new Goat();
@@ -217,6 +238,29 @@ namespace BumbleBot.Services
              var filePath =
                  $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{goat.FilePath}";
              return (goat, filePath);
+         }
+         public bool AreDairySpecialSpawnsEnabled()
+         {
+             var enabled = false;
+             using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+             {
+                 const string query = "select boolValue from config where paramName = ?param";
+                 var command = new MySqlCommand(query, connection);
+                 command.Parameters.AddWithValue("?param", "dairySpecials");
+                 connection.Open();
+                 var reader = command.ExecuteReader();
+                 if (reader.HasRows)
+                 {
+                     while (reader.Read())
+                     {
+                         enabled = reader.GetBoolean("boolValue");
+                     }
+                 }
+                 reader.Close();
+                 connection.Close();
+             }
+
+             return enabled;
          }
         public bool AreMemberSpawnsEnabled()
         {
