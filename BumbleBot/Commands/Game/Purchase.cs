@@ -175,46 +175,44 @@ namespace BumbleBot.Commands.Game
             }
             else
             {
-                var hasAlfalfa = false;
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
-                {
-                    var query = "select amount from items where ownerId = ?ownerId and name = ?item";
-                    var command = new MySqlCommand(query, connection);
-                    command.Parameters.AddWithValue("?ownerId", ctx.User.Id);
-                    command.Parameters.AddWithValue("?item", "alfalfa");
-                    connection.Open();
-                    var reader = command.ExecuteReader();
-                    if (reader.HasRows)
-                    {
-                        while (reader.Read())
-                        {
-                            hasAlfalfa = reader.GetInt16("amount") > 0;
-                        }
-                    }
-                    reader.Close();
-                }
-
-                if (hasAlfalfa)
+                if (farmerService.DoesFarmerHaveAlfalfa(ctx.User.Id))
                 {
                     await ctx.Channel.SendMessageAsync("You already have alfalfa.").ConfigureAwait(false);
                 }
                 else
                 {
-                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
-                    {
-                        var query = "insert into items (name, amount, ownerId) values (?item, 1, ?ownerId) on duplicate key update amount = 1";
-                        var command = new MySqlCommand(query, connection);
-                        command.Parameters.AddWithValue("?ownerId", ctx.User.Id);
-                        command.Parameters.AddWithValue("?item", "alfalfa");
-                        connection.Open();
-                        command.ExecuteNonQuery();
-                    }
-
+                    farmerService.AddAlfalfaToFarmer(ctx.User.Id);
+                    farmerService.DeductCreditsFromFarmer(ctx.User.Id, 500);
                     await ctx.Channel
                         .SendMessageAsync(
                             "Alfalfa has been purchased for 500 credits and will be used next time you run daily.")
                         .ConfigureAwait(false);
                 }
+            }
+        }
+
+        [Command("dust")]
+        [HasEnoughCredits(0)]
+        [Description("purchase some dust")]
+        public async Task PurchaseDust(CommandContext ctx, int cost)
+        {
+            if (cost != 1000)
+            {
+                await ctx.Channel.SendMessageAsync("Dust costs 1,000 credits.").ConfigureAwait(false);
+            }
+            else if (farmerService.DoesFarmerHaveOatsOrAlfalfa(ctx.User.Id))
+            {
+                await ctx.Channel.SendMessageAsync($"You cannot purchase dust while you have unused alfalfa or oats. Please try again after using them.")
+                    .ConfigureAwait(false);
+            }
+            else
+            {
+                farmerService.AddAlfalfaToFarmer(ctx.User.Id);
+                farmerService.AddOatsToFarmer(ctx.User.Id);
+                farmerService.DeductCreditsFromFarmer(ctx.User.Id, 1000);
+                await ctx.Channel.SendMessageAsync(
+                        $"Dust has been purchased and will be used next time you milk and run your daily.")
+                    .ConfigureAwait(false);
             }
         }
         
@@ -231,21 +229,7 @@ namespace BumbleBot.Commands.Game
                 }
                 else
                 {
-                    var hasOats = false;
-                    using (var conncetion = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
-                    {
-                        var query = "select oats from farmers where DiscordID = ?discordID";
-                        var command = new MySqlCommand(query, conncetion);
-                        command.Parameters.Add("?discordID", MySqlDbType.VarChar).Value = ctx.User.Id;
-                        conncetion.Open();
-                        var reader = command.ExecuteReader();
-                        if (reader.HasRows)
-                            while (reader.Read())
-                                hasOats = reader.GetBoolean("oats");
-                        reader.Close();
-                    }
-
-                    if (hasOats)
+                    if (farmerService.DoesFarmerHaveOats(ctx.User.Id))
                     {
                         await ctx.Channel
                             .SendMessageAsync(
@@ -254,17 +238,7 @@ namespace BumbleBot.Commands.Game
                     }
                     else
                     {
-                        var farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
-                        using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
-                        {
-                            var query = "update farmers set oats = 1, credits = ?credits where DiscordID = ?discordID";
-                            var command = new MySqlCommand(query, connection);
-                            command.Parameters.Add("?discordID", MySqlDbType.VarChar).Value = ctx.User.Id;
-                            command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.Credits - 250;
-                            connection.Open();
-                            command.ExecuteNonQuery();
-                        }
-
+                        farmerService.AddOatsToFarmer(ctx.User.Id);
                         await ctx.Channel
                             .SendMessageAsync(
                                 "Oats have been purchased and will be used next time you milk your goats.")
