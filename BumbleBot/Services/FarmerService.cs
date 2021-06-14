@@ -11,6 +11,79 @@ namespace BumbleBot.Services
     {
         private readonly DbUtils dBUtils = new DbUtils();
 
+        public void AddAlfalfaToFarmer(ulong userId)
+        {
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                var query = "insert into items (name, amount, ownerId) values (?item, 1, ?ownerId) on duplicate key update amount = 1";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?ownerId", userId);
+                command.Parameters.AddWithValue("?item", "alfalfa");
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
+
+        public void AddOatsToFarmer(ulong userId)
+        {
+            var farmer = ReturnFarmerInfo(userId);
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                var query = "update farmers set oats = 1, credits = ?credits where DiscordID = ?discordID";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?discordID", MySqlDbType.VarChar).Value = userId;
+                command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.Credits - 250;
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
+        public bool DoesFarmerHaveAlfalfa(ulong userId)
+        {
+            var hasAlfalfa = false;
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                var query = "select amount from items where ownerId = ?ownerId and name = ?item";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?ownerId", userId);
+                command.Parameters.AddWithValue("?item", "alfalfa");
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        hasAlfalfa = reader.GetInt16("amount") > 0;
+                    }
+                }
+                reader.Close();
+            }
+
+            return hasAlfalfa;
+        }
+        
+        public bool DoesFarmerHaveOats(ulong userId)
+        {
+            var hasOats = false;
+            using (var conncetion = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                var query = "select oats from farmers where DiscordID = ?discordID";
+                var command = new MySqlCommand(query, conncetion);
+                command.Parameters.Add("?discordID", MySqlDbType.VarChar).Value = userId;
+                conncetion.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                        hasOats = reader.GetBoolean("oats");
+                reader.Close();
+            }
+
+            return hasOats;
+        }
+
+        public bool DoesFarmerHaveOatsOrAlfalfa(ulong userId)
+        {
+            return DoesFarmerHaveAlfalfa(userId) || DoesFarmerHaveOats(userId);
+        }
         public bool DoesFarmerHaveKidsInKiddingPen(ulong discordId)
         {
             var hasKids = false;

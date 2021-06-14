@@ -54,6 +54,8 @@ namespace BumbleBot.Commands.Game
                     "Cost 250 - Will provide a boost to your goats milk output next time they're milked");
                 embed.AddField("Alfalfa",
                     "Cost 500 - Will give goats an exp boost when daily is used");
+                embed.AddField("Dust",
+                    "Cost 1,000 - Will provide a boost to your goats milk output and an exp boost when daily is used");
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
         }
