@@ -46,7 +46,7 @@ namespace BumbleBot.Commands.Game
                 embed.AddField("Pasture", $"Cost {grazeCost} - Will provide 10 extra pasture space");
                 if (!farmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
                     embed.AddField("Shelter",
-                        "Cost 5,000 - Purchases a kidding pen which adds the ability to breed goats");
+                        "Cost 5,000 - Purchases a Kidding Pen which adds the ability to breed goats");
                 if (!farmerService.DoesFarmerHaveDairy(ctx.User.Id))
                     embed.AddField("Dairy",
                         "Cost 10,000 - Purchases a Dairy which can be used to make products from milk");
@@ -55,7 +55,7 @@ namespace BumbleBot.Commands.Game
                 embed.AddField("Alfalfa",
                     "Cost 500 - Will give goats an exp boost when daily is used");
                 embed.AddField("Dust",
-                    "Cost 1,000 - Will provide a boost to your goats milk output and an exp boost when daily is used");
+                    "Cost 1,000 - Combined feed that offers both a boost to milk output and daily XP");
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
         }
