@@ -20,7 +20,7 @@ namespace BumbleBot.Commands.Game
         }
 
         [GroupCommand]
-        [Description("See you maintenance information")]
+        [Description("See your maintenance information")]
         public async Task CheckIfMaintenanceIsNeeded(CommandContext ctx)
         {
             var farmersMaintenance = MaintenanceService.GetFarmersMaintenance(ctx.User.Id);
