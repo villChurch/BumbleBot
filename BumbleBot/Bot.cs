@@ -94,6 +94,7 @@ namespace BumbleBot
                 .AddTransient<DairyService>()
                 .AddTransient<GoatSpawningService>()
                 .AddSingleton<ReminderService>()
+                .AddSingleton<MaintenanceService>()
                 .BuildServiceProvider(true);
 
 #pragma warning disable IDE0058 // Expression value is never used
@@ -384,9 +385,9 @@ namespace BumbleBot
         private async Task Commands_CommandErrored(CommandsNextExtension sender, CommandErrorEventArgs e)
         {
             e.Context.Client.Logger.Log(LogLevel.Error,
-                "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}",
+                "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}, Stacktrace {StackTrace}",
                 e.Context.User.Username, e.Command?.QualifiedName ?? "<unknown command>",
-                e.Exception.GetType(), e.Exception.Message);
+                e.Exception.GetType(), e.Exception.Message, e.Exception.StackTrace);
 
             if (e.Exception is ChecksFailedException ex)
             {
