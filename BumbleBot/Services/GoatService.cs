@@ -363,6 +363,24 @@ namespace BumbleBot.Services
 
             return goat.Breed == Breed.Valentines;
         }
+
+        private bool IsSummerGoat(int goatId)
+        {
+            var goat = new Goat();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                const string query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                reader.Close();
+            }
+
+            return goat.Breed == Breed.SummerSpecial;
+        }
         private string KillGoat(ulong userId)
         {
             var goat = new Goat();
@@ -630,6 +648,15 @@ namespace BumbleBot.Services
                 if (goat.FilePath.EndsWith("MilkshakeKid.png"))
                     return "MilkshakeAdult.png";
             }
+            else if (IsSummerGoat(goat.Id))
+            {
+                if (goat.FilePath.EndsWith("WatermelonKid.png"))
+                    return "Summer Specials/WatermelonAdult.png";
+                if (goat.FilePath.EndsWith("FireworkKid.png"))
+                    return "Summer Specials/FireworkAdult.png";
+                if (goat.FilePath.EndsWith("BeachKid.png"))
+                    return "Summer Specials/BeachAdult.png";
+            }
 
             var goatColour = "";
 
@@ -754,6 +781,15 @@ namespace BumbleBot.Services
                     return "MilkerAdult.png";
                 if (goat.FilePath.EndsWith("MilkshakeKid.png"))
                     return "MilkshakeAdult.png";
+            }
+            else if (IsSummerGoat(goat.Id))
+            {
+                if (goat.FilePath.EndsWith("WatermelonKid.png"))
+                    return "Summer Specials/WatermelonAdult.png";
+                if (goat.FilePath.EndsWith("FireworkKid.png"))
+                    return "Summer Specials/FireworkAdult.png";
+                if (goat.FilePath.EndsWith("BeachKid.png"))
+                    return "Summer Specials/BeachAdult.png";
             }
 
             var goatColour = "";

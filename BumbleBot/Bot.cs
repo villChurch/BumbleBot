@@ -250,6 +250,11 @@ namespace BumbleBot
                                     _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel,
                                         e.Guild, christmasGoat.Item1, christmasGoat.Item2, client));
                                     break;
+                                case 1 when goatSpawningService.AreSummerSpawnsEnabled():
+                                    var summerGoat = goatSpawningService.GenerateSummerGoatToSpawn();
+                                    _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel,
+                                        e.Guild, summerGoat.Item1, summerGoat.Item2, client));
+                                    break;
                                 case 2 when goatSpawningService.AreTaillessSpawnsEnabled():
                                     var taillessGoat = goatSpawningService.GenerateTaillessSpecialGoatToSpawn();
                                     _ = Task.Run(() =>

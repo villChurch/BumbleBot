@@ -179,9 +179,30 @@ namespace BumbleBot.Services
              randomGoat.LevelMulitplier = 1;
              randomGoat.Name = "Unregistered Goat";
              randomGoat.Special = false;
+             randomGoat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, randomGoat.Level - 1));
              randomGoat.FilePath = $"/Goat_Images/Kids/{GetKidImage(randomGoat.Breed, randomGoat.BaseColour)}";
              var filePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{randomGoat.FilePath}";
              return (randomGoat, filePath);
+         }
+
+         public (Goat, string) GenerateSummerGoatToSpawn()
+         {
+             var rnd = new Random();
+             var summerGoat = new Goat();
+             summerGoat.Breed = Breed.SummerSpecial;
+             summerGoat.BaseColour = BaseColour.Special;
+             summerGoat.Name = "Summer Special";
+             summerGoat.Level = RandomLevel.GetRandomLevel();
+             summerGoat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, summerGoat.Level - 1));
+             var summerGoats = new List<String>()
+             {
+                 "/Goat_Images/Summer Specials/BeachKid.png",
+                 "/Goat_Images/Summer Specials/FireworkKid.png",
+                 "/Goat_Images/Summer Specials/WatermelonKid.png"
+             };
+             summerGoat.FilePath = summerGoats[rnd.Next(0, 3)];
+             var filePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{summerGoat.FilePath}";
+             return (summerGoat, filePath);
          }
 
          private string GetKidImage(Breed breed, BaseColour baseColour)
@@ -389,6 +410,24 @@ namespace BumbleBot.Services
                 var query = "select boolValue from config where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
                 command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "taillessEnabled";
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                        enabled = reader.GetBoolean("boolValue");
+            }
+
+            return enabled;
+        }
+
+        public bool AreSummerSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            {
+                var query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?param", "summerEnabled");
                 connection.Open();
                 var reader = command.ExecuteReader();
                 if (reader.HasRows)

@@ -109,10 +109,16 @@ namespace BumbleBot.Commands.Game
                             GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, goat.Item1, goat.Item2,
                                 ctx.Client));
                         break;
+                    case "summer":
+                        var summerGoat = GoatSpawningService.GenerateSummerGoatToSpawn();
+                        _ = Task.Run(() => GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild,
+                            summerGoat.Item1, summerGoat.Item2,
+                            ctx.Client));
+                        break;
                     case "options":
                         await ctx.Channel.SendMessageAsync(
                             $@"Options are {Formatter.BlockCode
-                                ($"spring {Environment.NewLine}dazzle {Environment.NewLine}member special {Environment.NewLine}dairy {Environment.NewLine}holiday {Environment.NewLine}tailless {Environment.NewLine}valentines {Environment.NewLine}shamrock")}");
+                                ($"spring {Environment.NewLine}dazzle {Environment.NewLine}member special {Environment.NewLine}dairy {Environment.NewLine}holiday {Environment.NewLine}tailless {Environment.NewLine}valentines {Environment.NewLine}shamrock {Environment.NewLine}summer")}");
                         break;
                     default:
                         _ = new Random().Next(0, 100) == 69
