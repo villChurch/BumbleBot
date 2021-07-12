@@ -371,6 +371,7 @@ namespace BumbleBot.Services
             {
                 const string query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?id", goatId);
                 connection.Open();
                 var reader = command.ExecuteReader();
                 if (reader.HasRows)
