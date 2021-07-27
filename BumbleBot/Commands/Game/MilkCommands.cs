@@ -36,19 +36,10 @@ namespace BumbleBot.Commands.Game
                 var request = (HttpWebRequest) WebRequest.Create(uri);
                 request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 
-                using (var response = (HttpWebResponse) await request.GetResponseAsync())
-                using (var stream = response.GetResponseStream())
-                using (var reader = new StreamReader(stream))
-                {
-                    var jsonReader = new JsonTextReader(reader);
-                    var serializer = new JsonSerializer();
-                    var milkingResponse = serializer.Deserialize<MilkingResponse>(jsonReader);
-                    if (milkingResponse != null)
-                        await new DiscordMessageBuilder()
-                            .WithReply(ctx.Message.Id, true)
-                            .WithContent(milkingResponse.Message)
-                            .SendAsync(ctx.Channel);
-                }
+                var response = (HttpWebResponse) await request.GetResponseAsync();
+                ctx.Client.Logger.Log(LogLevel.Information,
+                    "{Username} milked and got the following status code {Response}",
+                    ctx.User.Username, response.StatusCode);
             }
             catch (Exception ex)
             {
