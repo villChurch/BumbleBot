@@ -208,6 +208,7 @@ namespace BumbleBot.Services
                             farmer.Barnspace = reader.GetInt32("barnsize");
                             farmer.Grazingspace = reader.GetInt32("grazesize");
                             farmer.Milk = reader.GetDecimal("milk");
+                            farmer.PerkPoints = reader.GetInt32("perkpoints");
                         }
 
                     reader.Close();

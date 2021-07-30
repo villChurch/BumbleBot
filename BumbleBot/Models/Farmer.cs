@@ -24,5 +24,8 @@ namespace BumbleBot.Models
 
         [Column("oats")]
         public int oats { get; set; }
+        
+        [Column("perkpoints")]
+        public int PerkPoints { get; set; }
     }
 }
