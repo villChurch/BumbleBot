@@ -18,6 +18,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
+using DSharpPlus.Interactivity.EventHandling;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using DSharpPlus.SlashCommands.EventArgs;
@@ -105,7 +106,12 @@ namespace BumbleBot
 
                 // default timeout for other actions to 5 minutes
                 Timeout = TimeSpan.FromMinutes(5),
-                ResponseBehavior = InteractionResponseBehavior.Ack
+                ResponseBehavior = InteractionResponseBehavior.Ack,
+                ButtonBehavior = ButtonPaginationBehavior.Disable,
+                AckPaginationButtons = true,
+                PaginationButtons = new PaginationButtons(),
+                PaginationEmojis = new PaginationEmojis(),
+                PaginationDeletion = PaginationDeletion.DeleteEmojis
             });
 #pragma warning restore IDE0058 // Expression value is never used
 

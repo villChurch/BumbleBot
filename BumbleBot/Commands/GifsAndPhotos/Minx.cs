@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using BumbleBot.Attributes;
 using BumbleBot.Services;
@@ -12,6 +13,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Enums;
+using DSharpPlus.Interactivity.EventHandling;
 using DSharpPlus.Interactivity.Extensions;
 using MySql.Data.MySqlClient;
 
@@ -82,8 +84,8 @@ namespace BumbleBot.Commands.GifsAndPhotos
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                await Console.Out.WriteLineAsync(ex.Message);
+                await Console.Out.WriteLineAsync(ex.StackTrace);
             }
         }
 
@@ -125,8 +127,8 @@ namespace BumbleBot.Commands.GifsAndPhotos
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                await Console.Out.WriteLineAsync(ex.Message);
+                await Console.Out.WriteLineAsync(ex.StackTrace);
             }
         }
 
@@ -160,14 +162,15 @@ namespace BumbleBot.Commands.GifsAndPhotos
                     foreach (var gifKey in minxPics.Keys) sb.AppendLine(gifKey + " - " + minxPics[gifKey]);
                     var gifPages =
                         interactivity.GeneratePagesInEmbed(sb.ToString(), SplitType.Line, new DiscordEmbedBuilder());
-                    _ = Task.Run(async () => await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, gifPages)
+                    _ = Task.Run(async () => await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, gifPages, null,
+                            PaginationBehaviour.WrapAround,ButtonPaginationBehavior.Disable, CancellationToken.None)
                         .ConfigureAwait(false));
                 }
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                await Console.Out.WriteLineAsync(ex.Message);
+                await Console.Out.WriteLineAsync(ex.StackTrace);
             }
         }
 
@@ -195,8 +198,8 @@ namespace BumbleBot.Commands.GifsAndPhotos
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                await Console.Out.WriteLineAsync(ex.Message);
+                await Console.Out.WriteLineAsync(ex.StackTrace);
             }
         }
 
@@ -227,8 +230,8 @@ namespace BumbleBot.Commands.GifsAndPhotos
             }
             catch (Exception ex)
             {
-                Console.Out.WriteLine(ex.Message);
-                Console.Out.WriteLine(ex.StackTrace);
+                await Console.Out.WriteLineAsync(ex.Message);
+                await Console.Out.WriteLineAsync(ex.StackTrace);
             }
         }
     }

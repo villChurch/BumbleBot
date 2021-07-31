@@ -64,7 +64,6 @@ namespace BumbleBot.Commands.ButtonCommands
             IEnumerable<DiscordButtonComponent> buttonEnum = buttonComponents;
             var result = await interactivity.WaitForButtonAsync(msg, buttonEnum, TimeSpan.FromMinutes(1));
             var interaction = result.Result;
-            myButton.Disabled = true;
             await interaction.Interaction.CreateResponseAsync(InteractionResponseType.UpdateMessage,
                 new DiscordInteractionResponseBuilder()
                     .WithContent($"{result.Result.User.Mention} pressed the button first")
