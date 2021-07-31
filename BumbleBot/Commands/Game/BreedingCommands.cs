@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
@@ -22,6 +23,7 @@ namespace BumbleBot.Commands.Game
 {
     [Group("breeding")]
     [Aliases("breed")]
+    [IsUserAvailable]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class BreedingCommands : BaseCommandModule
     {

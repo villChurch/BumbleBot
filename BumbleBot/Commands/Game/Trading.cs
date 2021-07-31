@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
@@ -14,6 +15,7 @@ using MySql.Data.MySqlClient;
 
 namespace BumbleBot.Commands.Game
 {
+    [IsUserAvailable]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class Trading : BaseCommandModule
     {

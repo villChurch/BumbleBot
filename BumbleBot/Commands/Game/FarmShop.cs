@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Services;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
@@ -8,6 +9,7 @@ namespace BumbleBot.Commands.Game
 {
     [Group("shop")]
     [Aliases("market")]
+    [IsUserAvailable]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class FarmShop : BaseCommandModule
     {

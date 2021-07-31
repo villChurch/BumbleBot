@@ -17,6 +17,7 @@ using Microsoft.Extensions.Logging;
 namespace BumbleBot.Commands.Game
 {
     [Group("shelter")]
+    [IsUserAvailable]
     [Description("Shelter commands")]
     public class KiddingPen : BaseCommandModule
     {

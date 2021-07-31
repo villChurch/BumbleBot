@@ -7,6 +7,7 @@ using BumbleBot.Attributes;
 
 namespace BumbleBot.Commands.Game
 {
+    [IsUserAvailable]
     public class Campaign : BaseCommandModule
     {
         static GoatService _goatService;

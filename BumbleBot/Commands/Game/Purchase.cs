@@ -11,6 +11,7 @@ using MySql.Data.MySqlClient;
 namespace BumbleBot.Commands.Game
 {
     [Group("purchase")]
+    [IsUserAvailable]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class Purchase : BaseCommandModule
     {

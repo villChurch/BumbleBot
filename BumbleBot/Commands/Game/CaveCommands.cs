@@ -12,6 +12,7 @@ using DSharpPlus.Entities;
 namespace BumbleBot.Commands.Game
 {
     [Group("cave")]
+    [IsUserAvailable]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class CaveCommands : BaseCommandModule
     {

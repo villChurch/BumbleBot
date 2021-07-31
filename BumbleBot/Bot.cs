@@ -144,22 +144,26 @@ namespace BumbleBot
         
         private async Task SlashOnSlashCommandErrored(SlashCommandsExtension sender, SlashCommandErrorEventArgs e)
         {
-            e.Context.Client.Logger.Log(LogLevel.Error,
-                "{Username} tried executing '{CommandName}' but it errored: {Type}: {Message}",
-                e.Context.User.Username, e.Context.CommandName ?? "<unknown command>",
-                e.Exception.GetType(), e.Exception.Message);
+            if (e.Exception is not SlashExecutionChecksFailedException)
+            {
+                e.Context.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{CommandName}' but it errored: {Type}: {Message}",
+                    e.Context.User.Username, e.Context.CommandName ?? "<unknown command>",
+                    e.Exception.GetType(), e.Exception.Message);
+            }
 
-            if (e.Exception is ChecksFailedException ex)
+            if (e.Exception is SlashExecutionChecksFailedException ex)
             {
                 var failed = ex.FailedChecks;
-                var test = failed.Any(x => x is HasEnoughCredits);
-                if (test)
+                var workingTest = failed.Any(x => x is IsUserAvailableSlash);
+                if (workingTest)
                 {
                     var embed = new DiscordEmbedBuilder
                     {
-                        Title = "Lack of funds",
-                        Description = "You do not have enough credits to perform this action",
-                        Color = DiscordColor.Aquamarine
+                        Title = "You are Currently working",
+                        Description =
+                            $"Slash Command {e.Context.CommandName} cannot be executed at the moment as you are currently working",
+                        Color = DiscordColor.Red
                     };
                     await e.Context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder().AddEmbed(embed)).ConfigureAwait(false);
@@ -396,10 +400,13 @@ namespace BumbleBot
 
         private async Task Commands_CommandErrored(CommandsNextExtension sender, CommandErrorEventArgs e)
         {
-            e.Context.Client.Logger.Log(LogLevel.Error,
-                "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}, Stacktrace {StackTrace}",
-                e.Context.User.Username, e.Command?.QualifiedName ?? "<unknown command>",
-                e.Exception.GetType(), e.Exception.Message, e.Exception.StackTrace);
+            if (e.Exception is not ChecksFailedException)
+            {
+                e.Context.Client.Logger.Log(LogLevel.Error,
+                    "{Username} tried executing '{QualifiedName}' but it errored: {ExceptionType}: {ExceptionMessage}, Stacktrace {StackTrace}",
+                    e.Context.User.Username, e.Command?.QualifiedName ?? "<unknown command>",
+                    e.Exception.GetType(), e.Exception.Message, e.Exception.StackTrace);
+            }
 
             if (e.Exception is ChecksFailedException ex)
             {
@@ -407,6 +414,7 @@ namespace BumbleBot
                 var test = failed.Any(x => x is HasEnoughCredits);
                 var test2 = failed.Any(x => x is CooldownAttribute)
                             && ex.Command.Parent.Name.ToLower().Trim().Equals("stick");
+                var workingTest = failed.Any(x => x is IsUserAvailable);
                 if (test)
                 {
                     var embed = new DiscordEmbedBuilder
@@ -415,11 +423,22 @@ namespace BumbleBot
                         Description = "You do not have enough credits to perform this action",
                         Color = DiscordColor.Aquamarine
                     };
-                    await e.Context.RespondAsync("", embed: embed).ConfigureAwait(false);
+                    await e.Context.RespondAsync(embed).ConfigureAwait(false);
                 }
                 else if (test2)
                 {
                     await e.Context.RespondAsync($"Don't abuse Mr Stick").ConfigureAwait(false);
+                }
+                else if (workingTest)
+                {
+                    var embed = new DiscordEmbedBuilder
+                    {
+                        Title = "You are Currently working",
+                        Description =
+                            $"Command {e.Context.Command.QualifiedName} cannot be executed at the moment as you are currently working",
+                        Color = DiscordColor.Red
+                    };
+                    await e.Context.RespondAsync(embed).ConfigureAwait(false);
                 }
                 else
                 {

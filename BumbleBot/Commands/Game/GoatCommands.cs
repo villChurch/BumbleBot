@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
@@ -24,6 +25,7 @@ using Type = BumbleBot.Models.Type;
 namespace BumbleBot.Commands.Game
 {
     [Group("goat")]
+    [IsUserAvailable]
     [Description("General goat commands")]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class GoatCommands : BaseCommandModule

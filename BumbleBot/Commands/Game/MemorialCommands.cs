@@ -3,12 +3,14 @@ using BumbleBot.Services;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using System.Linq;
+using BumbleBot.Attributes;
 using BumbleBot.Utilities;
 using MySql.Data.MySqlClient;
 
 namespace BumbleBot.Commands.Game
 {
     [Group("memorial")]
+    [IsUserAvailable]
     public class MemorialCommands : BaseCommandModule
     {
 

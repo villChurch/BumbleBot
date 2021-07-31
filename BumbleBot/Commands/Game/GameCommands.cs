@@ -22,6 +22,7 @@ using Type = BumbleBot.Models.Type;
 
 namespace BumbleBot.Commands.Game
 {
+    [IsUserAvailable]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class GameCommands : BaseCommandModule
     {

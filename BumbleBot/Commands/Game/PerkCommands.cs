@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
@@ -12,11 +13,11 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
 using DSharpPlus.Interactivity.Extensions;
-using MySqlConnector;
 
 namespace BumbleBot.Commands.Game
 {
     [Group("perks")]
+    [IsUserAvailable]
     [Description("For details of perks and other perk commands")]
     public class PerkCommands : BaseCommandModule
     {
