@@ -96,6 +96,7 @@ namespace BumbleBot
                 .AddTransient<GoatSpawningService>()
                 .AddSingleton<ReminderService>()
                 .AddSingleton<MaintenanceService>()
+                .AddSingleton<PerkService>()
                 .BuildServiceProvider(true);
 
 #pragma warning disable IDE0058 // Expression value is never used

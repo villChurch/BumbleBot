@@ -21,10 +21,12 @@ namespace BumbleBot.Commands.Game
     {
         private readonly DbUtils dbUtils = new();
         static FarmerService _farmerService;
+        private static PerkService _perkService;
 
-        public PerkCommands(FarmerService farmerService)
+        public PerkCommands(FarmerService farmerService, PerkService perkService)
         {
             _farmerService = farmerService;
+            _perkService = perkService;
         }
         
         [GroupCommand]
@@ -66,6 +68,7 @@ namespace BumbleBot.Commands.Game
                 var perkPoints = farmer.PerkPoints;
                 if (perkPoints >= matchedPerk.perkCost)
                 {
+                    await _perkService.AddPerkToUser(ctx.User.Id, matchedPerk, perkPoints);
                     await ctx.RespondAsync($"You have successfully purchased the perk {matchedPerk.perkName}")
                         .ConfigureAwait(false);
                 }
