@@ -1,12 +1,16 @@
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using BumbleBot.Attributes;
+using BumbleBot.Models;
 using BumbleBot.Utilities;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Entities;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
+using Newtonsoft.Json;
 
 namespace BumbleBot.Commands.Game
 {
@@ -64,10 +68,16 @@ namespace BumbleBot.Commands.Game
             var request = (HttpWebRequest) WebRequest.Create(uri);
             request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             
-            var response = (HttpWebResponse) await request.GetResponseAsync();
-            ctx.Client.Logger.Log(LogLevel.Information,
-                "{Username} stopped working and got the following status code {Response}",
-                ctx.User.Username, response.StatusCode);
+            using (var response = (HttpWebResponse) await request.GetResponseAsync())
+            using (var stream = response.GetResponseStream())
+            using (var reader = new StreamReader(stream))
+            {
+                var dailyResponse = await reader.ReadToEndAsync();
+                await new DiscordMessageBuilder()
+                    .WithReply(ctx.Message.Id, true)
+                    .WithContent(dailyResponse)
+                    .SendAsync(ctx.Channel);
+            }
         }
     }
 }
