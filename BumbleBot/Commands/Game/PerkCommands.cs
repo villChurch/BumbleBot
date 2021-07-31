@@ -1,3 +1,4 @@
+using System.CodeDom;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
@@ -32,7 +33,7 @@ namespace BumbleBot.Commands.Game
         [GroupCommand]
         public async Task ShowAllPerks(CommandContext ctx)
         {
-            var allPerks = await GetAllPerks();
+            var allPerks = await _perkService.GetAllPerks().ConfigureAwait(false);
             var pages = new List<Page>();
             foreach (var perk in allPerks)
             {
@@ -56,7 +57,7 @@ namespace BumbleBot.Commands.Game
         [Description("For purchasing a perk with perk points")]
         public async Task PurchasePerk(CommandContext ctx, [RemainingText] string perkName)
         {
-            var allPerks = await GetAllPerks();
+            var allPerks = await _perkService.GetAllPerks().ConfigureAwait(false);
             var matchedPerk = allPerks.Find(perk => perk.perkName.ToLower().Equals(perkName.ToLower()));
             if (null == matchedPerk)
             {
@@ -80,32 +81,61 @@ namespace BumbleBot.Commands.Game
                 }
             }
         }
-        private async Task<List<Perks>> GetAllPerks()
+
+        [Command("reset")]
+        [Description("This will reset what perks you have and give you the perk points back for a monetary cost")]
+        public async Task ResetPerks(CommandContext ctx)
         {
-            var allPerks = new List<Perks>();
-            using (var con = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            Farmer farmer = _farmerService.ReturnFarmerInfo(ctx.User.Id);
+            if (farmer.Credits < 10000)
             {
-                const string query = "select * from perks order by levelUnlocked, perkName ASC";
-                var command = new MySqlCommand(query, con);
-                con.Open();
-                var reader = await command.ExecuteReaderAsync();
-                if (reader.HasRows)
-                {
-                    while (reader.Read())
-                    {
-                        var perk = new Perks
-                        {
-                            id = reader.GetInt16("id"),
-                            perkName = reader.GetString("perkName"),
-                            perkBonusText = reader.GetString("perkBonusText"),
-                            perkCost = reader.GetInt16("perkCost"),
-                            levelUnlocked = reader.GetInt16("levelUnlocked")
-                        };
-                        allPerks.Add(perk);
-                    }
-                }
+                await ctx.RespondAsync(
+                        $"You do not have enough credits to reset your perks. Perks reset costs 10,000 credits")
+                    .ConfigureAwait(false);
             }
-            return allPerks;
+            else
+            {
+                var usersPerks = await _perkService.GetUsersPerks(ctx.User.Id).ConfigureAwait(false);
+                int perkPointsToAdd = usersPerks.Sum(perk => perk.perkCost);
+                await _perkService.RemovePerksFromUser(ctx.User.Id, usersPerks, farmer.PerkPoints)
+                    .ConfigureAwait(false);
+                await ctx.RespondAsync(
+                        $"Your perks have been reset for 10,000 credits and {perkPointsToAdd} perk points have been added to your profile.")
+                    .ConfigureAwait(false);
+            }
+        }
+
+        [Command("active")]
+        [Description("Displays your active perks")]
+        public async Task ShowActivePerks(CommandContext ctx)
+        {
+            var usersPerks = await _perkService.GetUsersPerks(ctx.User.Id).ConfigureAwait(false);
+            if (usersPerks == null || usersPerks.Count < 1)
+            {
+                await ctx.RespondAsync("You currently have no active perks").ConfigureAwait(false);
+            }
+            else {
+                var pages = new List<Page>();
+                foreach (var perk in usersPerks)
+                {
+                    var embed = new DiscordEmbedBuilder
+                    {
+                        Title = $"{perk.perkName}",
+                        Color = DiscordColor.Aquamarine
+                    };
+                    embed.AddField("Description", perk.perkBonusText);
+                    embed.AddField("Perk Point Cost", perk.perkCost.ToString());
+                    embed.AddField("Level Unlocked", perk.levelUnlocked.ToString());
+                    var page = new Page {Embed = embed};
+                    pages.Add(page);
+                }
+
+                var interactivity = ctx.Client.GetInteractivity();
+                _ = Task.Run(async () => await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages,
+                        null,
+                        PaginationBehaviour.WrapAround, ButtonPaginationBehavior.Disable, CancellationToken.None)
+                    .ConfigureAwait(false));
+            }
         }
     }
 }
