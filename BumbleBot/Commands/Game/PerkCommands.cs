@@ -74,6 +74,12 @@ namespace BumbleBot.Commands.Game
                     await ctx.RespondAsync($"You have successfully purchased the perk {matchedPerk.perkName}")
                         .ConfigureAwait(false);
                 }
+                else if (farmer.Level < matchedPerk.levelUnlocked)
+                {
+                    await ctx.RespondAsync(
+                            $"You must be level {matchedPerk.levelUnlocked} to unlock this perk. You are currently level {farmer.Level}.")
+                        .ConfigureAwait(false);
+                }
                 else
                 {
                     await ctx.RespondAsync(

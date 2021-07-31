@@ -23,9 +23,15 @@ namespace BumbleBot.Models
         public decimal Milk { get; set; }
 
         [Column("oats")]
-        public int oats { get; set; }
+        public int Oats { get; set; }
         
         [Column("perkpoints")]
         public int PerkPoints { get; set; }
+        
+        [Column("level")]
+        public int Level { get; set; }
+        
+        [Column("experience")]
+        public decimal Experience { get; set; }
     }
 }
