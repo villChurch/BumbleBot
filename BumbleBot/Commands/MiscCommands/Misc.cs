@@ -10,7 +10,10 @@ using DSharpPlus.Entities;
 using MySql.Data.MySqlClient;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
+using DSharpPlus.Interactivity.EventHandling;
 using DSharpPlus.Interactivity.Extensions;
 
 namespace BumbleBot.Commands.MiscCommands
@@ -154,7 +157,8 @@ namespace BumbleBot.Commands.MiscCommands
                     var interactivity = ctx.Client.GetInteractivity();
                     var stickPages =
                         interactivity.GeneratePagesInEmbed(sb.ToString(), SplitType.Line, new DiscordEmbedBuilder());
-                    _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, stickPages)
+                    _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, stickPages, null,
+                            PaginationBehaviour.WrapAround,ButtonPaginationBehavior.Disable,CancellationToken.None)
                         .ConfigureAwait(false));
                 }
             }
@@ -199,7 +203,8 @@ namespace BumbleBot.Commands.MiscCommands
                     var interactivity = ctx.Client.GetInteractivity();
                     var stickPages =
                         interactivity.GeneratePagesInEmbed(sb.ToString(), SplitType.Line, new DiscordEmbedBuilder());
-                    _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, stickPages)
+                    _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, stickPages, null,
+                            PaginationBehaviour.WrapAround,ButtonPaginationBehavior.Disable,CancellationToken.None)
                         .ConfigureAwait(false));
                 }
             }

@@ -480,7 +480,7 @@ namespace BumbleBot.Services
                 }
                 else if (!goatService.CanGoatsFitInBarn(buttonResult.Result.User.Id, 1))
                 {
-                    await buttonResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                    await buttonResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                     await buttonResult.Result.Message.DeleteAsync();
                     var member = await guild.GetMemberAsync(buttonResult.Result.User.Id);
                     await channel
@@ -490,7 +490,7 @@ namespace BumbleBot.Services
                 }
                 else if (!goatService.CanFarmerAffordGoat(goatToSpawn.Level - 1, buttonResult.Result.User.Id))
                 {
-                    await buttonResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                    await buttonResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                     await buttonResult.Result.Message.DeleteAsync();
                     var member = await guild.GetMemberAsync(buttonResult.Result.User.Id);
                     await channel
@@ -500,7 +500,7 @@ namespace BumbleBot.Services
                 }
                 else
                 {
-                    await buttonResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DefferedMessageUpdate);
+                    await buttonResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                     await buttonResult.Result.Message.DeleteAsync();
                     using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                     {
