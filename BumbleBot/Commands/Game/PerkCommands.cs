@@ -1,4 +1,3 @@
-using System.CodeDom;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
@@ -46,6 +45,10 @@ namespace BumbleBot.Commands.Game
                 embed.AddField("Description", perk.perkBonusText);
                 embed.AddField("Perk Point Cost", perk.perkCost.ToString());
                 embed.AddField("Level Unlocked", perk.levelUnlocked.ToString());
+                if (perk.requires != 0)
+                {
+                    embed.AddField("Requires Perk", allPerks.Find(p => p.id == perk.requires)?.perkName);
+                }
                 var page = new Page {Embed = embed};
                 pages.Add(page);
             }
@@ -68,10 +71,11 @@ namespace BumbleBot.Commands.Game
             {
                 var farmer = _farmerService.ReturnFarmerInfo(ctx.User.Id);
                 var perkPoints = farmer.PerkPoints;
-                if (perkPoints >= matchedPerk.perkCost)
+                var farmersPerks = await _perkService.GetUsersPerks(ctx.User.Id);
+                if (perkPoints < matchedPerk.perkCost)
                 {
-                    await _perkService.AddPerkToUser(ctx.User.Id, matchedPerk, perkPoints);
-                    await ctx.RespondAsync($"You have successfully purchased the perk {matchedPerk.perkName}")
+                    await ctx.RespondAsync(
+                            $"You currently have {perkPoints} perk points and {matchedPerk.perkName} costs {matchedPerk.perkCost} perk points.")
                         .ConfigureAwait(false);
                 }
                 else if (farmer.Level < matchedPerk.levelUnlocked)
@@ -80,10 +84,21 @@ namespace BumbleBot.Commands.Game
                             $"You must be level {matchedPerk.levelUnlocked} to unlock this perk. You are currently level {farmer.Level}.")
                         .ConfigureAwait(false);
                 }
-                else
+                else if (farmersPerks.Contains(matchedPerk))
+                {
+                    await ctx.RespondAsync($"You already own perk {matchedPerk.perkName}.").ConfigureAwait(false);
+                }
+                else if (matchedPerk.requires != 0 && farmersPerks.All(perk => perk.id != matchedPerk.requires))
                 {
                     await ctx.RespondAsync(
-                            $"You currently have {perkPoints} perk points and {matchedPerk.perkName} costs {matchedPerk.perkCost} perk points.")
+                            $"{matchedPerk.perkName} requires perk " +
+                            $"{allPerks.Find(perk => perk.id == matchedPerk.requires)?.perkName} to be purchased first.")
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    await _perkService.AddPerkToUser(ctx.User.Id, matchedPerk, perkPoints);
+                    await ctx.RespondAsync($"You have successfully purchased the perk {matchedPerk.perkName}.")
                         .ConfigureAwait(false);
                 }
             }

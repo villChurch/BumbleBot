@@ -103,7 +103,8 @@ namespace BumbleBot.Services
                             perkName = reader.GetString("perkName"),
                             perkBonusText = reader.GetString("perkBonusText"),
                             perkCost = reader.GetInt16("perkCost"),
-                            levelUnlocked = reader.GetInt16("levelUnlocked")
+                            levelUnlocked = reader.GetInt16("levelUnlocked"),
+                            requires = reader.GetInt32("requires")
                         };
                         allPerks.Add(perk);
                     }

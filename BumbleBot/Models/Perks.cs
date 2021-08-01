@@ -8,5 +8,7 @@ namespace BumbleBot.Models
         public int perkCost { get; set; }
 
         public int levelUnlocked { get; set; }
+        
+        public int requires { get; set; }
     }
 }
