@@ -477,8 +477,11 @@ namespace BumbleBot.Services
                     await channel
                         .SendMessageAsync($"No one decided to purchase {goatToSpawn.Name}")
                         .ConfigureAwait(false);
+                    return;
                 }
-                else if (!goatService.CanGoatsFitInBarn(buttonResult.Result.User.Id, 1))
+                var perkService = new PerkService();
+                var usersPerks = await perkService.GetUsersPerks(buttonResult.Result.User.Id);
+                if (!goatService.CanGoatsFitInBarn(buttonResult.Result.User.Id, 1, usersPerks))
                 {
                     await buttonResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                     await buttonResult.Result.Message.DeleteAsync();

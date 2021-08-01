@@ -303,7 +303,7 @@ namespace BumbleBot
                     try
                     {
                         var goatService = new GoatService();
-                        var hasGoatLevelled = goatService.CheckExpAgainstNextLevel(e.Message.Author.Id, (decimal) 0.5);
+                        var hasGoatLevelled = await goatService.CheckExpAgainstNextLevel(e.Message.Author.Id, (decimal) 0.5);
                         if (hasGoatLevelled.Item1)
                             await Task.Run(async () =>
                                 {

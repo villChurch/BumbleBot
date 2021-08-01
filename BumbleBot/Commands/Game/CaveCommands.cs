@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using BumbleBot.Attributes;
@@ -19,10 +20,13 @@ namespace BumbleBot.Commands.Game
         private DairyService DairyService { get; }
         private FarmerService FarmerService { get; }
 
-        public CaveCommands(FarmerService farmerService, DairyService dairyService)
+        private readonly PerkService perkService;
+
+        public CaveCommands(FarmerService farmerService, DairyService dairyService, PerkService perkService)
         {
             DairyService = dairyService;
             FarmerService = farmerService;
+            this.perkService = perkService;
         }
 
         [GroupCommand]
@@ -37,6 +41,11 @@ namespace BumbleBot.Commands.Game
             {
                 var cave = DairyService.GetUsersCave(ctx.User.Id);
                 var slotUpgradePrice = (3250 * cave.Slots);
+                var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
+                if (usersPerks.Any(perk => perk.id == 14))
+                {
+                    slotUpgradePrice = (int) Math.Ceiling(slotUpgradePrice * 0.9);
+                }
                 var embed = new DiscordEmbedBuilder()
                 {
                     Title = "Cave upgrade options",
@@ -54,6 +63,7 @@ namespace BumbleBot.Commands.Game
         [HasEnoughCredits(1)]
         public async Task UpgradeCave(CommandContext ctx, string item, int price)
         {
+            var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
             if (!DairyService.DoesDairyHaveACave(ctx.User.Id))
             {
                 await ctx.Channel.SendMessageAsync("You do not own a cave").ConfigureAwait(false);
@@ -62,6 +72,10 @@ namespace BumbleBot.Commands.Game
             {
                 var cave = DairyService.GetUsersCave(ctx.User.Id);
                 var slotUpgradePrice = (3250 * cave.Slots);
+                if (usersPerks.Any(perk => perk.id == 14))
+                {
+                    slotUpgradePrice = (int) Math.Ceiling(slotUpgradePrice * 0.9);
+                }
                 if (price == slotUpgradePrice)
                 {
                     DairyService.IncreaseCaveSlots(ctx.User.Id, cave.Slots + 1);

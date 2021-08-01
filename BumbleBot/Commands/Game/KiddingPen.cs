@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BumbleBot.Attributes;
@@ -21,12 +22,14 @@ namespace BumbleBot.Commands.Game
     [Description("Shelter commands")]
     public class KiddingPen : BaseCommandModule
     {
-        public KiddingPen(FarmerService farmerService, GoatService goatService)
+        public KiddingPen(FarmerService farmerService, GoatService goatService, PerkService perkService)
         {
             this.FarmerService = farmerService;
             this.GoatService = goatService;
+            this.perkService = perkService;
         }
 
+        private readonly PerkService perkService;
         private FarmerService FarmerService { get; }
         private GoatService GoatService { get; }
 
@@ -42,6 +45,11 @@ namespace BumbleBot.Commands.Game
             };
             var capacity = FarmerService.GetKiddingPenCapacity(ctx.User.Id);
             var price = (int) Math.Ceiling(5000 * capacity / 2.0);
+            var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
+            if (usersPerks.Any(perk => perk.id == 14))
+            {
+                price = (int) Math.Ceiling(price * 0.9);
+            }
             embed.AddField("Capacity", $"{price} credits will increase capacity by 1");
             await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
         }
@@ -92,6 +100,11 @@ namespace BumbleBot.Commands.Game
                 {
                     var capacity = FarmerService.GetKiddingPenCapacity(ctx.User.Id);
                     var upgradePrice = (int) Math.Ceiling(5000 * capacity / 2.0);
+                    var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
+                    if (usersPerks.Any(perk => perk.id == 14))
+                    {
+                        upgradePrice = (int) Math.Ceiling(upgradePrice * 0.9);
+                    }
                     if (price == upgradePrice)
                     {
                         FarmerService.IncreaseKiddingPenCapacity(ctx.User.Id, capacity, 1);
@@ -131,8 +144,9 @@ namespace BumbleBot.Commands.Game
                 }
                 else if (idString.ToLower().Equals("all"))
                 {
+                    var userPerks = await perkService.GetUsersPerks(ctx.User.Id);
                     var kids = GoatService.ReturnUsersKidsInKiddingPen(ctx.User.Id);
-                    if (GoatService.CanGoatsFitInBarn(ctx.User.Id, kids.Count))
+                    if (GoatService.CanGoatsFitInBarn(ctx.User.Id, kids.Count, userPerks))
                     {
                         kids.ForEach(kid => GoatService.MoveKidIntoGoatPen(kid, ctx.User.Id));
                         await ctx.Channel.SendMessageAsync($"{kids.Count} kids have now been moved to your barn")
@@ -147,6 +161,7 @@ namespace BumbleBot.Commands.Game
                 }
                 else
                 {
+                    var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
                     if (!int.TryParse(idString, out var id))
                     {
                         await ctx.Channel.SendMessageAsync($"You entered {idString} which is not a number")
@@ -161,7 +176,7 @@ namespace BumbleBot.Commands.Game
                         await ctx.Channel.SendMessageAsync("You don't have a kid in your shelter with this id")
                             .ConfigureAwait(false);
                     }
-                    else if (GoatService.CanGoatsFitInBarn(ctx.User.Id, 1))
+                    else if (GoatService.CanGoatsFitInBarn(ctx.User.Id, 1, usersPerks))
                     {
                         GoatService.MoveKidIntoGoatPen(kidToMove, ctx.User.Id);
                         await ctx.Channel.SendMessageAsync($"Kid with id {id} has been moved into your barn")
