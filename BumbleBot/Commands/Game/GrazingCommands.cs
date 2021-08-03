@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
@@ -20,17 +21,20 @@ using MySql.Data.MySqlClient;
 namespace BumbleBot.Commands.Game
 {
     [Group("pasture")]
+    [IsUserAvailable]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class GrazingCommands : BaseCommandModule
     {
         private readonly DbUtils dBUtils = new DbUtils();
 
-        public GrazingCommands(GoatService goatService, FarmerService farmerService)
+        public GrazingCommands(GoatService goatService, FarmerService farmerService, PerkService perkService)
         {
             this.GoatService = goatService;
             this.FarmerService = farmerService;
+            this.perkService = perkService;
         }
 
+        private readonly PerkService perkService;
         private GoatService GoatService { get; }
         private FarmerService FarmerService { get; }
 
@@ -179,6 +183,7 @@ namespace BumbleBot.Commands.Game
                 // ReSharper disable once RedundantAssignment
                 var notYours = ids.Where(id => !ownedGoatIds.Contains(id)).ToList();
                 var isBestCommand = false;
+                var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
                 if (goatIDs.ToLower().Trim().Equals("best"))
                 {
                     isBestCommand = true;
@@ -200,6 +205,11 @@ namespace BumbleBot.Commands.Game
                         command.Parameters.Add("?farmerId", MySqlDbType.VarChar).Value = ctx.User.Id;
                         connection.Open();
                         command.ExecuteNonQuery();
+                    }
+
+                    if (usersPerks.Any(perk => perk.id == 12))
+                    {
+                        pastureSize = (int) Math.Ceiling(pastureSize * 1.1);
                     }
                     for (var i = 0; i < pastureSize; i++)
                     {
@@ -232,6 +242,10 @@ namespace BumbleBot.Commands.Game
                     var currentlyGrazing = 0;
                     var farmer = FarmerService.ReturnFarmerInfo(ctx.User.Id);
                     var grazingSize = farmer.Grazingspace;
+                    if (usersPerks.Any(perk => perk.id == 12))
+                    {
+                        grazingSize = (int) Math.Ceiling(grazingSize * 1.1);
+                    }
                     using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
                     {
                         var query = "select COUNT(*) as goatsGrazing from grazing where farmerId = ?farmerId";

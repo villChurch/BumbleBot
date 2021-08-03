@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using BumbleBot.Models;
 using BumbleBot.Utilities;
 using MySql.Data.MySqlClient;
@@ -32,11 +33,17 @@ namespace BumbleBot.Services
                 command.ExecuteNonQuery();
             }
         }
-        public (bool, string) CheckExpAgainstNextLevel(ulong userId, decimal expToAdd)
+        public async Task<(bool, string)> CheckExpAgainstNextLevel(ulong userId, decimal expToAdd)
         {
             //n =  ln(FV / PV)ln(1 + r)
             // exp = 10 * 1.05^level
             var msg = "";
+            var perkService = new PerkService();
+            var userPerks = await perkService.GetUsersPerks(userId);
+            if (userPerks.Any(perk => perk.id == 1))
+            {
+                expToAdd *= 2;
+            }
             var goatsLevelAndExp = GetCurrentLevelAndExpOfGoat(userId);
             var startingLevel = goatsLevelAndExp.Item1;
             if (goatsLevelAndExp.Item1 == 0) return (startingLevel != goatsLevelAndExp.Item1, msg);
@@ -833,7 +840,7 @@ namespace BumbleBot.Services
             };
         }
 
-        public bool CanGoatsFitInBarn(ulong discordId, int numberOfGoatsToAdd)
+        public bool CanGoatsFitInBarn(ulong discordId, int numberOfGoatsToAdd, List<Perks> usersPerks)
         {
             var barnSize = 10;
             var numberOfGoats = 0;
@@ -863,6 +870,10 @@ namespace BumbleBot.Services
                 reader.Close();
             }
 
+            if (usersPerks.Any(perk => perk.id == 10))
+            {
+                barnSize = (int) Math.Ceiling(barnSize * 1.1);
+            }
             return barnSize != numberOfGoats && barnSize >= numberOfGoats + numberOfGoatsToAdd;
         }
 

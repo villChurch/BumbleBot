@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
@@ -15,6 +16,7 @@ using Newtonsoft.Json;
 namespace BumbleBot.Commands.Game
 {
     [Group("Milk")]
+    [IsUserAvailable]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class MilkCommands : BaseCommandModule
     {

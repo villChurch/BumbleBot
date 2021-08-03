@@ -9,7 +9,7 @@ namespace BumbleBot.Attributes
 {
     public class HasEnoughCredits : CheckBaseAttribute
     {
-        private readonly DbUtils dBUtils = new DbUtils();
+        private readonly DbUtils dBUtils = new();
 
         public HasEnoughCredits(int argumentPosition)
         {
@@ -17,10 +17,14 @@ namespace BumbleBot.Attributes
         }
 
         private int Balance { get; set; }
-        public int ArgumentPosition { get; set; }
+        private int ArgumentPosition { get; set; }
 
         public override Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
         {
+            if (help)
+            {
+                return Task.FromResult(true);
+            }
             using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
             {
                 var query = "select * from farmers where DiscordID = ?discordId";
@@ -37,7 +41,6 @@ namespace BumbleBot.Attributes
             }
 
             var arguments = ctx.RawArgumentString.Split(' ');
-            if (ctx.Command.Name.ToLower().Equals("help")) return Task.FromResult(1 == 1);
             var buyPrice = Convert.ToInt32(arguments[ArgumentPosition]);
             return Task.FromResult(Balance >= buyPrice);
         }

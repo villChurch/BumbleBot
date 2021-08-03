@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
@@ -14,15 +15,18 @@ using MySql.Data.MySqlClient;
 
 namespace BumbleBot.Commands.Game
 {
+    [IsUserAvailable]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class Trading : BaseCommandModule
     {
         private readonly DbUtils dBUtils = new();
+        private readonly PerkService perkService;
 
-        public Trading(FarmerService farmerService, GoatService goatService)
+        public Trading(FarmerService farmerService, GoatService goatService, PerkService perkService)
         {
             this.FarmerService = farmerService;
             this.GoatService = goatService;
+            this.perkService = perkService;
         }
 
         private FarmerService FarmerService { get; }
@@ -37,6 +41,7 @@ namespace BumbleBot.Commands.Game
         {
             var recipientFarmer = FarmerService.ReturnFarmerInfo(recipient.Id);
             var sendersGoats = GoatService.ReturnUsersGoats(ctx.User.Id);
+            var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
             if (sendersGoats.Select(x => x.Id == goatId).ToList().Count < 1)
             {
                 await ctx.Channel.SendMessageAsync($"You do not own a goat with id {goatId}").ConfigureAwait(false);
@@ -46,7 +51,7 @@ namespace BumbleBot.Commands.Game
                 await ctx.Channel.SendMessageAsync($"{recipient.Mention} does not have a profile setup.")
                     .ConfigureAwait(false);
             }
-            else if (!GoatService.CanGoatsFitInBarn(recipient.Id, 1))
+            else if (!GoatService.CanGoatsFitInBarn(recipient.Id, 1, usersPerks))
             {
                 await ctx.Channel
                     .SendMessageAsync($"{recipient.Mention} does not have enough room in their barn for this goat")

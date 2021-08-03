@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using BumbleBot.Attributes;
 using BumbleBot.Services;
@@ -7,30 +8,40 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
+using Org.BouncyCastle.Crypto.Tls;
 
 namespace BumbleBot.Commands.Game
 {
     [Group("purchase")]
+    [IsUserAvailable]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class Purchase : BaseCommandModule
     {
         private readonly DbUtils dBUtils = new DbUtils();
         private readonly FarmerService farmerService;
+        private readonly PerkService perkService;
 
-        public Purchase(FarmerService farmerService)
+        public Purchase(FarmerService farmerService, PerkService perkService)
         {
             this.farmerService = farmerService;
+            this.perkService = perkService;
         }
 
         [Command("dairy")]
         [HasEnoughCredits(0)]
         public async Task BuyDairy(CommandContext ctx, int upgradePrice)
         {
+            int dairyPrice = 10000;
+            var userPerks = await perkService.GetUsersPerks(ctx.User.Id);
+            if (userPerks.Any(perk => perk.id == 14))
+            {
+                dairyPrice = (int) Math.Ceiling(dairyPrice * 0.9);
+            }
             if (farmerService.DoesFarmerHaveDairy(ctx.User.Id))
             {
                 await ctx.Channel.SendMessageAsync("You already own a dairy.").ConfigureAwait(false);
             }
-            else if (upgradePrice != 10000)
+            else if (upgradePrice != dairyPrice)
             {
                 await ctx.Channel.SendMessageAsync("You have not entered the correct price for the shelter.");
             }
@@ -45,7 +56,7 @@ namespace BumbleBot.Commands.Game
                     command.ExecuteNonQuery();
                 }
 
-                farmerService.DeductCreditsFromFarmer(ctx.User.Id, 10000);
+                farmerService.DeductCreditsFromFarmer(ctx.User.Id, dairyPrice);
 
                 await ctx.Channel.SendMessageAsync("You have successfully brought a dairy.").ConfigureAwait(false);
             }
@@ -55,11 +66,17 @@ namespace BumbleBot.Commands.Game
         [HasEnoughCredits(0)]
         public async Task BuyKiddingBarn(CommandContext ctx, int upgradePrice)
         {
+            int shelterPrice = 5000;
+            var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
+            if (usersPerks.Any(perk => perk.id == 14))
+            {
+                shelterPrice = (int) Math.Ceiling(shelterPrice * 0.9);
+            }
             if (farmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
             {
                 await ctx.Channel.SendMessageAsync("You already own a shelter.").ConfigureAwait(false);
             }
-            else if (upgradePrice != 5000)
+            else if (upgradePrice != shelterPrice)
             {
                 await ctx.Channel.SendMessageAsync("You have not entered the correct price for the shelter.");
             }
@@ -74,7 +91,7 @@ namespace BumbleBot.Commands.Game
                     command.ExecuteNonQuery();
                 }
 
-                farmerService.DeductCreditsFromFarmer(ctx.User.Id, 5000);
+                farmerService.DeductCreditsFromFarmer(ctx.User.Id, shelterPrice);
                 await ctx.Channel.SendMessageAsync("You have successfully brought a shelter.").ConfigureAwait(false);
             }
         }
@@ -94,6 +111,20 @@ namespace BumbleBot.Commands.Game
             else
             {
                 var barnUpgradeCost = (farmer.Barnspace + 10) * 100;
+                var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
+                if (usersPerks.Any(perk => perk.id == 9))
+                {
+                    barnUpgradeCost = (int) Math.Ceiling(barnUpgradeCost * 0.75);
+                }
+                else if (usersPerks.Any(perk => perk.id == 4))
+                {
+                    barnUpgradeCost = (int) Math.Ceiling(barnUpgradeCost * 0.9);
+                }
+
+                if (usersPerks.Any(perk => perk.id == 14))
+                {
+                    barnUpgradeCost = (int) Math.Ceiling(barnUpgradeCost * 0.9);
+                }
                 if (upgradePrice >= barnUpgradeCost)
                 {
                     using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
@@ -135,6 +166,20 @@ namespace BumbleBot.Commands.Game
             else
             {
                 var grazingUpgradeCost = (farmer.Grazingspace + 10) * 100;
+                var userPerks = await perkService.GetUsersPerks(ctx.User.Id);
+                if (userPerks.Any(perk => perk.id == 11))
+                {
+                    grazingUpgradeCost = (int) Math.Ceiling(grazingUpgradeCost * 0.75);
+                }
+                else if (userPerks.Any(perk => perk.id == 5))
+                {
+                    grazingUpgradeCost = (int) Math.Ceiling(grazingUpgradeCost * 0.9);
+                }
+
+                if (userPerks.Any(perk => perk.id == 14))
+                {
+                    grazingUpgradeCost = (int) Math.Ceiling(grazingUpgradeCost * 0.9);
+                }
                 if (upgradePrice >= grazingUpgradeCost)
                 {
                     using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
@@ -169,9 +214,15 @@ namespace BumbleBot.Commands.Game
         [Description("purchase some alfalfa")]
         public async Task PurchaseAlfalfa(CommandContext ctx, int cost)
         {
-            if (cost < 500)
+            var alfalfaCost = 500;
+            var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
+            if (usersPerks.Any(perk => perk.id == 14))
             {
-                await ctx.Channel.SendMessageAsync("Alfalfa costs 500 credits.").ConfigureAwait(false);
+                alfalfaCost = (int) Math.Ceiling(alfalfaCost * 0.9);
+            }
+            if (cost < alfalfaCost)
+            {
+                await ctx.Channel.SendMessageAsync($"Alfalfa costs {alfalfaCost} credits.").ConfigureAwait(false);
             }
             else
             {
@@ -182,7 +233,7 @@ namespace BumbleBot.Commands.Game
                 else
                 {
                     farmerService.AddAlfalfaToFarmer(ctx.User.Id);
-                    farmerService.DeductCreditsFromFarmer(ctx.User.Id, 500);
+                    farmerService.DeductCreditsFromFarmer(ctx.User.Id, alfalfaCost);
                     await ctx.Channel
                         .SendMessageAsync(
                             "Alfalfa has been purchased for 500 credits and will be used next time you run daily.")
@@ -196,9 +247,15 @@ namespace BumbleBot.Commands.Game
         [Description("purchase some dust")]
         public async Task PurchaseDust(CommandContext ctx, int cost)
         {
-            if (cost != 1000)
+            var dustCost = 1000;
+            var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
+            if (usersPerks.Any(perk => perk.id == 14))
             {
-                await ctx.Channel.SendMessageAsync("Dust costs 1,000 credits.").ConfigureAwait(false);
+                dustCost = (int) Math.Ceiling(dustCost * 0.9);
+            }
+            if (cost != dustCost)
+            {
+                await ctx.Channel.SendMessageAsync($"Dust costs dustCost credits.").ConfigureAwait(false);
             }
             else if (farmerService.DoesFarmerHaveOatsOrAlfalfa(ctx.User.Id))
             {
@@ -209,7 +266,7 @@ namespace BumbleBot.Commands.Game
             {
                 farmerService.AddAlfalfaToFarmer(ctx.User.Id);
                 farmerService.AddOatsToFarmer(ctx.User.Id);
-                farmerService.DeductCreditsFromFarmer(ctx.User.Id, 1000);
+                farmerService.DeductCreditsFromFarmer(ctx.User.Id, dustCost);
                 await ctx.Channel.SendMessageAsync(
                         $"Dust has been purchased and will be used next time you milk and run your daily.")
                     .ConfigureAwait(false);
@@ -223,9 +280,15 @@ namespace BumbleBot.Commands.Game
         {
             try
             {
-                if (cost < 250)
+                var oatCost = 250;
+                var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
+                if (usersPerks.Any(perk => perk.id == 14))
                 {
-                    await ctx.Channel.SendMessageAsync("Oats cost 250 credits.").ConfigureAwait(false);
+                    oatCost = (int) Math.Ceiling(oatCost * 0.9);
+                }
+                if (cost < oatCost)
+                {
+                    await ctx.Channel.SendMessageAsync($"Oats cost {oatCost} credits.").ConfigureAwait(false);
                 }
                 else
                 {
@@ -239,6 +302,7 @@ namespace BumbleBot.Commands.Game
                     else
                     {
                         farmerService.AddOatsToFarmer(ctx.User.Id);
+                        farmerService.DeductCreditsFromFarmer(ctx.User.Id, oatCost);
                         await ctx.Channel
                             .SendMessageAsync(
                                 "Oats have been purchased and will be used next time you milk your goats.")

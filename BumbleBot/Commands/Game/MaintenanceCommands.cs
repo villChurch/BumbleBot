@@ -8,6 +8,7 @@ using DSharpPlus.Entities;
 namespace BumbleBot.Commands.Game
 {
     [Group("maintenance")]
+    [IsUserAvailable]
     public class MaintenanceCommands : BaseCommandModule
     {
 

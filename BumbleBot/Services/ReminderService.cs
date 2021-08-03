@@ -86,8 +86,15 @@ namespace BumbleBot.Services
                 }
                 catch (NotFoundException nfe)
                 {
-                    discordClient.Logger.Log(LogLevel.Error, "Guild could not be found. Exception message was {Message}",
+                    discordClient.Logger.Log(LogLevel.Error,
+                        "Guild could not be found. Exception message was {Message}",
                         nfe.Message);
+                }
+                catch (UnauthorizedException uae)
+                {
+                    discordClient.Logger.Log(LogLevel.Error,
+                        "Could not access that guild. Exception message was {Message}",
+                        uae.Message);
                 }
             }
         }

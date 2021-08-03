@@ -29,10 +29,9 @@ namespace BumbleBot.Services
             var farmer = ReturnFarmerInfo(userId);
             using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
             {
-                var query = "update farmers set oats = 1, credits = ?credits where DiscordID = ?discordID";
+                var query = "update farmers set oats = 1 where DiscordID = ?discordID";
                 var command = new MySqlCommand(query, connection);
                 command.Parameters.Add("?discordID", MySqlDbType.VarChar).Value = userId;
-                command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmer.Credits - 250;
                 connection.Open();
                 command.ExecuteNonQuery();
             }
@@ -208,6 +207,9 @@ namespace BumbleBot.Services
                             farmer.Barnspace = reader.GetInt32("barnsize");
                             farmer.Grazingspace = reader.GetInt32("grazesize");
                             farmer.Milk = reader.GetDecimal("milk");
+                            farmer.PerkPoints = reader.GetInt32("perkpoints");
+                            farmer.Level = reader.GetInt32("level");
+                            farmer.Experience = reader.GetDecimal("experience");
                         }
 
                     reader.Close();

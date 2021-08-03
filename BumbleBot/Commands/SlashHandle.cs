@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
 using DSharpPlus;
 using DSharpPlus.Entities;
-using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
 using MySql.Data.MySqlClient;
 
@@ -18,6 +17,7 @@ namespace BumbleBot.Commands
         private DairyService dairyService = new DairyService();
         private DbUtils dbUtils = new DbUtils();
 
+        [IsUserAvailableSlash]
         [SlashCommand("milk", "Display how much milk you have")]
         public async Task DisplayMilk(InteractionContext ctx)
         {
@@ -29,6 +29,7 @@ namespace BumbleBot.Commands
                 .ConfigureAwait(false);
         }
 
+        [IsUserAvailableSlash]
         [SlashCommand("cheese", "Display how much soft or hard cheese you have")]
         public async Task DisplayCheese(InteractionContext ctx, [Choice("soft_cheese", "soft")]
             [Choice("hard_cheese", "hard")] [Option("type_of_cheese", "Type of cheese")] String cheese)
@@ -50,6 +51,7 @@ namespace BumbleBot.Commands
             }
         }
         
+        [IsUserAvailableSlash]
         [SlashCommand("credits", "Display your balance")]
         public async Task DisplayBalance(InteractionContext ctx)
         {
@@ -58,6 +60,7 @@ namespace BumbleBot.Commands
                 new DiscordInteractionResponseBuilder().WithContent($"Current balance is {balance:n0}")).ConfigureAwait(false);
         }
 
+        [IsUserAvailableSlash]
         [SlashCommand("handle", "Handles a goat")]
         public async Task HandleGoat(InteractionContext ctx, [Option("goat_to_handle", "Id of goat to handle")]
             long goatId)

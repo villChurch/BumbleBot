@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Timers;
@@ -22,6 +23,7 @@ using Type = BumbleBot.Models.Type;
 
 namespace BumbleBot.Commands.Game
 {
+    [IsUserAvailable]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class GameCommands : BaseCommandModule
     {
@@ -29,13 +31,15 @@ namespace BumbleBot.Commands.Game
         private Timer equipTimer;
         private bool equipTimerrunning;
 
-        public GameCommands(GoatService goatService, FarmerService farmerService, GoatSpawningService goatSpawningService)
+        public GameCommands(GoatService goatService, FarmerService farmerService, GoatSpawningService goatSpawningService, PerkService perkService)
         {
             GoatService = goatService;
             FarmerService = farmerService;
             GoatSpawningService = goatSpawningService;
+            this.perkService = perkService;
         }
 
+        private readonly PerkService perkService;
         private FarmerService FarmerService { get; }
         private GoatService GoatService { get; }
         
@@ -306,6 +310,8 @@ namespace BumbleBot.Commands.Game
                 var barnSize = 10;
                 var grazingSize = 0;
                 decimal milkAmount = 0;
+                int perkPoints = 0;
+                var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
                 using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
                 {
                     var query = "select * from farmers where DiscordID = ?discordID";
@@ -319,6 +325,7 @@ namespace BumbleBot.Commands.Game
                         barnSize = reader.GetInt32("barnsize");
                         grazingSize = reader.GetInt32("grazesize");
                         milkAmount = reader.GetDecimal("milk");
+                        perkPoints = reader.GetInt32("perkpoints");
                     }
 
                     reader.Close();
@@ -347,7 +354,18 @@ namespace BumbleBot.Commands.Game
                     },
                     Color = DiscordColor.Aquamarine
                 };
-                embed.AddField("Credits", credits.ToString());
+                if (usersPerks.Any(perk => perk.id == 10))
+                {
+                    barnSize = (int) Math.Ceiling(barnSize * 1.1);
+                }
+
+                if (usersPerks.Any(perk => perk.id == 12))
+                {
+                    grazingSize = (int) Math.Ceiling(grazingSize * 1.1);
+                }
+                
+                embed.AddField("Credits", credits.ToString(), true);
+                embed.AddField("Perk Points", perkPoints.ToString(), true);
                 embed.AddField("Herd Size", numberOfGoats.ToString());
                 embed.AddField("Barn Space", barnSize.ToString(), true);
                 embed.AddField("Pasture Available", $"Space For {grazingSize} Goats", true);

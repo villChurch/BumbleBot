@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using BumbleBot.Attributes;
@@ -12,15 +13,18 @@ using DSharpPlus.Entities;
 namespace BumbleBot.Commands.Game
 {
     [Group("dairy")]
+    [IsUserAvailable]
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class Dairy : BaseCommandModule
     {
-        public Dairy(DairyService dairyService, FarmerService farmerService)
+        public Dairy(DairyService dairyService, FarmerService farmerService, PerkService perkService)
         {
             this.DairyService = dairyService;
             this.FarmerService = farmerService;
+            this.perkService = perkService;
         }
 
+        private readonly PerkService perkService;
         private DairyService DairyService { get; }
         private FarmerService FarmerService { get; }
 
@@ -33,6 +37,8 @@ namespace BumbleBot.Commands.Game
             }
             else
             {
+                var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
+                int caveCost = 12000;
                 var embed = new DiscordEmbedBuilder
                 {
                     Title = "Dairy Upgrade Options",
@@ -42,9 +48,14 @@ namespace BumbleBot.Commands.Game
                 };
                 var dairy = DairyService.GetUsersDairy(ctx.User.Id);
                 var price = dairy.Slots * 5000;
+                if (usersPerks.Any(perk => perk.id == 14))
+                {
+                    caveCost = (int) Math.Ceiling(caveCost * 0.9);
+                    price = (int) Math.Ceiling(price * 0.9);
+                }
                 embed.AddField("Capacity", $"{price} credits will increase milk capacity by 1,000 lbs");
                 if (!DairyService.DoesDairyHaveACave(ctx.User.Id))
-                    embed.AddField("Cave", "12,000 credits will add a cave to your dairy to produce hard cheese");
+                    embed.AddField("Cave", $"{caveCost} credits will add a cave to your dairy to produce hard cheese");
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
         }
@@ -66,11 +77,16 @@ namespace BumbleBot.Commands.Game
             else if (options.Contains(option.ToLower()))
             {
                 var dairy = DairyService.GetUsersDairy(ctx.User.Id);
+                var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
                 switch (option.ToLower())
                 {
                     case "capacity":
                     {
                         var upgradePrice = dairy.Slots * 5000;
+                        if (usersPerks.Any(perk => perk.id == 14))
+                        {
+                            upgradePrice = (int) Math.Ceiling(upgradePrice * 0.9);
+                        }
                         if (price == upgradePrice)
                         {
                             FarmerService.DeductCreditsFromFarmer(ctx.User.Id, price);
@@ -89,20 +105,25 @@ namespace BumbleBot.Commands.Game
                         break;
                     }
                     case "cave":
+                        var cavePrice = 12000;
+                        if (usersPerks.Any(perk => perk.id == 14))
+                        {
+                            cavePrice = (int) Math.Ceiling(cavePrice * 0.9);
+                        }
                         if (DairyService.DoesDairyHaveACave(ctx.User.Id))
                         {
                             await ctx.Channel.SendMessageAsync("Your dairy already has a cave").ConfigureAwait(false);
                         }
-                        else if (price == 12000)
+                        else if (price == cavePrice)
                         {
                             DairyService.CreateCaveInDairy(ctx.User.Id);
-                            FarmerService.DeductCreditsFromFarmer(ctx.User.Id, 12000);
+                            FarmerService.DeductCreditsFromFarmer(ctx.User.Id, cavePrice);
                             await ctx.Channel.SendMessageAsync("Your dairy now has a cave to age soft cheese in")
                                 .ConfigureAwait(false);
                         }
                         else
                         {
-                            await ctx.Channel.SendMessageAsync($"Upgrade price for {option} is 12,000 not {price}")
+                            await ctx.Channel.SendMessageAsync($"Upgrade price for {option} is {cavePrice} not {price}")
                                 .ConfigureAwait(false);
                         }
 
