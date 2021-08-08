@@ -58,7 +58,7 @@ namespace BumbleBot.Commands.Game
             try
             {
                 var farmer = new Farmer();
-                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Select * from farmers where DiscordID = ?discordID";
                     var command = new MySqlCommand(query, connection);
@@ -83,7 +83,7 @@ namespace BumbleBot.Commands.Game
                 else
                 {
                     farmer.Credits += (int) Math.Ceiling(farmer.Milk * 3);
-                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                     {
                         var query = "Update farmers set milk = ?milk, credits = ?credits where DiscordID = ?discordId";
                         var command = new MySqlCommand(query, connection);
@@ -94,7 +94,7 @@ namespace BumbleBot.Commands.Game
                         command.ExecuteNonQuery();
                     }
 
-                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                     {
                         var query = "Delete from milkexpiry where DiscordID = ?discordID";
                         var command = new MySqlCommand(query, connection);

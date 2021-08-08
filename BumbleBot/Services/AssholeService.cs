@@ -18,7 +18,7 @@ namespace BumbleBot.Services
                 if (rnd.Next(0, 10) == 5)
                 {
                     commandsRunBeforeParamChange = 0;
-                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                     {
                         var query = "Update config SET boolValue = ?boolValue where paramName = ?paramName";
                         var command = new MySqlCommand(query, connection);

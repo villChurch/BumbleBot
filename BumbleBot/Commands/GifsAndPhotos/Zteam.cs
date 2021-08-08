@@ -38,7 +38,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
             {
                 AssholeService.SetAhConfig();
                 var isAssholeMode = false;
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Select boolValue from config where paramName = ?paramName";
                     var command = new MySqlCommand(query, connection);
@@ -58,7 +58,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
                 }
 
                 var zteamLinks = new List<string>();
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Select zteamLink from zteam";
                     var command = new MySqlCommand(query, connection);
@@ -113,7 +113,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
 
                 gifLink = linkResponse.Result.Content.Trim();
 
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Insert into zteam (zteamLink, addedBy) Values (?zteamLink, ?addedBy)";
                     var command = new MySqlCommand(query, connection);
@@ -140,7 +140,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
             try
             {
                 var zteamPics = new Dictionary<string, string>();
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Select id, zteamLink from zteam";
                     var command = new MySqlCommand(query, connection);
@@ -183,7 +183,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
         {
             try
             {
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var command = new MySqlCommand("RemoveZteam", connection)
                     {
@@ -213,7 +213,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
             try
             {
                 var zteamLink = "";
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Select zteamLink from zteam where id = ?id";
                     var command = new MySqlCommand(query, connection);

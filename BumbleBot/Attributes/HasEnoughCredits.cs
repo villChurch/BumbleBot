@@ -25,7 +25,7 @@ namespace BumbleBot.Attributes
             {
                 return Task.FromResult(true);
             }
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from farmers where DiscordID = ?discordId";
                 var command = new MySqlCommand(query, connection);

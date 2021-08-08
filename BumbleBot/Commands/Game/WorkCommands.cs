@@ -24,7 +24,7 @@ namespace BumbleBot.Commands.Game
         [Description("Sends your character to work")]
         public async Task StartWorking(CommandContext ctx)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "update farmers set working = ?working where DiscordID = ?userId";
                 var command = new MySqlCommand(query, connection);
@@ -35,7 +35,7 @@ namespace BumbleBot.Commands.Game
                 await connection.CloseAsync();
             }
 
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "insert into working (farmerid) values (?farmerid)";
                 var command = new MySqlCommand(query, connection);
@@ -54,7 +54,7 @@ namespace BumbleBot.Commands.Game
         [Description("Returns your character from work")]
         public async Task StopWorking(CommandContext ctx)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "update farmers set working = ?working where DiscordID = ?userId";
                 var command = new MySqlCommand(query, connection);

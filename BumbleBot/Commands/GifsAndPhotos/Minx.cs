@@ -38,7 +38,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
             {
                 AssholeService.SetAhConfig();
                 var isAssholeMode = false;
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Select boolValue from config where paramName = ?paramName";
                     var command = new MySqlCommand(query, connection);
@@ -58,7 +58,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
                 }
 
                 var minxLinks = new List<string>();
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Select minxLink from minx";
                     var command = new MySqlCommand(query, connection);
@@ -113,7 +113,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
 
                 gifLink = linkResponse.Result.Content.Trim();
 
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Insert into minx (minxLink, addedBy) Values (?minxLink, ?addedBy)";
                     var command = new MySqlCommand(query, connection);
@@ -140,7 +140,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
             try
             {
                 var minxPics = new Dictionary<string, string>();
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Select id, minxLink from minx";
                     var command = new MySqlCommand(query, connection);
@@ -182,7 +182,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
         {
             try
             {
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var command = new MySqlCommand("RemoveMinx", connection)
                     {
@@ -212,7 +212,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
             try
             {
                 var minxLink = "";
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Select minxLink from minx where id = ?id";
                     var command = new MySqlCommand(query, connection);

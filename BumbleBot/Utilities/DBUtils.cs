@@ -10,7 +10,7 @@ namespace BumbleBot.Utilities
     {
         private readonly string configFilePath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
-        public string ReturnPopulatedConnectionStringAsync()
+        public string ReturnPopulatedConnectionString()
         {
             var json = string.Empty;
 

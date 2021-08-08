@@ -321,7 +321,7 @@ namespace BumbleBot.Commands.Game
                     }
                     else
                     {
-                        using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                        using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                         {
                             var query = "Update goats Set name = ?newName where id = ?goatId";
                             var command = new MySqlCommand(query, connection);

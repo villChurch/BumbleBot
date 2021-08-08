@@ -119,10 +119,17 @@ namespace BumbleBot.Commands.Game
                             summerGoat.Item1, summerGoat.Item2,
                             ctx.Client));
                         break;
+                    case "buck":
+                        var buckGoat = GoatSpawningService.GenerateBuckSpecialToSpawn();
+                        _ = Task.Run(() => GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild,
+                            buckGoat.Item1, buckGoat.Item2, ctx.Client));
+                        break;
                     case "options":
                         await ctx.Channel.SendMessageAsync(
                             $@"Options are {Formatter.BlockCode
-                                ($"spring {Environment.NewLine}dazzle {Environment.NewLine}member special {Environment.NewLine}dairy {Environment.NewLine}holiday {Environment.NewLine}tailless {Environment.NewLine}valentines {Environment.NewLine}shamrock {Environment.NewLine}summer")}");
+                                ($"spring {Environment.NewLine}dazzle {Environment.NewLine}member special {Environment.NewLine}dairy {Environment.NewLine}holiday " +
+                                 $"{Environment.NewLine}tailless {Environment.NewLine}valentines {Environment.NewLine}shamrock {Environment.NewLine}summer " +
+                                 $"{Environment.NewLine}buck")}");
                         break;
                     default:
                         _ = new Random().Next(0, 100) == 69
@@ -234,7 +241,7 @@ namespace BumbleBot.Commands.Game
 
             try
             {
-                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                 {
                     const string query = "INSERT INTO farmers (DiscordID) VALUES (?discordID)";
                     var command = new MySqlCommand(query, connection);
@@ -312,7 +319,7 @@ namespace BumbleBot.Commands.Game
                 decimal milkAmount = 0;
                 int perkPoints = 0;
                 var usersPerks = await perkService.GetUsersPerks(ctx.User.Id);
-                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "select * from farmers where DiscordID = ?discordID";
                     var command = new MySqlCommand(query, connection);
@@ -333,7 +340,7 @@ namespace BumbleBot.Commands.Game
 
                 var numberOfGoats = 0;
 
-                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "select COUNT(*) as amount from goats where ownerID = ?discordID";
                     var command = new MySqlCommand(query, connection);
@@ -400,7 +407,7 @@ namespace BumbleBot.Commands.Game
                 _ = Task.Run(async () =>
                 {
                     var goats = new List<Goat>();
-                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                     {
                         var query = "Select * from goats where ownerID = ?ownerId";
                         var command = new MySqlCommand(query, connection);
@@ -506,7 +513,7 @@ namespace BumbleBot.Commands.Game
                                     return;
                                 }
 
-                                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                                 {
                                     var query = "Update goats set equipped = 0 where ownerID = ?ownerId";
                                     var command = new MySqlCommand(query, connection);
@@ -515,7 +522,7 @@ namespace BumbleBot.Commands.Game
                                     command.ExecuteNonQuery();
                                 }
 
-                                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                                 {
                                     var query = "Update goats set equipped = 1 where id = ?id";
                                     var command = new MySqlCommand(query, connection);
@@ -546,7 +553,7 @@ namespace BumbleBot.Commands.Game
         private bool DoesUserHaveCharacter(ulong discordId)
         {
             bool hasCharacter;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from farmers where DiscordID = ?discordID";
                 var command = new MySqlCommand(query, connection);

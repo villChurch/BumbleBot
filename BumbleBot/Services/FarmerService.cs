@@ -13,7 +13,7 @@ namespace BumbleBot.Services
 
         public void AddAlfalfaToFarmer(ulong userId)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "insert into items (name, amount, ownerId) values (?item, 1, ?ownerId) on duplicate key update amount = 1";
                 var command = new MySqlCommand(query, connection);
@@ -27,7 +27,7 @@ namespace BumbleBot.Services
         public void AddOatsToFarmer(ulong userId)
         {
             var farmer = ReturnFarmerInfo(userId);
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "update farmers set oats = 1 where DiscordID = ?discordID";
                 var command = new MySqlCommand(query, connection);
@@ -39,7 +39,7 @@ namespace BumbleBot.Services
         public bool DoesFarmerHaveAlfalfa(ulong userId)
         {
             var hasAlfalfa = false;
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select amount from items where ownerId = ?ownerId and name = ?item";
                 var command = new MySqlCommand(query, connection);
@@ -63,7 +63,7 @@ namespace BumbleBot.Services
         public bool DoesFarmerHaveOats(ulong userId)
         {
             var hasOats = false;
-            using (var conncetion = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var conncetion = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select oats from farmers where DiscordID = ?discordID";
                 var command = new MySqlCommand(query, conncetion);
@@ -87,7 +87,7 @@ namespace BumbleBot.Services
         {
             var hasKids = false;
 
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from newbornkids where ownerID = ?ownerId";
                 var command = new MySqlCommand(query, connection);
@@ -103,7 +103,7 @@ namespace BumbleBot.Services
 
         public void IncreaseKiddingPenCapacity(ulong discordId, int currentCapcity, int increaseBy)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "update kiddingpens set capacity = ?capacity where ownerID = ?ownerId";
                 var command = new MySqlCommand(query, connection);
@@ -118,7 +118,7 @@ namespace BumbleBot.Services
         {
             var capacity = 1;
 
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from kiddingpens where ownerID = ?ownerId";
                 var command = new MySqlCommand(query, connection);
@@ -136,7 +136,7 @@ namespace BumbleBot.Services
         public bool DoesFarmerHaveDairy(ulong discordId)
         {
             var hasDairy = false;
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from dairy where ownerID = ?ownerId";
                 var command = new MySqlCommand(query, connection);
@@ -153,7 +153,7 @@ namespace BumbleBot.Services
         public bool DoesFarmerHaveAKiddingPen(ulong discordId)
         {
             var haspen = false;
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select count(*) as pens from kiddingpens where ownerId = ?discordId";
                 var command = new MySqlCommand(query, connection);
@@ -172,7 +172,7 @@ namespace BumbleBot.Services
         {
             var hasAdultsInPen = false;
             var goatIds = new List<int>();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select goatId from cookingdoes where ready = 0";
                 var command = new MySqlCommand(query, connection);
@@ -192,7 +192,7 @@ namespace BumbleBot.Services
             try
             {
                 var farmer = new Farmer();
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "select * from farmers where DiscordID = ?discordID";
                     var command = new MySqlCommand(query, connection);
@@ -230,7 +230,7 @@ namespace BumbleBot.Services
             try
             {
                 var farmerCredits = 0;
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "select credits from farmers where DiscordID = ?farmerId";
                     var command = new MySqlCommand(query, connection);
@@ -244,7 +244,7 @@ namespace BumbleBot.Services
                 }
 
                 farmerCredits -= credits;
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Update farmers Set credits = ?credits where DiscordID = ?farmerId";
                     var command = new MySqlCommand(query, connection);
@@ -266,7 +266,7 @@ namespace BumbleBot.Services
             try
             {
                 var farmerCredits = 0;
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "select credits from farmers where DiscordID = ?farmerId";
                     var command = new MySqlCommand(query, connection);
@@ -280,7 +280,7 @@ namespace BumbleBot.Services
                 }
 
                 farmerCredits += credits;
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Update farmers Set credits = ?credits where DiscordID = ?farmerId";
                     var command = new MySqlCommand(query, connection);

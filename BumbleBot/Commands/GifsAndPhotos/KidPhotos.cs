@@ -39,7 +39,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
             {
                 AssholeService.SetAhConfig();
                 var isAssholeMode = false;
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Select boolValue from config where paramName = ?paramName";
                     var command = new MySqlCommand(query, connection);
@@ -59,7 +59,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
                 }
 
                 var gifLinks = new List<string>();
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Select kidLink from goatKids";
                     var command = new MySqlCommand(query, connection);
@@ -127,7 +127,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
 
                 gifLink = linkResponse.Result.Content.Trim();
 
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query =
                         "Insert into goatKids (kidName, kidLink, addedBy) Values (?kidName, ?kidLink, ?addedBy)";
@@ -156,7 +156,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
             try
             {
                 var goatKids = new Dictionary<string, string>();
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Select kidName, kidLink from goatKids";
                     var command = new MySqlCommand(query, connection);
@@ -198,7 +198,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
         {
             try
             {
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var command = new MySqlCommand("RemoveKid", connection)
                     {
@@ -228,7 +228,7 @@ namespace BumbleBot.Commands.GifsAndPhotos
             try
             {
                 var kidLink = "";
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Select kidLink from goatKids where kidName = ?kidName";
                     var command = new MySqlCommand(query, connection);

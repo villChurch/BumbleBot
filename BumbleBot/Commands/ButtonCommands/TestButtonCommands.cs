@@ -78,7 +78,7 @@ namespace BumbleBot.Commands.ButtonCommands
                 _ = Task.Run(async () =>
                 {
                     var goats = new List<Goat>();
-                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                     {
                         var query = "Select * from goats where ownerID = ?ownerId";
                         var command = new MySqlCommand(query, connection);
@@ -246,7 +246,7 @@ namespace BumbleBot.Commands.ButtonCommands
                                     return;
                                 }
 
-                                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                                 {
                                     var query = "Update goats set equipped = 0 where ownerID = ?ownerId";
                                     var command = new MySqlCommand(query, connection);
@@ -255,7 +255,7 @@ namespace BumbleBot.Commands.ButtonCommands
                                     command.ExecuteNonQuery();
                                 }
 
-                                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                                 {
                                     var query = "Update goats set equipped = 1 where id = ?id";
                                     var command = new MySqlCommand(query, connection);

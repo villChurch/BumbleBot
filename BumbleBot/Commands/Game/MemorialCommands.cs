@@ -32,7 +32,7 @@ namespace BumbleBot.Commands.Game
             var credits = farmerService.ReturnFarmerInfo(ctx.User.Id).Credits;
             if (deadGoats.Any(dg => dg.Id == goatId) && credits > 250)
             {
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     const string query = "Update deadgoats Set name = ?name where goatId = ?goatId";
                     var command = new MySqlCommand(query, connection);

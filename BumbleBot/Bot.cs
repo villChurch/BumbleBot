@@ -208,7 +208,7 @@ namespace BumbleBot
         {
             _ = Task.Run(async () =>
                 {
-                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                     {
                         var query = "select stringResponse from config where paramName = ?paramName";
                         var command = new MySqlCommand(query, connection);
@@ -272,6 +272,11 @@ namespace BumbleBot
                                         goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild,
                                             taillessGoat.Item1, taillessGoat.Item2, client));
                                     break;
+                                case 2 when goatSpawningService.AreBuckSpawnsEnabled():
+                                    var buckGoat = goatSpawningService.GenerateBuckSpecialToSpawn();
+                                    _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel,
+                                        e.Guild, buckGoat.Item1, buckGoat.Item2, client));
+                                    break;
                                 case 3 when goatSpawningService.AreValentinesSpawnsEnabled():
                                     var valentinesGoat = goatSpawningService.GenerateValentinesGoatToSpawn();
                                     _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel,
@@ -319,7 +324,7 @@ namespace BumbleBot
                             );
 
                         var assholeMode = false;
-                        using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                        using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                         {
                             var query = "Select boolValue from config where paramName = ?paramName";
                             var command = new MySqlCommand(query, connection);
@@ -335,7 +340,7 @@ namespace BumbleBot
                         var mrStick = DiscordEmoji.FromName(client, ":mrstick:");
                         if (assholeMode && e.Message.Content.Equals(mrStick))
                         {
-                            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                             {
                                 var query = "Update config SET boolValue = ?boolValue where paramName = ?paramName";
                                 var command = new MySqlCommand(query, connection);
@@ -346,7 +351,7 @@ namespace BumbleBot
                             }
 
                             var currentResponse = "";
-                            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                             {
                                 var query = "Select stringResponse from config where paramName = ?paramName";
                                 var command = new MySqlCommand(query, connection);
