@@ -223,7 +223,7 @@ namespace BumbleBot.Commands.Game
                     expToAdd = rnd.Next(0, 60) + 1;
                     _goatService.GiveGoatExp(goat, expToAdd * -1);
                     campaignMessage =
-                        $"{goat?.Name} was so frightened in the ring they flopped to the ground and made you drag their out. " +
+                        $"{goat?.Name} was so frightened in the ring they flopped to the ground and made you drag them out. " +
                         $"They lost {expToAdd} XP and a good bit of self respect.";
                     break;
                 case 27:
