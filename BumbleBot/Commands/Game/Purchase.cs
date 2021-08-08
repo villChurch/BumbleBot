@@ -47,7 +47,7 @@ namespace BumbleBot.Commands.Game
             }
             else
             {
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "insert into dairy (ownerId) values (?discordId)";
                     var command = new MySqlCommand(query, connection);
@@ -82,7 +82,7 @@ namespace BumbleBot.Commands.Game
             }
             else
             {
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "insert into kiddingpens (ownerId) values (?discordId)";
                     var command = new MySqlCommand(query, connection);
@@ -127,7 +127,7 @@ namespace BumbleBot.Commands.Game
                 }
                 if (upgradePrice >= barnUpgradeCost)
                 {
-                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                     {
                         var query =
                             "UPDATE farmers SET barnsize = ?barnsize, credits = ?credits WHERE DiscordID = ?discordId";
@@ -182,7 +182,7 @@ namespace BumbleBot.Commands.Game
                 }
                 if (upgradePrice >= grazingUpgradeCost)
                 {
-                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                     {
                         var query =
                             "UPDATE farmers SET grazesize = ?grazesize, credits = ?credits WHERE DiscordID = ?discordId";

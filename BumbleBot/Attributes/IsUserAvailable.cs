@@ -13,7 +13,7 @@ namespace BumbleBot.Attributes
         private readonly DbUtils dBUtils = new();
         public override Task<bool> ExecuteCheckAsync(CommandContext ctx, bool help)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select working from farmers where DiscordId = ?userId";
                 var command = new MySqlCommand(query, connection);

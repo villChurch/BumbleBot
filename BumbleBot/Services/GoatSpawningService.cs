@@ -260,10 +260,48 @@ namespace BumbleBot.Services
                  $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{goat.FilePath}";
              return (goat, filePath);
          }
+
+         public (Goat, string) GenerateBuckSpecialToSpawn()
+         {
+             var goat = new Goat();
+             goat.Level = RandomLevel.GetRandomLevel();
+             goat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, goat.Level - 1));
+             goat.LevelMulitplier = 1;
+             goat.Type = Type.Kid;
+             goat.Name = "Unregistered Buck";
+             goat.BaseColour = BaseColour.Special;
+             goat.Breed = Breed.Buck;
+             goat.FilePath = "/Goat_Images/Buck_Specials/BuckKid.png";
+             var filePath =
+                 $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{goat.FilePath}";
+             return (goat, filePath);
+         }
+         public bool AreBuckSpawnsEnabled()
+         {
+             var enabled = false;
+             using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+             {
+                 const string query = "select boolValue from config where paramName = ?param";
+                 var command = new MySqlCommand(query, connection);
+                 command.Parameters.AddWithValue("?parm", "buckSpecials");
+                 connection.Open();
+                 var reader = command.ExecuteReader();
+                 if (reader.HasRows)
+                 {
+                     while (reader.Read())
+                     {
+                         enabled = reader.GetBoolean("boolValue");
+                     }
+                 }
+                 reader.Close();
+                 connection.Close();
+             }
+             return enabled;
+         }
          public bool AreDairySpecialSpawnsEnabled()
          {
              var enabled = false;
-             using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+             using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
              {
                  const string query = "select boolValue from config where paramName = ?param";
                  var command = new MySqlCommand(query, connection);
@@ -286,7 +324,7 @@ namespace BumbleBot.Services
         public bool AreMemberSpawnsEnabled()
         {
             var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select boolValue from config where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -309,7 +347,7 @@ namespace BumbleBot.Services
         public bool ArePaddysSpawnsEnabled()
         {
             var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select boolValue from config where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -328,7 +366,7 @@ namespace BumbleBot.Services
         public bool AreSpringSpawnsEnabled()
         {
             var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select boolValue from config where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -349,7 +387,7 @@ namespace BumbleBot.Services
         public bool AreDazzleSpawnsEnabled()
         {
             var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select boolValue from config where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -370,7 +408,7 @@ namespace BumbleBot.Services
         public bool AreValentinesSpawnsEnabled()
         {
             var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select boolValue from config where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -387,7 +425,7 @@ namespace BumbleBot.Services
         public bool AreChristmasSpawnsEnabled()
         {
             var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select boolValue from config where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -405,7 +443,7 @@ namespace BumbleBot.Services
         public bool AreTaillessSpawnsEnabled()
         {
             var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select boolValue from config where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -423,7 +461,7 @@ namespace BumbleBot.Services
         public bool AreSummerSpawnsEnabled()
         {
             var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select boolValue from config where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -505,7 +543,7 @@ namespace BumbleBot.Services
                 {
                     await buttonResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                     await buttonResult.Result.Message.DeleteAsync();
-                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                     {
                         var query = 
                             "INSERT INTO goats (level, name, type, breed, baseColour, ownerID, experience, imageLink)" +

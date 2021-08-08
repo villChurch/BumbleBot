@@ -60,7 +60,7 @@ namespace BumbleBot.Commands.MiscCommands
                     memberId = ctx.Member.Id;
                     unoReversal = true;
                 }
-                using (var con = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var con = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                 {
                     const string query =
                         "Insert into sticked (recipientId, stickerId, messageLink) values (?recipientId, ?stickerId, ?messageLink)";
@@ -74,7 +74,7 @@ namespace BumbleBot.Commands.MiscCommands
                 }
 
                 var stickCount = 1;
-                using (var con = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var con = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                 {
                     const string query =
                         "select COUNT(*) as stickCount from sticked where recipientId = ?recipientId";
@@ -122,7 +122,7 @@ namespace BumbleBot.Commands.MiscCommands
             public async Task ShowTimesIHaveBeenSticked(CommandContext ctx)
             {
                 List<Sticked> listOfSticks = new List<Sticked>();
-                using (var con = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var con = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                 {
                     const string query = "select * from sticked where recipientId = ?userId";
                     var command = new MySqlCommand(query, con);
@@ -168,7 +168,7 @@ namespace BumbleBot.Commands.MiscCommands
             public async Task ShowVictimsIHaveSticked(CommandContext ctx)
             {
                 List<Sticked> listOfSticks = new List<Sticked>();
-                using (var con = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var con = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                 {
                     const string query = "select * from sticked where stickerId = ?userId";
                     var command = new MySqlCommand(query, con);

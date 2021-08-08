@@ -101,7 +101,7 @@ namespace BumbleBot.Services
         public async Task AddReminderToDataBase(DateTimeOffset dateTimeOffset, 
             DiscordMember member, string message, DiscordMessage discordMessage)
         {
-            using (var con = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var con = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "insert into reminders (userId, message, discordMessageLink, time, guild)"
                                      + " values(?userId, ?message, ?dml, ?time, ?guild)";

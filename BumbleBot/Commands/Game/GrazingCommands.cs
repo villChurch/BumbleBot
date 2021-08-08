@@ -45,7 +45,7 @@ namespace BumbleBot.Commands.Game
             try
             {
                 var ids = new List<int>();
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "select goatId from grazing where farmerId = ?userId";
                     var command = new MySqlCommand(query, connection);
@@ -127,7 +127,7 @@ namespace BumbleBot.Commands.Game
                 notYours = ids.Where(id => !ownedGoatIds.Contains(id)).ToList();
                 if (removeAll)
                 {
-                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                     {
                         var query = "delete from grazing where farmerId = ?farmerId";
                         var command = new MySqlCommand(query, connection);
@@ -146,7 +146,7 @@ namespace BumbleBot.Commands.Game
                 {
                     goats.Where(goat => ids.Contains(goat.Id)).ToList().ForEach(goat =>
                     {
-                        using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                        using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                         {
                             var query = "delete from grazing where goatId = ?goatId";
                             var command = new MySqlCommand(query, connection);
@@ -198,7 +198,7 @@ namespace BumbleBot.Commands.Game
                 {
                     var orderByDescending = goats.OrderByDescending(x => x.Level).ToList();
                     var pastureSize = FarmerService.ReturnFarmerInfo(ctx.User.Id).Grazingspace;
-                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                     {
                         var query = "delete from grazing where farmerId = ?farmerId";
                         var command = new MySqlCommand(query, connection);
@@ -219,7 +219,7 @@ namespace BumbleBot.Commands.Game
                         }
                         else
                         {
-                            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                             {
                                 var query = "replace into grazing (goatId, farmerId) Values (?goatId, ?farmerId)";
                                 var command = new MySqlCommand(query, connection);
@@ -246,7 +246,7 @@ namespace BumbleBot.Commands.Game
                     {
                         grazingSize = (int) Math.Ceiling(grazingSize * 1.1);
                     }
-                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                     {
                         var query = "select COUNT(*) as goatsGrazing from grazing where farmerId = ?farmerId";
                         var command = new MySqlCommand(query, connection);
@@ -270,7 +270,7 @@ namespace BumbleBot.Commands.Game
                     {
                         goats.Where(goat => ids.Contains(goat.Id)).ToList().ForEach(goat =>
                         {
-                            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                             {
                                 var query = "replace into grazing (goatId, farmerId) Values (?goatId, ?farmerId)";
                                 var command = new MySqlCommand(query, connection);

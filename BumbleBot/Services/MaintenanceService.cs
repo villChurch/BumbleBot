@@ -11,7 +11,7 @@ namespace BumbleBot.Services
         public Maintenance GetFarmersMaintenance(ulong farmerId)
         {
             var maintenance = new Maintenance();
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select * from maintenance where farmerid = ?farmerid";
                 var command = new MySqlCommand(query, connection);
@@ -37,7 +37,7 @@ namespace BumbleBot.Services
         public int GetMaintenanceRepairCost(ulong farmerId)
         {
             var numberOfGoats = 0;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "SELECT COUNT(*) as numberOfGoats FROM goats WHERE ownerID = ?discordId";
                 var command = new MySqlCommand(query, connection);
@@ -55,7 +55,7 @@ namespace BumbleBot.Services
 
         public void SetMaintenanceAsCompleted(ulong farmerId)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "Update maintenance Set needsMaintenance = 0 where farmerid  = ?farmerId";
                 var command = new MySqlCommand(query, connection);

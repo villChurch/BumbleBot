@@ -75,7 +75,7 @@ namespace BumbleBot.Commands
             }
             else if (goats.Find(g => g.Id == gId) != null)
             {
-                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Update goats set equipped = 0 where ownerID = ?ownerId";
                     var command = new MySqlCommand(query, connection);
@@ -84,7 +84,7 @@ namespace BumbleBot.Commands
                     command.ExecuteNonQuery();
                 }
 
-                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Update goats set equipped = 1 where id = ?id";
                     var command = new MySqlCommand(query, connection);

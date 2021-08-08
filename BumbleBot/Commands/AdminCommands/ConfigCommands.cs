@@ -17,12 +17,31 @@ namespace BumbleBot.Commands.AdminCommands
     {
         private readonly DbUtils dbUtils = new DbUtils();
 
+        [Command("buck")]
+        [Description("Disable or enable buck special spawns")]
+        [OwnerOrPermission(Permissions.KickMembers)]
+        public async Task SetBuckSpecialSpawnVariable(CommandContext ctx, bool enabled)
+        {
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                const string query = "update config SET boolValue = ?value where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?value", enabled);
+                command.Parameters.AddWithValue("?param", "buckSpecials");
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+            var enabledOrDisabled = enabled ? "enabled" : "disabled";
+            await ctx.Channel.SendMessageAsync($"Buck spawns have been {enabledOrDisabled}.")
+                .ConfigureAwait(false); 
+        }
+        
         [Command("summer")]
         [Description("Disable or enable dairy special spawns")]
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetSummerSpecialSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "update config SET boolValue = ?value where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -41,7 +60,7 @@ namespace BumbleBot.Commands.AdminCommands
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetDairySpecialSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "update config SET boolValue = ?value where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -60,7 +79,7 @@ namespace BumbleBot.Commands.AdminCommands
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetMemberSpecialSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "update config SET boolValue = ?value where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -79,7 +98,7 @@ namespace BumbleBot.Commands.AdminCommands
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetDazzleSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "update config SET boolValue = ?value where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -97,7 +116,7 @@ namespace BumbleBot.Commands.AdminCommands
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetSpringSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "update config SET boolValue = ?value where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -115,7 +134,7 @@ namespace BumbleBot.Commands.AdminCommands
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetShamrockSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "update config SET boolValue = ?value where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -134,7 +153,7 @@ namespace BumbleBot.Commands.AdminCommands
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetValentineSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "update config SET boolValue = ?value where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -154,7 +173,7 @@ namespace BumbleBot.Commands.AdminCommands
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetTaillessSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "update config SET boolValue = ?value where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
@@ -176,7 +195,7 @@ namespace BumbleBot.Commands.AdminCommands
         {
             try
             {
-                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Update config SET stringResponse = ?spawnChannel where paramName = ?paramName";
                     var command = new MySqlCommand(query, connection);
@@ -203,7 +222,7 @@ namespace BumbleBot.Commands.AdminCommands
         {
             try
             {
-                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Update config SET boolValue = ?boolValue where paramName = ?paramName";
                     var command = new MySqlCommand(query, connection);
@@ -231,7 +250,7 @@ namespace BumbleBot.Commands.AdminCommands
             try
             {
                 var currentResponse = "";
-                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Select stringResponse from config where paramName = ?paramName";
                     var command = new MySqlCommand(query, connection);
@@ -256,7 +275,7 @@ namespace BumbleBot.Commands.AdminCommands
                 }
                 else
                 {
-                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionStringAsync()))
+                    using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                     {
                         var query = "Update config set stringResponse = ?stringResponse where paramName = ?paramName";
                         var command = new MySqlCommand(query, connection);

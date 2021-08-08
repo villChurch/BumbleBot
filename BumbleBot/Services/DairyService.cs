@@ -11,7 +11,7 @@ namespace BumbleBot.Services
 
         public void IncreaseCaveSlots(ulong userId, int slots)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "update dairycave set slots = ?slots where ownerID = ?userId";
                 var command = new MySqlCommand(query, connection);
@@ -23,7 +23,7 @@ namespace BumbleBot.Services
         }
         public void DeductAllHardCheeseFromDairy(ulong userId)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "update dairy set hardcheese = 0 where ownerID = ?userId";
                 var command = new MySqlCommand(query, connection);
@@ -32,7 +32,7 @@ namespace BumbleBot.Services
                 command.ExecuteNonQuery();
             }
 
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "delete from aging where DiscordID = ?userId";
                 var command = new MySqlCommand(query, connection);
@@ -44,7 +44,7 @@ namespace BumbleBot.Services
         public bool DoesDairyHaveACave(ulong userId)
         {
             var hasCave = false;
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select * from dairycave where ownerId = ?userId";
                 var command = new MySqlCommand(query, connection);
@@ -60,7 +60,7 @@ namespace BumbleBot.Services
 
         public void CreateCaveInDairy(ulong userId)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "insert into dairycave (ownerID) values (?userId)";
                 var command = new MySqlCommand(query, connection);
@@ -73,7 +73,7 @@ namespace BumbleBot.Services
         public bool HasDairy(ulong userId)
         {
             var hasDairy = false;
-            using (var conneciton = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var conneciton = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from dairy where ownerId = ?userId";
                 var command = new MySqlCommand(query, conneciton);
@@ -97,7 +97,7 @@ namespace BumbleBot.Services
         public Cave GetUsersCave(ulong userId)
         {
             var cave = new Cave();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select * from dairycave where ownerID = ?userId";
                 var command = new MySqlCommand(query, connection);
@@ -120,7 +120,7 @@ namespace BumbleBot.Services
         public Dairy GetUsersDairy(ulong userId)
         {
             var dairy = new Dairy();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from dairy where ownerID = ?userId";
                 var command = new MySqlCommand(query, connection);
@@ -144,7 +144,7 @@ namespace BumbleBot.Services
 
         public void IncreaseCapcityOfDairy(ulong userId, int currentCapacity, int increaseBy)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "update dairy set slots = ?slots where ownerID = ?userId";
                 var command = new MySqlCommand(query, connection);
@@ -159,7 +159,7 @@ namespace BumbleBot.Services
         {
             if (null == softCheese)
             {
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "update dairy set softcheese = 0 where ownerID = ?userId";
                     var command = new MySqlCommand(query, connection);
@@ -173,7 +173,7 @@ namespace BumbleBot.Services
                 Console.Out.WriteLine($"Soft cheese amount was not null it was {softCheese}");
                 var currentSoftCheese = GetUsersDairy(userId).SoftCheese;
                 var newSoftCheese = currentSoftCheese - softCheese;
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     const string query = "update dairy set softcheese = ?softCheese where ownerID = ?userId";
                     var command = new MySqlCommand(query, connection);
@@ -187,7 +187,7 @@ namespace BumbleBot.Services
 
         public void DeleteSoftCheeseFromExpiryTable(ulong userId)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "delete from softcheeseexpiry where DiscordID = ?userId";
                 var command = new MySqlCommand(query, connection);

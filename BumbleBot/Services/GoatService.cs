@@ -21,7 +21,7 @@ namespace BumbleBot.Services
             var newLevel =
                 (int) Math.Floor(Math.Log((double) ((startingExp + expToAdd) / 10)) / Math.Log(1.05));
             var newExp = startingExp + expToAdd;
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query =
                     "Update goats Set level = ?level, experience = ?experience where id = ?goatId";
@@ -68,7 +68,7 @@ namespace BumbleBot.Services
         private bool IsSpecialGoat(ulong userId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where ownerID = ?userId and equipped = 1";
                 var command = new MySqlCommand(query, connection);
@@ -97,7 +97,7 @@ namespace BumbleBot.Services
         public bool IsGoatMinxByGoatId(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -126,7 +126,7 @@ namespace BumbleBot.Services
         public bool IsGoatBumbleByGoatId(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -155,7 +155,7 @@ namespace BumbleBot.Services
         public bool IsGoatTaillessByGoatId(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -184,7 +184,7 @@ namespace BumbleBot.Services
         public bool IsGoatZenByGoatId(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -213,7 +213,7 @@ namespace BumbleBot.Services
         public bool IsBestGoatByGoatId(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -234,7 +234,7 @@ namespace BumbleBot.Services
         public bool IsDairySpecialByGoatId(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -257,7 +257,7 @@ namespace BumbleBot.Services
         public bool IsMemberSpecialByGoatId(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -279,7 +279,7 @@ namespace BumbleBot.Services
         private bool IsShamrockGoat(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -300,7 +300,7 @@ namespace BumbleBot.Services
         private bool IsSpringGoat(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -321,7 +321,7 @@ namespace BumbleBot.Services
         private bool IsChristmasGoat(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -350,7 +350,7 @@ namespace BumbleBot.Services
         private bool IsValentinesGoat(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -374,7 +374,7 @@ namespace BumbleBot.Services
         private bool IsSummerGoat(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -389,10 +389,34 @@ namespace BumbleBot.Services
 
             return goat.Breed == Breed.SummerSpecial;
         }
+
+        private bool IsBuck(int goatId)
+        {
+            var goat = new Goat();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            {
+                const string query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?id", goatId);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                    }
+                }
+                reader.Close();
+                connection.Close();
+            }
+
+            return goat.Breed == Breed.Buck;
+        }
         private string KillGoat(ulong userId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where ownerID = ?userId and equipped = 1";
                 var command = new MySqlCommand(query, connection);
@@ -415,7 +439,7 @@ namespace BumbleBot.Services
                 reader.Close();
             }
 
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "insert into deadgoats (goatid, baseColour, breed, level, name, ownerID, imageLink) " +
                             "values (?goatid, ?baseColour, ?breed, ?level, ?name, ?ownerID, ?imageLink)";
@@ -442,7 +466,7 @@ namespace BumbleBot.Services
 
         private string KillGoat(Goat goat, ulong userId)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "insert into deadgoats (goatid, baseColour, breed, level, name, ownerID, imageLink) " +
                             "values (?goatid, ?baseColour, ?breed, ?level, ?name, ?ownerID, ?imageLink)";
@@ -470,7 +494,7 @@ namespace BumbleBot.Services
         {
             var goatsLevel = 0;
             decimal goatsExperience = 0;
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "Select level, experience from goats Where ownerID = ?ownerId and equipped = 1";
                 var command = new MySqlCommand(query, connection);
@@ -493,7 +517,7 @@ namespace BumbleBot.Services
         public void UpdateGoatImagesForKidsThatAreAdults(ulong userId)
         {
             var goats = new List<Goat>();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "Select * from goats where ownerID = ?ownerId and type = ?type and level > ?level";
                 var command = new MySqlCommand(query, connection);
@@ -535,7 +559,7 @@ namespace BumbleBot.Services
         }
         private void UpdateGoatImage(Goat goat)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "Update goats Set imageLink = ?imageLink, type = ?type Where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -551,7 +575,7 @@ namespace BumbleBot.Services
         private string UpdateGoatLevelAndExperience(int oldLevel, int level, decimal experience, ulong userId)
         {
             if (level >= 100 && oldLevel < 100)
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Update goats Set level = ?level, experience = ?experience, type = ?type, " +
                                 "imageLink = ?imageLink where ownerID = ?ownerId and equipped = 1";
@@ -566,7 +590,7 @@ namespace BumbleBot.Services
                     command.ExecuteNonQuery();
                 }
             else
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query =
                         "Update goats Set level = ?level, experience = ?experience where ownerID = ?ownerId and equipped = 1";
@@ -665,6 +689,19 @@ namespace BumbleBot.Services
                 if (goat.FilePath.EndsWith("BeachKid.png"))
                     return "Summer Specials/BeachAdult.png";
             }
+            else if (IsBuck(goat.Id))
+            {
+                var buckNumber = new Random().Next(5);
+                var buckImages = new List<string>()
+                {
+                    "Buck_Specials/BuckAdult1.png",
+                    "Buck_Specials/BuckAdult2.png",
+                    "Buck_Specials/BuckAdult4.png",
+                    "Buck_Specials/BuckAdult5.png",
+                    "Buck_Specials/BuckAdult6.png"
+                };
+                return buckImages[buckNumber];
+            }
 
             var goatColour = "";
 
@@ -698,7 +735,7 @@ namespace BumbleBot.Services
         private string GetAdultGoatImageUrl(ulong userId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "Select * from goats where equipped = 1 and ownerID = ?discordId";
                 var command = new MySqlCommand(query, connection);
@@ -799,6 +836,19 @@ namespace BumbleBot.Services
                 if (goat.FilePath.EndsWith("BeachKid.png"))
                     return "Summer Specials/BeachAdult.png";
             }
+            else if (IsBuck(goat.Id))
+            {
+                var buckNumber = new Random().Next(5);
+                var buckImages = new List<string>()
+                {
+                    "Buck_Specials/BuckAdult1.png",
+                    "Buck_Specials/BuckAdult2.png",
+                    "Buck_Specials/BuckAdult4.png",
+                    "Buck_Specials/BuckAdult5.png",
+                    "Buck_Specials/BuckAdult6.png"
+                };
+                return buckImages[buckNumber];
+            }
 
             var goatColour = "";
 
@@ -844,7 +894,7 @@ namespace BumbleBot.Services
         {
             var barnSize = 10;
             var numberOfGoats = 0;
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "Select barnsize from farmers where DiscordID = ?discordId";
                 var command = new MySqlCommand(query, connection);
@@ -857,7 +907,7 @@ namespace BumbleBot.Services
                 reader.Close();
             }
 
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "SELECT COUNT(*) as numberOfGoats FROM goats WHERE ownerID = ?discordId";
                 var command = new MySqlCommand(query, connection);
@@ -880,7 +930,7 @@ namespace BumbleBot.Services
         public List<Goat> ReturnUsersGoats(ulong userId)
         {
             var goats = new List<Goat>();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where ownerID = ?ownerId";
                 var command = new MySqlCommand(query, connection);
@@ -910,7 +960,7 @@ namespace BumbleBot.Services
         public List<Goat> ReturnUsersDeadGoats(ulong userId)
         {
             var goats = new List<Goat>();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from deadgoats where ownerID = ?ownerId";
                 var command = new MySqlCommand(query, connection);
@@ -939,7 +989,7 @@ namespace BumbleBot.Services
             var goatIds = new List<int>();
             var dictionary = new Dictionary<int, string>();
             var ownedGoats = ReturnUsersGoats(userId);
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select goatId, dueDate from cookingdoes where ready = 0";
                 var command = new MySqlCommand(query, connection);
@@ -962,7 +1012,7 @@ namespace BumbleBot.Services
         public List<Goat> ReturnUsersKidsInKiddingPen(ulong userId)
         {
             var kids = new List<Goat>();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from newbornkids where ownerID = ?ownerId";
                 var command = new MySqlCommand(query, connection);
@@ -988,7 +1038,7 @@ namespace BumbleBot.Services
         public Goat GetEquippedGoat(ulong userId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where ownerID = ?ownerID and equipped = 1";
                 var command = new MySqlCommand(query, connection);
@@ -1015,7 +1065,7 @@ namespace BumbleBot.Services
         public bool CanFarmerAffordGoat(int buyPrice, ulong userId)
         {
             var credits = 0;
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select credits from farmers where DiscordID = ?userId";
                 var command = new MySqlCommand(query, connection);
@@ -1033,7 +1083,7 @@ namespace BumbleBot.Services
 
         public void DeleteKidFromKiddingPen(int id)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "delete from newbornkids where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -1045,7 +1095,7 @@ namespace BumbleBot.Services
 
         public void MoveKidIntoGoatPen(Goat goat, ulong userId)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query =
                     "insert into goats (level, name, type, breed, baseColour, ownerID, experience, imageLink) " +
@@ -1070,7 +1120,7 @@ namespace BumbleBot.Services
 
         public void DeleteGoat(int id)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "delete from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -1079,7 +1129,7 @@ namespace BumbleBot.Services
                 command.ExecuteNonQuery();
             }
 
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "delete from grazing where goatId = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -1093,7 +1143,7 @@ namespace BumbleBot.Services
         {
             var cooking = false;
 
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "Select * from cookingdoes where goatId = ?goatId";
                 var command = new MySqlCommand(query, connection);

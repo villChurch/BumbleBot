@@ -13,7 +13,7 @@ namespace BumbleBot.Services
 
         public async Task AddPerkToUser(ulong userId, Perks perkToAdd, int currentPerkPoints)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "insert into farmerperks (farmerid, perkid) values (?farmerid, ?perkid)";
                 var command = new MySqlCommand(query, connection);
@@ -28,7 +28,7 @@ namespace BumbleBot.Services
 
         private async Task SubtractPerkPointsFromUser(ulong userId, int perkPointsToSubtract, int currentPerkPoints)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "update farmers set perkpoints = ?perkpoints where DiscordID = ?userId";
                 var command = new MySqlCommand(query, connection);
@@ -43,7 +43,7 @@ namespace BumbleBot.Services
         public async Task RemovePerksFromUser(ulong userId, List<Perks> usersPerks, int currentPerkPoints)
         {
             int perkPointsToAdd = usersPerks.Sum(perk => perk.perkCost);
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "delete from farmerperks where farmerid = ?userId";
                 var command = new MySqlCommand(query, connection);
@@ -64,7 +64,7 @@ namespace BumbleBot.Services
         {
             List<Perks> userPerks = new List<Perks>();
             var allPerks = await GetAllPerks().ConfigureAwait(false);
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select * from farmerperks where farmerid = ?userId";
                 var command = new MySqlCommand(query, connection);
@@ -87,7 +87,7 @@ namespace BumbleBot.Services
         public async Task<List<Perks>> GetAllPerks()
         {
             var allPerks = new List<Perks>();
-            using (var con = new MySqlConnection(dBUtils.ReturnPopulatedConnectionStringAsync()))
+            using (var con = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select * from perks order by levelUnlocked, perkName ASC";
                 var command = new MySqlCommand(query, con);
