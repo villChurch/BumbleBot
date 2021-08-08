@@ -276,6 +276,29 @@ namespace BumbleBot.Services
                  $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{goat.FilePath}";
              return (goat, filePath);
          }
+
+         public bool IsSpecialSpawnEnabled(string special)
+         {
+             var enabled = false;
+             using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+             {
+                 const string query = "select boolValue from config where paramName = ?param";
+                 var command = new MySqlCommand(query, connection);
+                 command.Parameters.AddWithValue("?param", special);
+                 connection.Open();
+                 var reader = command.ExecuteReader();
+                 if (reader.HasRows)
+                 {
+                     while (reader.Read())
+                     {
+                         enabled = reader.GetBoolean("boolValue");
+                     }
+                 }
+                 reader.Close();
+                 connection.Close();
+             }
+             return enabled;
+         }
          public bool AreBuckSpawnsEnabled()
          {
              var enabled = false;
@@ -283,7 +306,7 @@ namespace BumbleBot.Services
              {
                  const string query = "select boolValue from config where paramName = ?param";
                  var command = new MySqlCommand(query, connection);
-                 command.Parameters.AddWithValue("?parm", "buckSpecials");
+                 command.Parameters.AddWithValue("?param", "buckSpecials");
                  connection.Open();
                  var reader = command.ExecuteReader();
                  if (reader.HasRows)
