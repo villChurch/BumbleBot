@@ -283,7 +283,7 @@ namespace BumbleBot.Services
              {
                  const string query = "select boolValue from config where paramName = ?param";
                  var command = new MySqlCommand(query, connection);
-                 command.Parameters.AddWithValue("?parm", "buckSpecials");
+                 command.Parameters.AddWithValue("?param", "buckSpecials");
                  connection.Open();
                  var reader = command.ExecuteReader();
                  if (reader.HasRows)
