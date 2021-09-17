@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using BumbleBot.Models;
 using BumbleBot.Utilities;
+using DSharpPlus;
+using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Type = BumbleBot.Models.Type;
 
@@ -94,6 +96,34 @@ namespace BumbleBot.Services
             return goat.BaseColour == BaseColour.Special;
         }
 
+        public bool IsSpecialGoat(int goatId)
+        {
+            var goat = new Goat();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?id", MySqlDbType.VarChar).Value = goatId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                    {
+                        goat.Name = reader.GetString("name");
+                        goat.Id = reader.GetInt32("id");
+                        goat.Level = reader.GetInt32("level");
+                        goat.LevelMulitplier = reader.GetDecimal("levelMultiplier");
+                        goat.Experience = reader.GetDecimal("experience");
+                        goat.FilePath = reader.GetString("imageLink");
+                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                        goat.BaseColour = (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                    }
+
+                reader.Close();
+            }
+
+            return goat.BaseColour == BaseColour.Special;
+        }
         public bool IsGoatMinxByGoatId(int goatId)
         {
             var goat = new Goat();
@@ -552,7 +582,24 @@ namespace BumbleBot.Services
             {
                 goat.Level = 0;
                 goat.Experience = 0;
-                return KillGoat(goat, userId);
+                if (IsSpecialGoat(goatId))
+                {
+                    using (var conn = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+                    {
+                        const string query = "update goats set level = ?level, experience = ?exp where id = ?id";
+                        var command = new MySqlCommand(query, conn);
+                        command.Parameters.AddWithValue("?level", 0);
+                        command.Parameters.AddWithValue("?exp", 0);
+                        command.Parameters.AddWithValue("?id", goatId);
+                        conn.Open();
+                        command.ExecuteNonQuery();
+                        conn.Close();
+                    }
+                }
+                else
+                {
+                    return KillGoat(goat, userId);
+                }
             }
 
             return "";
@@ -670,6 +717,12 @@ namespace BumbleBot.Services
                     return "MemberSpecialGiuhAdult.png";
                 if (goat.FilePath.EndsWith("MemberSpecialEponaKid.png"))
                     return "MemberSpecialEponaAdult.png";
+                if (goat.FilePath.EndsWith("MemberSpecialVenKid.png"))
+                    return "MemberSpecialVenAdult.png";
+                if (goat.FilePath.EndsWith("MemberSpecialMinxKid.png"))
+                    return "MemberSpecialMinxAdult.png";
+                if (goat.FilePath.EndsWith("MemberSpecialKateKid.png"))
+                    return "MemberSpecialKateAdult.png";
             }
             else if (IsDairySpecialByGoatId(goat.Id))
             {
@@ -817,6 +870,12 @@ namespace BumbleBot.Services
                     return "MemberSpecialGiuhAdult.png";
                 if (goat.FilePath.EndsWith("MemberSpecialEponaKid.png"))
                     return "MemberSpecialEponaAdult.png";
+                if (goat.FilePath.EndsWith("MemberSpecialVenKid.png"))
+                    return "MemberSpecialVenAdult.png";
+                if (goat.FilePath.EndsWith("MemberSpecialMinxKid.png"))
+                    return "MemberSpecialMinxAdult.png";
+                if (goat.FilePath.EndsWith("MemberSpecialKateKid.png"))
+                    return "MemberSpecialKateAdult.png";
             }
             else if (IsDairySpecialByGoatId(goat.Id))
             {
@@ -890,7 +949,7 @@ namespace BumbleBot.Services
             };
         }
 
-        public bool CanGoatsFitInBarn(ulong discordId, int numberOfGoatsToAdd, List<Perks> usersPerks)
+        public bool CanGoatsFitInBarn(ulong discordId, int numberOfGoatsToAdd, List<Perks> usersPerks, ILogger<BaseDiscordClient> logger)
         {
             var barnSize = 10;
             var numberOfGoats = 0;
@@ -920,10 +979,11 @@ namespace BumbleBot.Services
                 reader.Close();
             }
 
-            if (usersPerks.Any(perk => perk.id == 10))
-            {
-                barnSize = (int) Math.Ceiling(barnSize * 1.1);
-            }
+            logger.Log(LogLevel.Information, "Barn Size is {BarnSize} before perk", barnSize);
+            if (usersPerks.All(perk => perk.id != 10))
+                return barnSize != numberOfGoats && barnSize >= numberOfGoats + numberOfGoatsToAdd;
+            barnSize = (int) Math.Ceiling(barnSize * 1.1);
+            logger.Log(LogLevel.Information, "Barn Size is {BarnSize} after perk", barnSize);
             return barnSize != numberOfGoats && barnSize >= numberOfGoats + numberOfGoatsToAdd;
         }
 
