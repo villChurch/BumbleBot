@@ -77,7 +77,7 @@ namespace BumbleBot
                 Token = configJson.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
-                MinimumLogLevel = LogLevel.Debug,
+                MinimumLogLevel = LogLevel.Information,
                 Intents = DiscordIntents.All
             };
             

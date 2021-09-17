@@ -103,9 +103,12 @@ namespace BumbleBot.Services
              {
                  "/Goat_Images/MemberSpecialEponaKid.png",
                  "/Goat_Images/MemberSpecialGiuhKid.png",
-                 "/Goat_Images/MemberSpecialKimdolKid.png"
+                 "/Goat_Images/MemberSpecialKimdolKid.png",
+                 "/Goat_Images/MemberSpecialKateKid.png",
+                 "/Goat_Images/MemberSpecialMinxKid.png",
+                 "/Goat_Images/MemberSpecialVenKid.png"
              };
-             memberGoat.FilePath = memberGoats[new Random().Next(0, 3)];
+             memberGoat.FilePath = memberGoats[new Random().Next(0, memberGoats.Count)];
              var filePath =
                  $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{memberGoat.FilePath}";
              return (memberGoat, filePath);
@@ -519,7 +522,7 @@ namespace BumbleBot.Services
                 }
                 var perkService = new PerkService();
                 var usersPerks = await perkService.GetUsersPerks(buttonResult.Result.User.Id);
-                if (!goatService.CanGoatsFitInBarn(buttonResult.Result.User.Id, 1, usersPerks))
+                if (!goatService.CanGoatsFitInBarn(buttonResult.Result.User.Id, 1, usersPerks, client.Logger))
                 {
                     await buttonResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                     await buttonResult.Result.Message.DeleteAsync();

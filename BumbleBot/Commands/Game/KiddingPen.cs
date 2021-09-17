@@ -146,7 +146,7 @@ namespace BumbleBot.Commands.Game
                 {
                     var userPerks = await perkService.GetUsersPerks(ctx.User.Id);
                     var kids = GoatService.ReturnUsersKidsInKiddingPen(ctx.User.Id);
-                    if (GoatService.CanGoatsFitInBarn(ctx.User.Id, kids.Count, userPerks))
+                    if (GoatService.CanGoatsFitInBarn(ctx.User.Id, kids.Count, userPerks, ctx.Client.Logger))
                     {
                         kids.ForEach(kid => GoatService.MoveKidIntoGoatPen(kid, ctx.User.Id));
                         await ctx.Channel.SendMessageAsync($"{kids.Count} kids have now been moved to your barn")
@@ -176,7 +176,7 @@ namespace BumbleBot.Commands.Game
                         await ctx.Channel.SendMessageAsync("You don't have a kid in your shelter with this id")
                             .ConfigureAwait(false);
                     }
-                    else if (GoatService.CanGoatsFitInBarn(ctx.User.Id, 1, usersPerks))
+                    else if (GoatService.CanGoatsFitInBarn(ctx.User.Id, 1, usersPerks, ctx.Client.Logger))
                     {
                         GoatService.MoveKidIntoGoatPen(kidToMove, ctx.User.Id);
                         await ctx.Channel.SendMessageAsync($"Kid with id {id} has been moved into your barn")
