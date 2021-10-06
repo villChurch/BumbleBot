@@ -27,7 +27,8 @@ namespace BumbleBot.Models
         MemberSpecial,
         DairySpecial,
         SummerSpecial,
-        Buck
+        Buck,
+        BotAnniversarySpecial
     }
 
     public enum BaseColour

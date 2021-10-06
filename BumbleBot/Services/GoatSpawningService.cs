@@ -279,6 +279,22 @@ namespace BumbleBot.Services
                  $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{goat.FilePath}";
              return (goat, filePath);
          }
+
+         public (Goat, string) GenerateBotBirthdaySpecialToSpawn()
+         {
+             var goat = new Goat();
+             goat.Level = RandomLevel.GetRandomLevel();
+             goat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, goat.Level - 1));
+             goat.LevelMulitplier = 1;
+             goat.Type = Type.Kid;
+             goat.Name = "Bot Anniversary Kid";
+             goat.BaseColour = BaseColour.Special;
+             goat.Breed = Breed.BotAnniversarySpecial;
+             goat.FilePath = "/Goat_Images/Special Variations/BirthdayBumble/FirstBirthdayBumbleKid.png";
+             var filePath =
+                 $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{goat.FilePath}";
+             return (goat, filePath);
+         }
          public bool AreBuckSpawnsEnabled()
          {
              var enabled = false;
@@ -476,6 +492,23 @@ namespace BumbleBot.Services
                         enabled = reader.GetBoolean("boolValue");
             }
 
+            return enabled;
+        }
+
+        public bool AreBotBirthSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?param", "botBirthdayEnabled");
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                        enabled = reader.GetBoolean("boolValue");
+            }
             return enabled;
         }
 
