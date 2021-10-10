@@ -17,6 +17,25 @@ namespace BumbleBot.Commands.AdminCommands
     {
         private readonly DbUtils dbUtils = new DbUtils();
 
+        [Command("birthday")]
+        [Description("Enables or disables birthday special spawn")]
+        [OwnerOrPermission(Permissions.KickMembers)]
+        public async Task SetBotBirthdaySpawnVariable(CommandContext ctx, bool enabled)
+        {
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                const string query = "update config SET boolValue = ?value where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?value", enabled);
+                command.Parameters.AddWithValue("?param", "botBirthdayEnabled");
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+            var enabledOrDisabled = enabled ? "enabled" : "disabled";
+            await ctx.Channel.SendMessageAsync($"Bot anniversary spawn has been {enabledOrDisabled}.")
+                .ConfigureAwait(false); 
+        }
+
         [Command("buck")]
         [Description("Disable or enable buck special spawns")]
         [OwnerOrPermission(Permissions.KickMembers)]
