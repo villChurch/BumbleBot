@@ -420,6 +420,26 @@ namespace BumbleBot.Services
             return goat.Breed == Breed.SummerSpecial;
         }
 
+        private bool IsBotBirthdayGoat(int goatId)
+        {
+            var goat = new Goat();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            {
+                const string query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?id", goatId);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                    {
+                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                    }
+            }
+
+            return goat.Breed == Breed.BotAnniversarySpecial;
+        }
+
         private bool IsBuck(int goatId)
         {
             var goat = new Goat();
@@ -742,6 +762,10 @@ namespace BumbleBot.Services
                 if (goat.FilePath.EndsWith("BeachKid.png"))
                     return "Summer Specials/BeachAdult.png";
             }
+            else if (IsBotBirthdayGoat(goat.Id))
+            {
+                return "Special Variations/BirthdayBumble/FirstBirthdayBumble.png";
+            }
             else if (IsBuck(goat.Id))
             {
                 var buckNumber = new Random().Next(5);
@@ -894,6 +918,10 @@ namespace BumbleBot.Services
                     return "Summer Specials/FireworkAdult.png";
                 if (goat.FilePath.EndsWith("BeachKid.png"))
                     return "Summer Specials/BeachAdult.png";
+            }
+            else if (IsBotBirthdayGoat(goat.Id))
+            {
+                return "Special Variations/BirthdayBumble/FirstBirthdayBumble.png";
             }
             else if (IsBuck(goat.Id))
             {
