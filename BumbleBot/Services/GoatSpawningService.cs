@@ -235,7 +235,7 @@ namespace BumbleBot.Services
          public (Goat, string) GenerateSpecialGoatToSpawn()
          {
              var random = new Random();
-             var number = random.Next(0, 3);
+             var number = random.Next(0, 5);
              var goat = new Goat();
              switch (number)
              {
@@ -246,6 +246,18 @@ namespace BumbleBot.Services
                  case 1:
                      goat.Breed = Breed.Minx;
                      goat.FilePath = "/Goat_Images/Special Variations/MinxKid.png";
+                     break;
+                 case 2:
+                     goat.Breed = Breed.Juliet;
+                     goat.FilePath = "/Goat_Images/Special Variations/JulietKid.png";
+                     break;
+                 case 3:
+                     goat.Breed = Breed.Percy;
+                     goat.FilePath = "/Goat_Images/Special Variations/PercyKid.png";
+                     break;
+                 case 4:
+                     goat.Breed = Breed.Seven;
+                     goat.FilePath = "/Goat_Images/Special Variations/SevenKid.png";
                      break;
                  default:
                      goat.Breed = Breed.Zenyatta;

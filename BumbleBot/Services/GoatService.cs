@@ -153,6 +153,72 @@ namespace BumbleBot.Services
             return goat.Breed == Breed.Minx;
         }
 
+        public bool IsGoatJulietById(int goatId)
+        {
+            var goat = new Goat();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?id", goatId);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                    }
+                }
+            }
+
+            return goat.Breed == Breed.Juliet;
+        }
+
+        public bool IsGoatPercyById(int goatId)
+        {
+            var goat = new Goat();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?id", goatId);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                    }
+                }
+            }
+
+            return goat.Breed == Breed.Percy;
+        }
+
+        public bool IsGoatSevenById(int goatId)
+        {
+            var goat = new Goat();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?id", goatId);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                    }
+                }
+            }
+
+            return goat.Breed == Breed.Seven;
+        }
+
         public bool IsGoatBumbleByGoatId(int goatId)
         {
             var goat = new Goat();
@@ -721,6 +787,18 @@ namespace BumbleBot.Services
             {
                 return "Special Variations/ZenyattaAdult.png";
             }
+            else if (IsGoatJulietById(goat.Id))
+            {
+                return "Special Variations/JulietAdult.png";
+            }
+            else if (IsGoatPercyById(goat.Id))
+            {
+                return "Special Variations/PercyAdult.png";
+            }
+            else if (IsGoatSevenById(goat.Id))
+            {
+                return "Special Variations/SevenAdult.png";
+            }
             else if (IsGoatTaillessByGoatId(goat.Id))
             {
                 return "Special Variations/taillessadult.png";
@@ -877,6 +955,18 @@ namespace BumbleBot.Services
             else if (IsGoatZenByGoatId(goat.Id))
             {
                 return "Special Variations/ZenyattaAdult.png";
+            }
+            else if (IsGoatJulietById(goat.Id))
+            {
+                return "Special Variations/JulietAdult.png";
+            }
+            else if (IsGoatPercyById(goat.Id))
+            {
+                return "Special Variations/PercyAdult.png";
+            }
+            else if (IsGoatSevenById(goat.Id))
+            {
+                return "Special Variations/SevenAdult.png";
             }
             else if (IsGoatTaillessByGoatId(goat.Id))
             {
