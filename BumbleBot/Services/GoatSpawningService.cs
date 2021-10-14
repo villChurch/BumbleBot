@@ -235,7 +235,7 @@ namespace BumbleBot.Services
          public (Goat, string) GenerateSpecialGoatToSpawn()
          {
              var random = new Random();
-             var number = random.Next(0, 3);
+             var number = random.Next(0, 5);
              var goat = new Goat();
              switch (number)
              {
@@ -246,6 +246,18 @@ namespace BumbleBot.Services
                  case 1:
                      goat.Breed = Breed.Minx;
                      goat.FilePath = "/Goat_Images/Special Variations/MinxKid.png";
+                     break;
+                 case 2:
+                     goat.Breed = Breed.Juliet;
+                     goat.FilePath = "/Goat_Images/Special Variations/JulietKid.png";
+                     break;
+                 case 3:
+                     goat.Breed = Breed.Percy;
+                     goat.FilePath = "/Goat_Images/Special Variations/PercyKid.png";
+                     break;
+                 case 4:
+                     goat.Breed = Breed.Seven;
+                     goat.FilePath = "/Goat_Images/Special Variations/SevenKid.png";
                      break;
                  default:
                      goat.Breed = Breed.Zenyatta;
@@ -275,6 +287,22 @@ namespace BumbleBot.Services
              goat.BaseColour = BaseColour.Special;
              goat.Breed = Breed.Buck;
              goat.FilePath = "/Goat_Images/Buck_Specials/BuckKid.png";
+             var filePath =
+                 $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{goat.FilePath}";
+             return (goat, filePath);
+         }
+
+         public (Goat, string) GenerateBotBirthdaySpecialToSpawn()
+         {
+             var goat = new Goat();
+             goat.Level = RandomLevel.GetRandomLevel();
+             goat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, goat.Level - 1));
+             goat.LevelMulitplier = 1;
+             goat.Type = Type.Kid;
+             goat.Name = "Bot Anniversary Kid";
+             goat.BaseColour = BaseColour.Special;
+             goat.Breed = Breed.BotAnniversarySpecial;
+             goat.FilePath = "/Goat_Images/Special Variations/BirthdayBumble/FirstBirthdayBumbleKid.png";
              var filePath =
                  $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{goat.FilePath}";
              return (goat, filePath);
@@ -476,6 +504,23 @@ namespace BumbleBot.Services
                         enabled = reader.GetBoolean("boolValue");
             }
 
+            return enabled;
+        }
+
+        public bool AreBotBirthSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?param", "botBirthdayEnabled");
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                        enabled = reader.GetBoolean("boolValue");
+            }
             return enabled;
         }
 

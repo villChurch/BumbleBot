@@ -63,7 +63,7 @@ namespace BumbleBot.Commands.Game
         [Command("spawn")]
         [Hidden]
         [OwnerOrPermission(Permissions.KickMembers)]
-        public async Task SpawnGoat(CommandContext ctx, string goatName)
+        public async Task SpawnGoat(CommandContext ctx, [RemainingText] string goatName)
         {
             try
             {
@@ -124,12 +124,24 @@ namespace BumbleBot.Commands.Game
                         _ = Task.Run(() => GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild,
                             buckGoat.Item1, buckGoat.Item2, ctx.Client));
                         break;
+                    case "bot birthday":
+                        var birthdayGoat = GoatSpawningService.GenerateBotBirthdaySpecialToSpawn();
+                        _ = Task.Run(() =>
+                            GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, birthdayGoat.Item1,
+                                birthdayGoat.Item2, ctx.Client));
+                        break;
+                    case "special":
+                        var specialGoat = GoatSpawningService.GenerateSpecialGoatToSpawn();
+                        _ = Task.Run(() =>
+                            GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, specialGoat.Item1,
+                                specialGoat.Item2, ctx.Client));
+                        break;
                     case "options":
                         await ctx.Channel.SendMessageAsync(
                             $@"Options are {Formatter.BlockCode
                                 ($"spring {Environment.NewLine}dazzle {Environment.NewLine}member special {Environment.NewLine}dairy {Environment.NewLine}holiday " +
                                  $"{Environment.NewLine}tailless {Environment.NewLine}valentines {Environment.NewLine}shamrock {Environment.NewLine}summer " +
-                                 $"{Environment.NewLine}buck")}");
+                                 $"{Environment.NewLine}buck {Environment.NewLine}bot birthday {Environment.NewLine}special")}");
                         break;
                     default:
                         _ = new Random().Next(0, 100) == 69
@@ -174,6 +186,12 @@ namespace BumbleBot.Commands.Game
                         _ = Task.Run(() =>
                             GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, memberGoatToSpawn.Item1,
                                 memberGoatToSpawn.Item2, ctx.Client));
+                        break;
+                    case 0 or 1 when GoatSpawningService.AreBotBirthSpawnsEnabled():
+                        var birthdayGoat = GoatSpawningService.GenerateBotBirthdaySpecialToSpawn();
+                        _ = Task.Run(() =>
+                            GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, birthdayGoat.Item1,
+                                birthdayGoat.Item2, ctx.Client));
                         break;
                     case 1 when GoatSpawningService.AreDairySpecialSpawnsEnabled():
                         var dairySpecial = GoatSpawningService.GenerateSpecialDairyGoatToSpawn();

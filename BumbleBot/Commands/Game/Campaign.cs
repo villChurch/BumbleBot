@@ -25,7 +25,6 @@ namespace BumbleBot.Commands.Game
         {
             await DoCampaign(ctx, goatId, bet);
         }
-
         public static async Task DoCampaign(CommandContext ctx, int goatId, int bet)
         {
             var goats = _goatService.ReturnUsersGoats(ctx.User.Id);
@@ -43,6 +42,7 @@ namespace BumbleBot.Commands.Game
                 return;
             }
 
+            _farmerService.DeductCreditsFromFarmer(ctx.User.Id, 1000);
             var goat = goats.Find(g => g.Id == goatId);
             var rnd = new Random();
             var scenarioNumber = rnd.Next(0, 40);
