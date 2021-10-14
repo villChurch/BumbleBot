@@ -255,7 +255,7 @@ namespace BumbleBot.Commands.Game
             }
             if (cost != dustCost)
             {
-                await ctx.Channel.SendMessageAsync($"Dust costs dustCost credits.").ConfigureAwait(false);
+                await ctx.Channel.SendMessageAsync($"Dust costs {dustCost} credits.").ConfigureAwait(false);
             }
             else if (farmerService.DoesFarmerHaveOatsOrAlfalfa(ctx.User.Id))
             {
