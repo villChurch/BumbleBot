@@ -204,13 +204,27 @@ namespace BumbleBot.Commands.ButtonCommands
                                 var goat = goatService.ReturnUsersGoats(ctx.User.Id).First(g => g.Id == id);
                                 goatService.DeleteGoat(id);
                                 var creditsToAdd = goat.Type == Type.Adult ? (int)Math.Ceiling(goat.Level * 1.35) : (int)Math.Ceiling(goat.Level * 0.75);
-                                farmerService.AddCreditsToFarmer(ctx.User.Id, creditsToAdd);
+                                var loanString = "";
+                                if (farmerService.DoesFarmerHaveALoan(ctx.User.Id))
+                                {
+                                    var loanDeductions =
+                                        farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, creditsToAdd);
+                                    farmerService.AddCreditsToFarmer(ctx.User.Id, (creditsToAdd - loanDeductions.Item1));
+                                    loanString =
+                                        $"{Environment.NewLine}{loanDeductions.Item1:n0} credits have been taken from your earnings to " +
+                                        $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";
+                                }
+                                else
+                                {
+                                    farmerService.AddCreditsToFarmer(ctx.User.Id, creditsToAdd);
+                                }
+
                                 await buttonResult.Result.Interaction.CreateResponseAsync(
                                         InteractionResponseType.UpdateMessage,
                                         new DiscordInteractionResponseBuilder()
                                             .AddEmbed(pages[pageCounter].Embed)
                                             .WithContent($"You have sold {goat.Name} to market for {creditsToAdd} " +
-                                                         "credits")
+                                                         $"credits. {loanString}")
                                             .AddComponents(backwardButton, forwardButton, handleButton, sellButton, campaignButton))
                                     .ConfigureAwait(false);
                             }

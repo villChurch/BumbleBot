@@ -190,10 +190,22 @@ namespace BumbleBot.Commands.Game
                 {
                     var sellAmount = 0;
                     sellAmount += (int) Math.Ceiling(dairy.SoftCheese * 45);
-                    FarmerService.AddCreditsToFarmer(ctx.User.Id, sellAmount);
+                    var loanString = "";
+                    if (FarmerService.DoesFarmerHaveALoan(ctx.User.Id))
+                    {
+                        var loanDeductions = FarmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, sellAmount);
+                        loanString =
+                            $"{Environment.NewLine}{loanDeductions.Item1:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";
+                        FarmerService.AddCreditsToFarmer(ctx.User.Id, (sellAmount - loanDeductions.Item1));
+                    }
+                    else
+                    {
+                        FarmerService.AddCreditsToFarmer(ctx.User.Id, sellAmount);
+                    }
                     DairyService.RemoveSoftCheeseFromPlayer(ctx.User.Id, null);
                     DairyService.DeleteSoftCheeseFromExpiryTable(ctx.User.Id);
-                    await ctx.Channel.SendMessageAsync($"Sold contents of your dairy for {sellAmount}")
+                    await ctx.Channel.SendMessageAsync($"Sold contents of your dairy for {sellAmount:n0}. {loanString}")
                         .ConfigureAwait(false);
                 }
             }

@@ -362,10 +362,22 @@ namespace BumbleBot.Commands.Game
                     GoatService.DeleteGoat(goatId);
                     var goat = goats.First(g => g.Id == goatId);
                     var creditsToAdd = goat.Type == Type.Adult ? (int)Math.Ceiling(goat.Level * 1.35) : (int)Math.Ceiling(goat.Level * 0.75);
-                    FarmerService.AddCreditsToFarmer(ctx.User.Id, creditsToAdd);
+                    var loanString = "";
+                    if (FarmerService.DoesFarmerHaveALoan(ctx.User.Id))
+                    {
+                        var loanDeductions = FarmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, creditsToAdd);
+                        loanString =
+                            $"{Environment.NewLine}{loanDeductions.Item1:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";
+                        FarmerService.AddCreditsToFarmer(ctx.User.Id, (creditsToAdd - loanDeductions.Item1));
+                    }
+                    else
+                    {
+                        FarmerService.AddCreditsToFarmer(ctx.User.Id, creditsToAdd);
+                    }
                     await ctx.Channel.SendMessageAsync(
-                        $"You have sold {goat.Name} to market for {creditsToAdd} " +
-                        "credits").ConfigureAwait(false);
+                        $"You have sold {goat.Name} to market for {creditsToAdd:n0} " +
+                        $"credits. {loanString}").ConfigureAwait(false);
                 }
                 else
                 {
