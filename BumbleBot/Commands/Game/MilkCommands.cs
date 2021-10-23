@@ -22,12 +22,14 @@ namespace BumbleBot.Commands.Game
     {
         private readonly DbUtils dbUtils = new DbUtils();
 
-        public MilkCommands(GoatService goatService)
+        public MilkCommands(GoatService goatService, FarmerService farmerService)
         {
             this.GoatService = goatService;
+            this.farmerService = farmerService;
         }
 
         private GoatService GoatService { get; }
+        private FarmerService farmerService { get; }
 
         [GroupCommand]
         public async Task MilkGoats(CommandContext ctx)
@@ -82,7 +84,22 @@ namespace BumbleBot.Commands.Game
                 }
                 else
                 {
-                    farmer.Credits += (int) Math.Ceiling(farmer.Milk * 3);
+                    int milkEarnings = (int) Math.Ceiling(farmer.Milk * 3);
+                    var hasLoan = farmerService.DoesFarmerHaveALoan(ctx.User.Id);
+                    var loanString = "";
+                    if (hasLoan)
+                    {
+                        var loanDeductions = farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, milkEarnings);
+                        farmer.Credits += (milkEarnings - loanDeductions.Item1);
+                        loanString =
+                            $"{Environment.NewLine}{loanDeductions.Item1:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";
+                    }
+                    else
+                    {
+                        farmer.Credits += milkEarnings;
+                    }
+
                     using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
                     {
                         var query = "Update farmers set milk = ?milk, credits = ?credits where DiscordID = ?discordId";
@@ -104,8 +121,8 @@ namespace BumbleBot.Commands.Game
                     }
 
                     await ctx.Channel.SendMessageAsync(
-                        $"Congratulations {ctx.User.Mention} you have sold {farmer.Milk} lbs of milk for " +
-                        $"{Math.Ceiling(farmer.Milk * 3)} credits.").ConfigureAwait(false);
+                        $"Congratulations {ctx.User.Mention} you have sold {farmer.Milk:n2} lbs of milk for " +
+                        $"{milkEarnings:n0} credits. {loanString}").ConfigureAwait(false);
                 }
             }
             catch (Exception ex)
