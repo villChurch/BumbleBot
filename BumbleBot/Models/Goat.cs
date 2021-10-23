@@ -31,7 +31,8 @@ namespace BumbleBot.Models
         BotAnniversarySpecial,
         Juliet,
         Percy,
-        Seven
+        Seven,
+        Halloween
     }
 
     public enum BaseColour
