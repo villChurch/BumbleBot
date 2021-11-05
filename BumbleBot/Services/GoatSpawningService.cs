@@ -55,7 +55,27 @@ namespace BumbleBot.Services
                 $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{specialGoat.FilePath}";
              return (specialGoat, filePath);
          }
-         
+
+        public (Goat, string) GenerateHalloweenSpecialToSpawn()
+        {
+            var specialGoat = new Goat();
+            specialGoat.Breed = Breed.Halloween;
+            specialGoat.BaseColour = BaseColour.Special;
+            specialGoat.Level = new Random().Next(76, 100);
+            specialGoat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, specialGoat.Level - 1));
+            specialGoat.Name = "Halloween Goat";
+            var halloweenGoats = new List<String>()
+            {
+                "/Goat_Images/Halloween Specials/CandyCornKid.png",
+                "/Goat_Images/Halloween Specials/PinkyKid.png",
+                "/Goat_Images/Halloween Specials/SkeletonKid.png"
+            };
+            var rnd = new Random();
+            specialGoat.FilePath = halloweenGoats[rnd.Next(0, 3)];
+            var filePath =
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{specialGoat.FilePath}";
+            return (specialGoat, filePath);
+        }
          public (Goat, string) GenerateSpecialSpringGoatToSpawn()
          {
              var specialGoat = new Goat();
@@ -521,6 +541,26 @@ namespace BumbleBot.Services
                     while (reader.Read())
                         enabled = reader.GetBoolean("boolValue");
             }
+            return enabled;
+        }
+
+        public bool AreHalloweenSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "select boolValue from config where paramName =?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?param", "halloweenEnabled");
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                    {
+                        enabled = reader.GetBoolean("boolValue");
+                    }
+            }
+
             return enabled;
         }
 

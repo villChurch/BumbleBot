@@ -467,6 +467,29 @@ namespace BumbleBot.Services
             return goat.Breed == Breed.Valentines;
         }
 
+        private bool IsHalloweenGoat(int goatId)
+        {
+            var goat = new Goat();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            {
+                const string query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?id", goatId);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                    }
+                }
+                reader.Close();
+            }
+
+            return goat.Breed == Breed.Halloween;
+        }
+
         private bool IsSummerGoat(int goatId)
         {
             var goat = new Goat();
@@ -857,6 +880,21 @@ namespace BumbleBot.Services
                 };
                 return buckImages[buckNumber];
             }
+            else if (IsHalloweenGoat(goat.Id))
+            {
+                if (goat.FilePath.EndsWith("CandyCornKid.png"))
+                {
+                    return "Halloween Specials/CandyCornAdult.png";
+                }
+                if (goat.FilePath.EndsWith("PinkyKid.png"))
+                {
+                    return "Halloween Specials/PinkyAdult.png";
+                }
+                if (goat.FilePath.EndsWith("SkeletonKid.png"))
+                {
+                    return "Halloween Specials/SkeletonAdult.png";
+                }
+            }
 
             var goatColour = "";
 
@@ -1025,6 +1063,21 @@ namespace BumbleBot.Services
                     "Buck_Specials/BuckAdult6.png"
                 };
                 return buckImages[buckNumber];
+            }
+            else if (IsHalloweenGoat(goat.Id))
+            {
+                if (goat.FilePath.EndsWith("CandyCornKid.png"))
+                {
+                    return "Halloween Specials/CandyCornAdult.png";
+                }
+                if (goat.FilePath.EndsWith("PinkyKid.png"))
+                {
+                    return "Halloween Specials/PinkyAdult.png";
+                }
+                if (goat.FilePath.EndsWith("SkeletonKid.png"))
+                {
+                    return "Halloween Specials/SkeletonAdult.png";
+                }
             }
 
             var goatColour = "";

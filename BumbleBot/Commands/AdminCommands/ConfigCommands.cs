@@ -36,6 +36,25 @@ namespace BumbleBot.Commands.AdminCommands
                 .ConfigureAwait(false); 
         }
 
+        [Command("halloween")]
+        [Description("Disable or enabled halloween special spawns")]
+        [OwnerOrPermission(Permissions.KickMembers)]
+        public async Task SetHalloweenSpawnVariable(CommandContext ctx, bool enabled)
+        {
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                const string query = "update config SET boolValue = ?value where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?value", enabled);
+                command.Parameters.AddWithValue("?param", "halloweenEnabled");
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+            var enabledOrDisabled = enabled ? "enabled" : "disabled";
+            await ctx.Channel.SendMessageAsync($"Halloween specials have been {enabledOrDisabled}.")
+                .ConfigureAwait(false); 
+        }
+
         [Command("buck")]
         [Description("Disable or enable buck special spawns")]
         [OwnerOrPermission(Permissions.KickMembers)]
