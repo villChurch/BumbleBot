@@ -15,12 +15,32 @@ namespace BumbleBot.Services
     {
         private readonly DbUtils dbUtils = new();
 
+        public (Goat, string) GenerateNovemberGoatToSpawn()
+        {
+            var novGoat = new Goat
+            {
+                Breed = Breed.November, BaseColour = BaseColour.Special, Level = new Random().Next(76, 100)
+            };
+            novGoat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, novGoat.Level - 1));
+            novGoat.Name = "November Special";
+            var novSpecials = new List<string>
+            {
+                "/Goat_Images/November/LingerieKid.png",
+                "/Goat_Images/November/BlueAngelKid.png",
+                "/Goat_Images/November/BBQKid.png"
+            };
+            var rnd = new Random();
+            novGoat.FilePath = novSpecials[rnd.Next(0, novSpecials.Count)];
+            var filePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{novGoat.FilePath}";
+            return (novGoat, filePath);
+        }
+        
         public (Goat, string) GenerateSpecialDairyGoatToSpawn()
         {
-            var specialGoat = new Goat();
-            specialGoat.Breed = Breed.DairySpecial;
-            specialGoat.BaseColour = BaseColour.Special;
-            specialGoat.Level = new Random().Next(76, 100);
+            var specialGoat = new Goat
+            {
+                Breed = Breed.DairySpecial, BaseColour = BaseColour.Special, Level = new Random().Next(76, 100)
+            };
             specialGoat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, specialGoat.Level - 1));
             specialGoat.Name = "Dairy Special";
             var dairySpecials = new List<string>()
@@ -349,6 +369,30 @@ namespace BumbleBot.Services
              }
              return enabled;
          }
+
+         public bool AreNovemberSpawnsEnabled()
+         {
+             var enabled = false;
+             using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+             {
+                 const string query = "select boolValue from config where paramName = ?param";
+                 var command = new MySqlCommand(query, connection);
+                 command.Parameters.AddWithValue("?param", "novemberSpecials");
+                 connection.Open();
+                 var reader = command.ExecuteReader();
+                 if (reader.HasRows)
+                 {
+                     while (reader.Read())
+                     {
+                         enabled = reader.GetBoolean("boolValue");
+                     }
+                 }
+                 reader.Close();
+                 connection.Close();
+             }
+             return enabled;
+         }
+         
          public bool AreDairySpecialSpawnsEnabled()
          {
              var enabled = false;

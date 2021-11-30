@@ -44,7 +44,7 @@ namespace BumbleBot
 
         private void StartTimer()
         {
-            timer = new Timer {Interval = 60000 * 5};
+            timer = new Timer {Interval = 60000 * 1};
             // One Minute
             timer.Elapsed += ResetMpm;
             timer.AutoReset = true;
@@ -255,6 +255,12 @@ namespace BumbleBot
                                     _ = Task.Run(() =>
                                         goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild,
                                             goatToSpawn.Item1, goatToSpawn.Item2, client));
+                                    break;
+                                case 0 or 1 when goatSpawningService.AreNovemberSpawnsEnabled():
+                                    var novSpecialToSpawn = goatSpawningService.GenerateNovemberGoatToSpawn();
+                                    _ = Task.Run(() =>
+                                        goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild,
+                                            novSpecialToSpawn.Item1, novSpecialToSpawn.Item2, client));
                                     break;
                                 case 1 when goatSpawningService.AreDairySpecialSpawnsEnabled():
                                     var dairySpecial = goatSpawningService.GenerateSpecialDairyGoatToSpawn();

@@ -142,6 +142,12 @@ namespace BumbleBot.Commands.Game
                             GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, halloweenGoat.Item1,
                                 halloweenGoat.Item2, ctx.Client));
                         break;
+                    case "november":
+                        var novGoat = GoatSpawningService.GenerateNovemberGoatToSpawn();
+                        _ = Task.Run(() =>
+                            GoatSpawningService.SpawnGoatFromGoatObject(ctx.Channel, ctx.Guild, novGoat.Item1,
+                                novGoat.Item2, ctx.Client));
+                        break;
                     case "options":
                         await ctx.Channel.SendMessageAsync(
                             $@"Options are {Formatter.BlockCode

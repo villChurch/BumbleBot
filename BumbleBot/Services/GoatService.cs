@@ -529,6 +529,29 @@ namespace BumbleBot.Services
             return goat.Breed == Breed.BotAnniversarySpecial;
         }
 
+        private bool IsNovemberGoat(int goatId)
+        {
+            var goat = new Goat();
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            {
+                const string query = "select * from goats where id = ?id";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?id", goatId);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                    }
+                }
+                reader.Close();
+                connection.Close();
+            }
+
+            return goat.Breed == Breed.November;
+        }
         private bool IsBuck(int goatId)
         {
             var goat = new Goat();
@@ -895,6 +918,21 @@ namespace BumbleBot.Services
                     return "Halloween Specials/SkeletonAdult.png";
                 }
             }
+            else if (IsNovemberGoat(goat.Id))
+            {
+                if (goat.FilePath.EndsWith("LingerieKid.png"))
+                {
+                    return "November/LingerieAdult.png";
+                }
+                if (goat.FilePath.EndsWith("BlueAngelKid.png"))
+                {
+                    return "November/BlueAngelAdult.png";
+                }
+                if (goat.FilePath.EndsWith("BBQKid.png"))
+                {
+                    return "November/BBQAdult.png";
+                }
+            }
 
             var goatColour = "";
 
@@ -1077,6 +1115,21 @@ namespace BumbleBot.Services
                 if (goat.FilePath.EndsWith("SkeletonKid.png"))
                 {
                     return "Halloween Specials/SkeletonAdult.png";
+                }
+            }
+            else if (IsNovemberGoat(goat.Id))
+            {
+                if (goat.FilePath.EndsWith("LingerieKid.png"))
+                {
+                    return "November/LingerieAdult.png";
+                }
+                if (goat.FilePath.EndsWith("BlueAngelKid.png"))
+                {
+                    return "November/BlueAngelAdult.png";
+                }
+                if (goat.FilePath.EndsWith("BBQKid.png"))
+                {
+                    return "November/BBQAdult.png";
                 }
             }
 

@@ -32,7 +32,8 @@ namespace BumbleBot.Models
         Juliet,
         Percy,
         Seven,
-        Halloween
+        Halloween,
+        November
     }
 
     public enum BaseColour
