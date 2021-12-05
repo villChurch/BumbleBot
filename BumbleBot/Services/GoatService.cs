@@ -1202,11 +1202,11 @@ namespace BumbleBot.Services
                         numberOfGoats = reader.GetInt32("numberOfGoats");
                 reader.Close();
             }
-
             logger.Log(LogLevel.Information, "Barn Size is {BarnSize} before perk", barnSize);
-            if (usersPerks.All(perk => perk.id != 10))
-                return barnSize != numberOfGoats && barnSize >= numberOfGoats + numberOfGoatsToAdd;
-            barnSize = (int) Math.Ceiling(barnSize * 1.1);
+            if (usersPerks.Any(perk => perk.id == 10))
+            {
+                barnSize = (int) Math.Ceiling(barnSize * 1.1);
+            }
             logger.Log(LogLevel.Information, "Barn Size is {BarnSize} after perk", barnSize);
             return barnSize != numberOfGoats && barnSize >= numberOfGoats + numberOfGoatsToAdd;
         }
