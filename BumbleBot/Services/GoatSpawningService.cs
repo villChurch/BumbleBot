@@ -189,18 +189,23 @@ namespace BumbleBot.Services
 
          public (Goat, string) GenerateChristmasSpecialToSpawn()
          {
-             var specialGoat = new Goat();
-             specialGoat.BaseColour = BaseColour.Special;
-             specialGoat.Breed = Breed.Christmas;
-             specialGoat.Type = Type.Kid;
-             specialGoat.LevelMulitplier = 1;
-             specialGoat.Level = RandomLevel.GetRandomLevel();
-             specialGoat.Name = "Christmas Special";
-             var christmasGoats = new List<String>()
+             var specialGoat = new Goat
+             {
+                 BaseColour = BaseColour.Special,
+                 Breed = Breed.Christmas,
+                 Type = Type.Kid,
+                 LevelMulitplier = 1,
+                 Level = RandomLevel.GetRandomLevel(),
+                 Name = "Christmas Special"
+             };
+             var christmasGoats = new List<string>()
              {
                  "/Goat_Images/Special Variations/AngelLightsKid.png",
                  "/Goat_Images/Special Variations/GrinchKid.png",
-                 "/Goat_Images/Special Variations/SantaKid.png"
+                 "/Goat_Images/Special Variations/SantaKid.png",
+                 "/Goat_Images/Special Variations/ElfKid.png",
+                 "/Goat_Images/Special Variations/LightsKid.png",
+                 "/Goat_Images/Special Variations/ReindeerKid.png"
              };
              var rnd = new Random();
              specialGoat.FilePath = christmasGoats[rnd.Next(0,3)];
