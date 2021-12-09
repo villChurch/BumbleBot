@@ -208,7 +208,7 @@ namespace BumbleBot.Services
                  "/Goat_Images/Special Variations/ReindeerKid.png"
              };
              var rnd = new Random();
-             specialGoat.FilePath = christmasGoats[rnd.Next(0,3)];
+             specialGoat.FilePath = christmasGoats[rnd.Next(0, christmasGoats.Count)];
              var filePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{specialGoat.FilePath}";
              return (specialGoat, filePath);
          }
