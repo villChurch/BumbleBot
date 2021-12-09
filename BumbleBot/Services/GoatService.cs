@@ -792,7 +792,14 @@ namespace BumbleBot.Services
                     return "Special Variations/SantaAdult.png";
                 if (goat.FilePath.EndsWith("AngelLightsKid.png"))
                     return "Special Variations/AngelLightsAdult.png";
-                if (goat.FilePath.EndsWith("GrinchKid.png")) return "Special Variations/GrinchAdult.png";
+                if (goat.FilePath.EndsWith("GrinchKid.png")) 
+                    return "Special Variations/GrinchAdult.png";
+                if (goat.FilePath.EndsWith("ElfKid.png"))
+                    return "Special Variations/ElfAdult.png";
+                if (goat.FilePath.EndsWith("LightsKid.png"))
+                    return "Special Variations/LightsAdult.png";
+                if (goat.FilePath.EndsWith("ReindeerKid.png"))
+                    return "Special Variations/ReindeerAdult.png";
             }
             else if (IsValentinesGoat(goat.Id))
             {
@@ -991,7 +998,14 @@ namespace BumbleBot.Services
                     return "Special Variations/SantaAdult.png";
                 if (goat.FilePath.EndsWith("AngelLightsKid.png"))
                     return "Special Variations/AngelLightsAdult.png";
-                if (goat.FilePath.EndsWith("GrinchKid.png")) return "Special Variations/GrinchAdult.png";
+                if (goat.FilePath.EndsWith("GrinchKid.png"))
+                    return "Special Variations/GrinchAdult.png";
+                if (goat.FilePath.EndsWith("ElfKid.png")) 
+                    return "Special Variations/ElfAdult.png";
+                if (goat.FilePath.EndsWith("LightsKid.png"))
+                    return "Special Variations/LightsAdult.png";
+                if (goat.FilePath.EndsWith("ReindeerKid.png"))
+                    return "Special Variations/ReindeerAdult.png";
             }
             else if (IsValentinesGoat(goat.Id))
             {
