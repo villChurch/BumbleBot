@@ -207,12 +207,11 @@ namespace BumbleBot.Commands.ButtonCommands
                                 var loanString = "";
                                 if (farmerService.DoesFarmerHaveALoan(ctx.User.Id))
                                 {
-                                    var loanDeductions =
-                                        farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, creditsToAdd);
-                                    farmerService.AddCreditsToFarmer(ctx.User.Id, (creditsToAdd - loanDeductions.Item1));
+                                    var (repaymentAmount, loanAmount) = farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, creditsToAdd);
+                                    farmerService.AddCreditsToFarmer(ctx.User.Id, (creditsToAdd - repaymentAmount));
                                     loanString =
-                                        $"{Environment.NewLine}{loanDeductions.Item1:n0} credits have been taken from your earnings to " +
-                                        $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";
+                                        $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                                        $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";
                                 }
                                 else
                                 {

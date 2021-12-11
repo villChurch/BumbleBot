@@ -225,13 +225,12 @@ namespace BumbleBot.Commands.Game
                         GoatService.DeleteKidFromKiddingPen(kid.Id);
                         if (hasLoan)
                         {
-                            var loanDeductions =
-                                FarmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, (kid.Level * 2));
-                            deductionTotal += loanDeductions.Item1;
+                            var (repaymentAmount, loanAmount) = FarmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, (kid.Level * 2));
+                            deductionTotal += repaymentAmount;
                             loanString =
                                 $"{Environment.NewLine}{deductionTotal:n0} credits have been taken from your earnings to " +
-                                $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";
-                            FarmerService.AddCreditsToFarmer(ctx.User.Id, ((kid.Level* 2) - loanDeductions.Item1));
+                                $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";
+                            FarmerService.AddCreditsToFarmer(ctx.User.Id, ((kid.Level* 2) - repaymentAmount));
                         }
                         else
                         {
@@ -266,12 +265,11 @@ namespace BumbleBot.Commands.Game
                         GoatService.DeleteKidFromKiddingPen(id);
                         if (hasLoan)
                         {
-                            var loanDeductions =
-                                FarmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, kidToSell.Level * 2);
+                            var (repaymentAmount, loanAmount) = FarmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, kidToSell.Level * 2);
                             loanString =
-                                $"{Environment.NewLine}{loanDeductions.Item1:n0} credits have been taken from your earnings to " +
-                                $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";
-                            FarmerService.AddCreditsToFarmer(ctx.User.Id, ((kidToSell.Level * 2) - loanDeductions.Item1));
+                                $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                                $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";
+                            FarmerService.AddCreditsToFarmer(ctx.User.Id, ((kidToSell.Level * 2) - repaymentAmount));
                         }
                         else
                         {

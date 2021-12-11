@@ -377,7 +377,7 @@ namespace BumbleBot.Services
             }
         }
 
-        public (int, int) TakeLoanRepaymentFromEarnings(ulong farmerId, int earnings)
+        public (int repaymentAmount, int loanAmount) TakeLoanRepaymentFromEarnings(ulong farmerId, int earnings)
         {
             var loanAmount = AmountLeftOnLoan(farmerId);
             int repaymentAmount = (int) Math.Floor((decimal)earnings / 10);
