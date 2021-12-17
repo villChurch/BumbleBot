@@ -15,12 +15,32 @@ namespace BumbleBot.Services
     {
         private readonly DbUtils dbUtils = new();
 
+        public (Goat, string) GenerateNovemberGoatToSpawn()
+        {
+            var novGoat = new Goat
+            {
+                Breed = Breed.November, BaseColour = BaseColour.Special, Level = new Random().Next(76, 100)
+            };
+            novGoat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, novGoat.Level - 1));
+            novGoat.Name = "November Special";
+            var novSpecials = new List<string>
+            {
+                "/Goat_Images/November/LingerieKid.png",
+                "/Goat_Images/November/BlueAngelKid.png",
+                "/Goat_Images/November/BBQKid.png"
+            };
+            var rnd = new Random();
+            novGoat.FilePath = novSpecials[rnd.Next(0, novSpecials.Count)];
+            var filePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{novGoat.FilePath}";
+            return (novGoat, filePath);
+        }
+        
         public (Goat, string) GenerateSpecialDairyGoatToSpawn()
         {
-            var specialGoat = new Goat();
-            specialGoat.Breed = Breed.DairySpecial;
-            specialGoat.BaseColour = BaseColour.Special;
-            specialGoat.Level = new Random().Next(76, 100);
+            var specialGoat = new Goat
+            {
+                Breed = Breed.DairySpecial, BaseColour = BaseColour.Special, Level = new Random().Next(76, 100)
+            };
             specialGoat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, specialGoat.Level - 1));
             specialGoat.Name = "Dairy Special";
             var dairySpecials = new List<string>()
@@ -55,7 +75,27 @@ namespace BumbleBot.Services
                 $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{specialGoat.FilePath}";
              return (specialGoat, filePath);
          }
-         
+
+        public (Goat, string) GenerateHalloweenSpecialToSpawn()
+        {
+            var specialGoat = new Goat();
+            specialGoat.Breed = Breed.Halloween;
+            specialGoat.BaseColour = BaseColour.Special;
+            specialGoat.Level = new Random().Next(76, 100);
+            specialGoat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, specialGoat.Level - 1));
+            specialGoat.Name = "Halloween Goat";
+            var halloweenGoats = new List<String>()
+            {
+                "/Goat_Images/Halloween Specials/CandyCornKid.png",
+                "/Goat_Images/Halloween Specials/PinkyKid.png",
+                "/Goat_Images/Halloween Specials/SkeletonKid.png"
+            };
+            var rnd = new Random();
+            specialGoat.FilePath = halloweenGoats[rnd.Next(0, 3)];
+            var filePath =
+                $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{specialGoat.FilePath}";
+            return (specialGoat, filePath);
+        }
          public (Goat, string) GenerateSpecialSpringGoatToSpawn()
          {
              var specialGoat = new Goat();
@@ -103,9 +143,12 @@ namespace BumbleBot.Services
              {
                  "/Goat_Images/MemberSpecialEponaKid.png",
                  "/Goat_Images/MemberSpecialGiuhKid.png",
-                 "/Goat_Images/MemberSpecialKimdolKid.png"
+                 "/Goat_Images/MemberSpecialKimdolKid.png",
+                 "/Goat_Images/MemberSpecialKateKid.png",
+                 "/Goat_Images/MemberSpecialMinxKid.png",
+                 "/Goat_Images/MemberSpecialVenKid.png"
              };
-             memberGoat.FilePath = memberGoats[new Random().Next(0, 3)];
+             memberGoat.FilePath = memberGoats[new Random().Next(0, memberGoats.Count)];
              var filePath =
                  $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{memberGoat.FilePath}";
              return (memberGoat, filePath);
@@ -146,21 +189,26 @@ namespace BumbleBot.Services
 
          public (Goat, string) GenerateChristmasSpecialToSpawn()
          {
-             var specialGoat = new Goat();
-             specialGoat.BaseColour = BaseColour.Special;
-             specialGoat.Breed = Breed.Christmas;
-             specialGoat.Type = Type.Kid;
-             specialGoat.LevelMulitplier = 1;
-             specialGoat.Level = RandomLevel.GetRandomLevel();
-             specialGoat.Name = "Christmas Special";
-             var christmasGoats = new List<String>()
+             var specialGoat = new Goat
+             {
+                 BaseColour = BaseColour.Special,
+                 Breed = Breed.Christmas,
+                 Type = Type.Kid,
+                 LevelMulitplier = 1,
+                 Level = RandomLevel.GetRandomLevel(),
+                 Name = "Christmas Special"
+             };
+             var christmasGoats = new List<string>()
              {
                  "/Goat_Images/Special Variations/AngelLightsKid.png",
                  "/Goat_Images/Special Variations/GrinchKid.png",
-                 "/Goat_Images/Special Variations/SantaKid.png"
+                 "/Goat_Images/Special Variations/SantaKid.png",
+                 "/Goat_Images/Special Variations/ElfKid.png",
+                 "/Goat_Images/Special Variations/LightsKid.png",
+                 "/Goat_Images/Special Variations/ReindeerKid.png"
              };
              var rnd = new Random();
-             specialGoat.FilePath = christmasGoats[rnd.Next(0,3)];
+             specialGoat.FilePath = christmasGoats[rnd.Next(0, christmasGoats.Count)];
              var filePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{specialGoat.FilePath}";
              return (specialGoat, filePath);
          }
@@ -232,7 +280,7 @@ namespace BumbleBot.Services
          public (Goat, string) GenerateSpecialGoatToSpawn()
          {
              var random = new Random();
-             var number = random.Next(0, 3);
+             var number = random.Next(0, 5);
              var goat = new Goat();
              switch (number)
              {
@@ -243,6 +291,18 @@ namespace BumbleBot.Services
                  case 1:
                      goat.Breed = Breed.Minx;
                      goat.FilePath = "/Goat_Images/Special Variations/MinxKid.png";
+                     break;
+                 case 2:
+                     goat.Breed = Breed.Juliet;
+                     goat.FilePath = "/Goat_Images/Special Variations/JulietKid.png";
+                     break;
+                 case 3:
+                     goat.Breed = Breed.Percy;
+                     goat.FilePath = "/Goat_Images/Special Variations/PercyKid.png";
+                     break;
+                 case 4:
+                     goat.Breed = Breed.Seven;
+                     goat.FilePath = "/Goat_Images/Special Variations/SevenKid.png";
                      break;
                  default:
                      goat.Breed = Breed.Zenyatta;
@@ -276,7 +336,6 @@ namespace BumbleBot.Services
                  $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{goat.FilePath}";
              return (goat, filePath);
          }
-
          public bool IsSpecialSpawnEnabled(string special)
          {
              var enabled = false;
@@ -299,6 +358,257 @@ namespace BumbleBot.Services
              }
              return enabled;
          }
+         public (Goat, string) GenerateBotBirthdaySpecialToSpawn()
+         {
+             var goat = new Goat();
+             goat.Level = RandomLevel.GetRandomLevel();
+             goat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, goat.Level - 1));
+             goat.LevelMulitplier = 1;
+             goat.Type = Type.Kid;
+             goat.Name = "Bot Anniversary Kid";
+             goat.BaseColour = BaseColour.Special;
+             goat.Breed = Breed.BotAnniversarySpecial;
+             goat.FilePath = "/Goat_Images/Special Variations/BirthdayBumble/FirstBirthdayBumbleKid.png";
+             var filePath =
+                 $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{goat.FilePath}";
+             return (goat, filePath);
+         }
+         public bool AreBuckSpawnsEnabled()
+         {
+             var enabled = false;
+             using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+             {
+                 const string query = "select boolValue from config where paramName = ?param";
+                 var command = new MySqlCommand(query, connection);
+                 command.Parameters.AddWithValue("?param", "buckSpecials");
+                 connection.Open();
+                 var reader = command.ExecuteReader();
+                 if (reader.HasRows)
+                 {
+                     while (reader.Read())
+                     {
+                         enabled = reader.GetBoolean("boolValue");
+                     }
+                 }
+                 reader.Close();
+                 connection.Close();
+             }
+             return enabled;
+         }
+
+         public bool AreNovemberSpawnsEnabled()
+         {
+             var enabled = false;
+             using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+             {
+                 const string query = "select boolValue from config where paramName = ?param";
+                 var command = new MySqlCommand(query, connection);
+                 command.Parameters.AddWithValue("?param", "novemberSpecials");
+                 connection.Open();
+                 var reader = command.ExecuteReader();
+                 if (reader.HasRows)
+                 {
+                     while (reader.Read())
+                     {
+                         enabled = reader.GetBoolean("boolValue");
+                     }
+                 }
+                 reader.Close();
+                 connection.Close();
+             }
+             return enabled;
+         }
+         public bool AreMemberSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                const string query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "memberSpecials";
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read())
+                    {
+                        enabled = reader.GetBoolean("boolValue");
+                    }
+                }
+                reader.Close();
+                connection.Close();
+            }
+            return enabled;
+        }
+        
+        public bool ArePaddysSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                const string query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "paddysSpecials";
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                        enabled = reader.GetBoolean("boolValue");
+                reader.Close();
+            }
+
+            return enabled;
+        }
+
+        public bool AreSpringSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                const string query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?param", "springSpecials");
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                    {
+                        enabled = reader.GetBoolean("boolValue");
+                    }
+                reader.Close();
+            }
+
+            return enabled;
+        }
+
+        public bool AreDazzleSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                const string query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?param", "bestestGoat");
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                    {
+                        enabled = reader.GetBoolean("boolValue");
+                    }
+                reader.Close();
+                connection.Close();
+            }
+
+            return enabled;
+        }
+        public bool AreValentinesSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                const string query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "valentinesSpecials";
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                        enabled = reader.GetBoolean("boolValue");
+                reader.Close();
+            }
+            return enabled;
+        }
+        public bool AreChristmasSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "christmasSpecials";
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                        enabled = reader.GetBoolean("boolValue");
+            }
+
+            return enabled;
+        }
+        
+        public bool AreTaillessSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "taillessEnabled";
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                        enabled = reader.GetBoolean("boolValue");
+            }
+
+            return enabled;
+        }
+
+        public bool AreSummerSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?param", "summerEnabled");
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                        enabled = reader.GetBoolean("boolValue");
+            }
+
+            return enabled;
+        }
+
+        public bool AreBotBirthSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "select boolValue from config where paramName = ?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?param", "botBirthdayEnabled");
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                        enabled = reader.GetBoolean("boolValue");
+            }
+            return enabled;
+        }
+
+        public bool AreHalloweenSpawnsEnabled()
+        {
+            var enabled = false;
+            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "select boolValue from config where paramName =?param";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?param", "halloweenEnabled");
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                    {
+                        enabled = reader.GetBoolean("boolValue");
+                    }
+            }
+
+            return enabled;
+        }
         public async Task SpawnGoatFromGoatObject(DiscordChannel channel, DiscordGuild guild, (Goat, string) goatObject, DiscordClient client)
         {
             await SpawnGoatFromGoatObject(channel, guild, goatObject.Item1, goatObject.Item2, client);
@@ -342,7 +652,7 @@ namespace BumbleBot.Services
                 }
                 var perkService = new PerkService();
                 var usersPerks = await perkService.GetUsersPerks(buttonResult.Result.User.Id);
-                if (!goatService.CanGoatsFitInBarn(buttonResult.Result.User.Id, 1, usersPerks))
+                if (!goatService.CanGoatsFitInBarn(buttonResult.Result.User.Id, 1, usersPerks, client.Logger))
                 {
                     await buttonResult.Result.Interaction.CreateResponseAsync(InteractionResponseType.DeferredMessageUpdate);
                     await buttonResult.Result.Message.DeleteAsync();

@@ -44,7 +44,7 @@ namespace BumbleBot
 
         private void StartTimer()
         {
-            timer = new Timer {Interval = 60000 * 5};
+            timer = new Timer {Interval = 60000 * 1};
             // One Minute
             timer.Elapsed += ResetMpm;
             timer.AutoReset = true;
@@ -77,7 +77,7 @@ namespace BumbleBot
                 Token = configJson.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
-                MinimumLogLevel = LogLevel.Debug,
+                MinimumLogLevel = LogLevel.Information,
                 Intents = DiscordIntents.All
             };
             
@@ -256,6 +256,18 @@ namespace BumbleBot
                                         e.Guild,
                                         dairySpecial.Item1, dairySpecial.Item2, client));
                                     break;
+                                case 0 or 1 when goatSpawningService.IsSpecialSpawnEnabled("botBirthdayEnabled"):
+                                    var goatToSpawn = goatSpawningService.GenerateBotBirthdaySpecialToSpawn();
+                                    _ = Task.Run(() =>
+                                        goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild,
+                                            goatToSpawn.Item1, goatToSpawn.Item2, client));
+                                    break;
+                                case 0 or 1 when goatSpawningService.IsSpecialSpawnEnabled("novemberSpecials"):
+                                    var novSpecialToSpawn = goatSpawningService.GenerateNovemberGoatToSpawn();
+                                    _ = Task.Run(() =>
+                                        goatSpawningService.SpawnGoatFromGoatObject(spawnChannel, e.Guild,
+                                            novSpecialToSpawn.Item1, novSpecialToSpawn.Item2, client));
+                                    break;
                                 case 1 when goatSpawningService.IsSpecialSpawnEnabled("christmasSpecials"):
                                     var christmasGoat = goatSpawningService.GenerateChristmasSpecialToSpawn();
                                     _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel,
@@ -281,6 +293,12 @@ namespace BumbleBot
                                     var valentinesGoat = goatSpawningService.GenerateValentinesGoatToSpawn();
                                     _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel,
                                         e.Guild, valentinesGoat.Item1, valentinesGoat.Item2, client));
+                                    break;
+                                case 2 when goatSpawningService.IsSpecialSpawnEnabled("halloweenEnabled"):
+                                    var halloweenGoat = goatSpawningService.GenerateHalloweenSpecialToSpawn();
+                                    _ = Task.Run(() => goatSpawningService.SpawnGoatFromGoatObject(spawnChannel,
+                                        e.Guild,
+                                        halloweenGoat.Item1, halloweenGoat.Item2, client));
                                     break;
                                 case 4 when goatSpawningService.IsSpecialSpawnEnabled("paddysSpecials"):
                                     var goat = goatSpawningService.GenerateSpecialPaddyGoatToSpawn();

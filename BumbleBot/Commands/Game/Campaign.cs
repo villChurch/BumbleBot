@@ -10,8 +10,8 @@ namespace BumbleBot.Commands.Game
     [IsUserAvailable]
     public class Campaign : BaseCommandModule
     {
-        static GoatService _goatService;
-        static FarmerService _farmerService;
+        private static GoatService _goatService;
+        private static FarmerService _farmerService;
         public Campaign(GoatService goatService, FarmerService farmerService)
         {
             _goatService = goatService;
@@ -25,7 +25,6 @@ namespace BumbleBot.Commands.Game
         {
             await DoCampaign(ctx, goatId, bet);
         }
-
         public static async Task DoCampaign(CommandContext ctx, int goatId, int bet)
         {
             var goats = _goatService.ReturnUsersGoats(ctx.User.Id);
@@ -43,22 +42,49 @@ namespace BumbleBot.Commands.Game
                 return;
             }
 
+            _farmerService.DeductCreditsFromFarmer(ctx.User.Id, 1000);
             var goat = goats.Find(g => g.Id == goatId);
             var rnd = new Random();
             var scenarioNumber = rnd.Next(0, 40);
             var expToAdd = 0;
             var campaignMessage = "";
+            var loanString = "";
+            var hasLoan = _farmerService.DoesFarmerHaveALoan(ctx.User.Id);
             switch (scenarioNumber)
             {
                 case 0:
-                    _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000);
+                    if (hasLoan)
+                    {
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 1000);
+                        loanString =
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000 - repaymentAmount);
+                    }
+                    else
+                    {
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000);
+                    }
+
                     expToAdd = rnd.Next(600, 1000) + 1;
                     _goatService.GiveGoatExp(goat, expToAdd);
                     campaignMessage = $"{goat?.Name} won Grand Champion, congratulations!" +
                                       $" They earned {expToAdd} XP and a prize of 1000 credits.";
                     break;
                 case 1:
-                    _farmerService.AddCreditsToFarmer(ctx.User.Id, 500);
+                    if (hasLoan)
+                    {
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 500);
+                        loanString =
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 500 - repaymentAmount);
+                    }
+                    else
+                    {
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 500);
+                    }
+
                     expToAdd = rnd.Next(600, 1000) + 1;
                     _goatService.GiveGoatExp(goat, expToAdd);
                     campaignMessage =
@@ -107,7 +133,19 @@ namespace BumbleBot.Commands.Game
                         $"{goat?.Name} tried their best at the show, but became agitated and did not place. They lost {expToAdd} XP from the stress.";
                     break;
                 case 9:
-                    _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000);
+                    if (hasLoan)
+                    {
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 1000);
+                        loanString =
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000 - repaymentAmount);
+                    }
+                    else
+                    {
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000);
+                    }
+
                     expToAdd = rnd.Next(600, 1000) + 1;
                     _goatService.GiveGoatExp(goat, expToAdd);
                     campaignMessage =
@@ -115,7 +153,19 @@ namespace BumbleBot.Commands.Game
                         $" They earned {expToAdd} XP and a prize of 1000 credits.";
                     break;
                 case 10:
-                    _farmerService.AddCreditsToFarmer(ctx.User.Id, 500);
+                    if (hasLoan)
+                    {
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 500);
+                        loanString =
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";   
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 500 - repaymentAmount);
+                    }
+                    else
+                    {
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 500);
+                    }
+
                     expToAdd = rnd.Next(600, 1000) + 1;
                     _goatService.GiveGoatExp(goat, expToAdd);
                     campaignMessage =
@@ -174,7 +224,19 @@ namespace BumbleBot.Commands.Game
                         $" They lost {expToAdd} XP from the stress and cost you 100 credits in trailer repairs.";
                     break;
                 case 19:
-                    _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000);
+                    if (hasLoan)
+                    {
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 1000);
+                        loanString =
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";   
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000 - repaymentAmount);
+                    }
+                    else
+                    {
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000);
+                    }
+
                     expToAdd = rnd.Next(600, 1000) + 1;
                     _goatService.GiveGoatExp(goat, expToAdd);
                     campaignMessage =
@@ -182,7 +244,19 @@ namespace BumbleBot.Commands.Game
                         $" They earned {expToAdd} XP and a prize of 1000 credits.";
                     break;
                 case 20:
-                    _farmerService.AddCreditsToFarmer(ctx.User.Id, 500);
+                    if (hasLoan)
+                    {
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 500);
+                        loanString =
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";   
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 500 - repaymentAmount);
+                    }
+                    else
+                    {
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 500);
+                    }
+
                     expToAdd = rnd.Next(600, 1000) + 1;
                     _goatService.GiveGoatExp(goat, expToAdd);
                     campaignMessage =
@@ -241,7 +315,18 @@ namespace BumbleBot.Commands.Game
                                       $" They lost {expToAdd} XP from being chased and cost you 100 credits in repair fees.";
                     break;
                 case 29:
-                    _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000);
+                    if (hasLoan)
+                    {
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 1000);
+                        loanString =
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";   
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000 - repaymentAmount);
+                    }
+                    else
+                    {
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000);
+                    }
                     expToAdd = rnd.Next(600, 1000) + 1;
                     _goatService.GiveGoatExp(goat, expToAdd);
                     campaignMessage =
@@ -249,7 +334,18 @@ namespace BumbleBot.Commands.Game
                         $" They earned {expToAdd} XP and a prize of 1000 credits.";
                     break;
                 case 30:
-                    _farmerService.AddCreditsToFarmer(ctx.User.Id, 500);
+                    if (hasLoan)
+                    {
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 500);
+                        loanString =
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 500 - repaymentAmount);
+                    }
+                    else
+                    {
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 500);
+                    }
                     expToAdd = rnd.Next(600, 1000) + 1;
                     _goatService.GiveGoatExp(goat, expToAdd);
                     campaignMessage =
@@ -298,7 +394,7 @@ namespace BumbleBot.Commands.Game
                     expToAdd = rnd.Next(60, 150) + 1;
                     _goatService.GiveGoatExp(goat, expToAdd * -1);
                     campaignMessage =
-                        $"{goat?.Name} found the noise and bustle of the show overwealming and screamed the entire time. " +
+                        $"{goat?.Name} found the noise and bustle of the show overwhelming and screamed the entire time. " +
                         $"They lost {expToAdd} XP - and their voice.";
                     break;
                 case 38:
@@ -330,7 +426,7 @@ namespace BumbleBot.Commands.Game
             {
                 _goatService.UpdateGoatImagesForKidsThatAreAdults(ctx.User.Id);
             }
-            await ctx.Channel.SendMessageAsync(campaignMessage).ConfigureAwait(false);
+            await ctx.Channel.SendMessageAsync($"{campaignMessage} {loanString}").ConfigureAwait(false);
         }
     }
 }

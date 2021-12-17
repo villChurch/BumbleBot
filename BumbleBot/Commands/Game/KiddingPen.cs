@@ -146,7 +146,7 @@ namespace BumbleBot.Commands.Game
                 {
                     var userPerks = await perkService.GetUsersPerks(ctx.User.Id);
                     var kids = GoatService.ReturnUsersKidsInKiddingPen(ctx.User.Id);
-                    if (GoatService.CanGoatsFitInBarn(ctx.User.Id, kids.Count, userPerks))
+                    if (GoatService.CanGoatsFitInBarn(ctx.User.Id, kids.Count, userPerks, ctx.Client.Logger))
                     {
                         kids.ForEach(kid => GoatService.MoveKidIntoGoatPen(kid, ctx.User.Id));
                         await ctx.Channel.SendMessageAsync($"{kids.Count} kids have now been moved to your barn")
@@ -176,7 +176,7 @@ namespace BumbleBot.Commands.Game
                         await ctx.Channel.SendMessageAsync("You don't have a kid in your shelter with this id")
                             .ConfigureAwait(false);
                     }
-                    else if (GoatService.CanGoatsFitInBarn(ctx.User.Id, 1, usersPerks))
+                    else if (GoatService.CanGoatsFitInBarn(ctx.User.Id, 1, usersPerks, ctx.Client.Logger))
                     {
                         GoatService.MoveKidIntoGoatPen(kidToMove, ctx.User.Id);
                         await ctx.Channel.SendMessageAsync($"Kid with id {id} has been moved into your barn")
@@ -204,6 +204,7 @@ namespace BumbleBot.Commands.Game
         {
             try
             {
+                var hasLoan = FarmerService.DoesFarmerHaveALoan(ctx.User.Id);
                 if (!FarmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
                 {
                     await ctx.Channel.SendMessageAsync("You currently don't have a kidding pen").ConfigureAwait(false);
@@ -217,15 +218,29 @@ namespace BumbleBot.Commands.Game
                 {
                     var kids = GoatService.ReturnUsersKidsInKiddingPen(ctx.User.Id);
                     var total = 0;
+                    var deductionTotal = 0;
+                    var loanString = "";
                     kids.ForEach(kid =>
                     {
                         GoatService.DeleteKidFromKiddingPen(kid.Id);
-                        FarmerService.AddCreditsToFarmer(ctx.User.Id, kid.Level * 2);
+                        if (hasLoan)
+                        {
+                            var (repaymentAmount, loanAmount) = FarmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, (kid.Level * 2));
+                            deductionTotal += repaymentAmount;
+                            loanString =
+                                $"{Environment.NewLine}{deductionTotal:n0} credits have been taken from your earnings to " +
+                                $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";
+                            FarmerService.AddCreditsToFarmer(ctx.User.Id, ((kid.Level* 2) - repaymentAmount));
+                        }
+                        else
+                        {
+                            FarmerService.AddCreditsToFarmer(ctx.User.Id, kid.Level * 2);
+                        }
                         total += kid.Level * 2;
                     });
                     var kidOrKids = kids.Count == 1 ? "kid" : "kids";
                     await ctx.Channel
-                        .SendMessageAsync($"You have sold {kids.Count} {kidOrKids} for {total.ToString()} credits.")
+                        .SendMessageAsync($"You have sold {kids.Count} {kidOrKids} for {total:n0} credits. {loanString}")
                         .ConfigureAwait(false);
                 }
                 else
@@ -246,10 +261,23 @@ namespace BumbleBot.Commands.Game
                     }
                     else
                     {
+                        var loanString = "";
                         GoatService.DeleteKidFromKiddingPen(id);
-                        FarmerService.AddCreditsToFarmer(ctx.User.Id, kidToSell.Level * 2);
+                        if (hasLoan)
+                        {
+                            var (repaymentAmount, loanAmount) = FarmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, kidToSell.Level * 2);
+                            loanString =
+                                $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                                $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";
+                            FarmerService.AddCreditsToFarmer(ctx.User.Id, ((kidToSell.Level * 2) - repaymentAmount));
+                        }
+                        else
+                        {
+                            FarmerService.AddCreditsToFarmer(ctx.User.Id, kidToSell.Level * 2);
+                        }
+
                         await ctx.Channel
-                            .SendMessageAsync($"You have sold kid with id {id} for {kidToSell.Level * 2} credits")
+                            .SendMessageAsync($"You have sold kid with id {id} for {(kidToSell.Level * 2):n0} credits. {loanString}")
                             .ConfigureAwait(false);
                     }
                 }

@@ -11,6 +11,86 @@ namespace BumbleBot.Services
     {
         private readonly DbUtils dBUtils = new DbUtils();
 
+
+        public bool DoesFarmerHaveALoan(ulong userId)
+        {
+            var hasLoan = false;
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "select * from loans where farmerId = ?userId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?userId", userId);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                hasLoan = reader.HasRows;
+                reader.Close();
+                connection.Close();
+            }
+            return hasLoan;
+        }
+
+        public int GetFarmersBarnSize(ulong userId)
+        {
+            var barnSize = 10;
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "Select barnsize from farmers where DiscordID = ?discordId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.Add("?discordId", MySqlDbType.VarChar).Value = userId;
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                        barnSize = reader.GetInt32("barnsize");
+                reader.Close();
+            }
+            return barnSize;
+        }
+
+        public int AmountLeftOnLoan(ulong userId)
+        {
+            var amountLeft = 0;
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "select amountOwed from loans where farmerId = ?userId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?userId", userId);
+                connection.Open();
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                    while (reader.Read())
+                    {
+                        amountLeft = reader.GetInt32("amountOwed");
+                    }
+            }
+            return amountLeft;
+        }
+
+        public async void RemoveLoanFromFarmer(ulong userId)
+        {
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "delete from loans where farmerId = ?userId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?userId", userId);
+                await connection.OpenAsync();
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+
+        public async void AlterLoanAmountForFarmer(ulong userId, int newAmount)
+        {
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            {
+                var query = "Update loans Set amountOwed = ?newAmount where farmerId = ?userId";
+                var command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("?newAmount", newAmount);
+                command.Parameters.AddWithValue("?userId", userId);
+                await connection.OpenAsync();
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+        
         public void AddAlfalfaToFarmer(ulong userId)
         {
             using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
@@ -261,6 +341,60 @@ namespace BumbleBot.Services
             }
         }
 
+        public void AddLoanCreditsToFarmer(ulong farmerId, int credits)
+        {
+            try
+            {
+                var farmerCredits = 0;
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+                {
+                    var query = "select credits from farmers where DiscordID = ?farmerId";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?farmerId", MySqlDbType.VarChar).Value = farmerId;
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    if (reader.HasRows)
+                        while (reader.Read())
+                            farmerCredits = reader.GetInt32("credits");
+                    reader.Close();
+                }
+
+                farmerCredits += credits;
+                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+                {
+                    var query = "Update farmers Set credits = ?credits where DiscordID = ?farmerId";
+                    var command = new MySqlCommand(query, connection);
+                    command.Parameters.Add("?credits", MySqlDbType.Int32).Value = farmerCredits;
+                    command.Parameters.Add("?farmerId", MySqlDbType.VarChar).Value = farmerId;
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Out.WriteLine(ex.Message);
+                Console.Out.WriteLine(ex.StackTrace);
+            }
+        }
+
+        public (int repaymentAmount, int loanAmount) TakeLoanRepaymentFromEarnings(ulong farmerId, int earnings)
+        {
+            var loanAmount = AmountLeftOnLoan(farmerId);
+            int repaymentAmount = (int) Math.Floor((decimal)earnings / 10);
+            if (repaymentAmount > loanAmount)
+            {
+                repaymentAmount = loanAmount;
+                DeductCreditsFromFarmer(farmerId, repaymentAmount);
+                loanAmount = 0;
+                RemoveLoanFromFarmer(farmerId);
+            }
+            else
+            {
+                loanAmount -= repaymentAmount;
+                AlterLoanAmountForFarmer(farmerId, loanAmount);
+            }
+            return (repaymentAmount, loanAmount);
+        }
         public void AddCreditsToFarmer(ulong farmerId, int credits)
         {
             try

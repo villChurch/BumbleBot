@@ -17,20 +17,45 @@ namespace BumbleBot.Commands.AdminCommands
     {
         private readonly DbUtils dbUtils = new DbUtils();
 
+        [Command("november")]
+        [Description("Enables or disables november special spawns")]
+        [OwnerOrPermission(Permissions.KickMembers)]
+        public async Task SetNovemberSpawnVariable(CommandContext ctx, bool enabled)
+        {
+            await EnableOrDisableSpecialSpwan(enabled, "novemberSpecials");
+            var enabledOrDisabled = enabled ? "enabled" : "disabled";
+            await ctx.Channel.SendMessageAsync($"November spawns have been {enabledOrDisabled}.")
+                .ConfigureAwait(false);
+        }
+        
+        [Command("birthday")]
+        [Description("Enables or disables birthday special spawn")]
+        [OwnerOrPermission(Permissions.KickMembers)]
+        public async Task SetBotBirthdaySpawnVariable(CommandContext ctx, bool enabled)
+        {
+            await EnableOrDisableSpecialSpwan(enabled, "botBirthdayEnabled");
+            var enabledOrDisabled = enabled ? "enabled" : "disabled";
+            await ctx.Channel.SendMessageAsync($"Bot anniversary spawn has been {enabledOrDisabled}.")
+                .ConfigureAwait(false); 
+        }
+
+        [Command("halloween")]
+        [Description("Disable or enabled halloween special spawns")]
+        [OwnerOrPermission(Permissions.KickMembers)]
+        public async Task SetHalloweenSpawnVariable(CommandContext ctx, bool enabled)
+        {
+            await EnableOrDisableSpecialSpwan(enabled, "halloweenEnabled");
+            var enabledOrDisabled = enabled ? "enabled" : "disabled";
+            await ctx.Channel.SendMessageAsync($"Halloween specials have been {enabledOrDisabled}.")
+                .ConfigureAwait(false); 
+        }
+
         [Command("buck")]
         [Description("Disable or enable buck special spawns")]
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetBuckSpecialSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "update config SET boolValue = ?value where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("?value", enabled);
-                command.Parameters.AddWithValue("?param", "buckSpecials");
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
+            await EnableOrDisableSpecialSpwan(enabled, "buckSpecials");
             var enabledOrDisabled = enabled ? "enabled" : "disabled";
             await ctx.Channel.SendMessageAsync($"Buck spawns have been {enabledOrDisabled}.")
                 .ConfigureAwait(false); 
@@ -41,15 +66,7 @@ namespace BumbleBot.Commands.AdminCommands
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetSummerSpecialSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "update config SET boolValue = ?value where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("?value", enabled);
-                command.Parameters.AddWithValue("?param", "summerEnabled");
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
+            await EnableOrDisableSpecialSpwan(enabled, "summerEnabled");
             var enabledOrDisabled = enabled ? "enabled" : "disabled";
             await ctx.Channel.SendMessageAsync($"Summer special spawns have been {enabledOrDisabled}.")
                 .ConfigureAwait(false); 
@@ -60,15 +77,7 @@ namespace BumbleBot.Commands.AdminCommands
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetDairySpecialSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "update config SET boolValue = ?value where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("?value", enabled);
-                command.Parameters.AddWithValue("?param", "dairySpecials");
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
+            await EnableOrDisableSpecialSpwan(enabled, "dairySpecials");
             var enabledOrDisabled = enabled ? "enabled" : "disabled";
             await ctx.Channel.SendMessageAsync($"Dairy special spawns have been {enabledOrDisabled}.")
                 .ConfigureAwait(false); 
@@ -79,15 +88,7 @@ namespace BumbleBot.Commands.AdminCommands
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetMemberSpecialSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "update config SET boolValue = ?value where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("?value", enabled);
-                command.Parameters.AddWithValue("?param", "memberSpecials");
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
+            await EnableOrDisableSpecialSpwan(enabled, "memberSpecials");
             var enabledOrDisabled = enabled ? "enabled" : "disabled";
             await ctx.Channel.SendMessageAsync($"Member special spawns have been {enabledOrDisabled}.")
                 .ConfigureAwait(false); 
@@ -98,15 +99,7 @@ namespace BumbleBot.Commands.AdminCommands
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetDazzleSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "update config SET boolValue = ?value where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("?value", enabled);
-                command.Parameters.AddWithValue("?param", "bestestGoat");
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
+            await EnableOrDisableSpecialSpwan(enabled, "bestestGoat");
             var enabledOrDisabled = enabled ? "enabled" : "disabled";
             await ctx.Channel.SendMessageAsync($"Dazzle spawns have been {enabledOrDisabled}.")
                 .ConfigureAwait(false); 
@@ -116,15 +109,7 @@ namespace BumbleBot.Commands.AdminCommands
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetSpringSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "update config SET boolValue = ?value where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("?value", enabled);
-                command.Parameters.AddWithValue("?param", "springSpecials");
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
+            await EnableOrDisableSpecialSpwan(enabled, "springSpecials");
             var enabledOrDisabled = enabled ? "enabled" : "disabled";
             await ctx.Channel.SendMessageAsync($"Spring spawns have been {enabledOrDisabled}.")
                 .ConfigureAwait(false);
@@ -134,15 +119,7 @@ namespace BumbleBot.Commands.AdminCommands
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetShamrockSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "update config SET boolValue = ?value where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?value", MySqlDbType.Int16).Value = enabled;
-                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "paddysSpecials";
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
+            await EnableOrDisableSpecialSpwan(enabled, "paddysSpecials");
             var enabledOrDisabled = enabled ? "enabled" : "disabled";
             await ctx.Channel.SendMessageAsync($"Shamrock spawns have been {enabledOrDisabled}.")
                 .ConfigureAwait(false);
@@ -153,15 +130,7 @@ namespace BumbleBot.Commands.AdminCommands
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetValentineSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "update config SET boolValue = ?value where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?value", MySqlDbType.Int16).Value = enabled;
-                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "valentinesSpecials";
-                connection.Open();
-                command.ExecuteNonQuery();
-            }
+            await EnableOrDisableSpecialSpwan(enabled, "valentinesSpecials");
             var enabledOrDisabled = enabled ? "enabled" : "disabled";
             await ctx.Channel.SendMessageAsync($"Valentine spawns have been {enabledOrDisabled}.")
                 .ConfigureAwait(false);
@@ -173,18 +142,22 @@ namespace BumbleBot.Commands.AdminCommands
         [OwnerOrPermission(Permissions.KickMembers)]
         public async Task SetTaillessSpawnVariable(CommandContext ctx, bool enabled)
         {
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            await EnableOrDisableSpecialSpwan(enabled, "taillessEnabled");
+            var enabledOrDisabled = enabled ? "enabled" : "disabled";
+            await ctx.Channel.SendMessageAsync($"Tailless spawns have been {enabledOrDisabled}.").ConfigureAwait(false);
+        }
+
+        private async Task EnableOrDisableSpecialSpwan(bool enabled, string special)
+        {
+            await using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "update config SET boolValue = ?value where paramName = ?param";
                 var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?value", MySqlDbType.Int16).Value = enabled;
-                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "taillessEnabled";
-                connection.Open();
-                command.ExecuteNonQuery();
+                command.Parameters.AddWithValue("?value", enabled);
+                command.Parameters.AddWithValue("?param", special);
+                await connection.OpenAsync();
+                await command.ExecuteNonQueryAsync();
             }
-
-            var enabledOrDisabled = enabled ? "enabled" : "disabled";
-            await ctx.Channel.SendMessageAsync($"Tailless spawns have been {enabledOrDisabled}.").ConfigureAwait(false);
         }
         
         [Command("goatspawns")]
