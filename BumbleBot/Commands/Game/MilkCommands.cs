@@ -89,11 +89,11 @@ namespace BumbleBot.Commands.Game
                     var loanString = "";
                     if (hasLoan)
                     {
-                        var loanDeductions = farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, milkEarnings);
-                        farmer.Credits += (milkEarnings - loanDeductions.Item1);
+                        var (repaymentAmount, loanAmount) = farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, milkEarnings);
+                        farmer.Credits += (milkEarnings - repaymentAmount);
                         loanString =
-                            $"{Environment.NewLine}{loanDeductions.Item1:n0} credits have been taken from your earnings to " +
-                            $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";
                     }
                     else
                     {

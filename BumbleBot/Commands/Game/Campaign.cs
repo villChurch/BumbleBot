@@ -10,8 +10,8 @@ namespace BumbleBot.Commands.Game
     [IsUserAvailable]
     public class Campaign : BaseCommandModule
     {
-        static GoatService _goatService;
-        static FarmerService _farmerService;
+        private static GoatService _goatService;
+        private static FarmerService _farmerService;
         public Campaign(GoatService goatService, FarmerService farmerService)
         {
             _goatService = goatService;
@@ -55,11 +55,11 @@ namespace BumbleBot.Commands.Game
                 case 0:
                     if (hasLoan)
                     {
-                        var loanDeductions = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 1000);
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 1000);
                         loanString =
-                            $"{Environment.NewLine}{loanDeductions.Item1:n0} credits have been taken from your earnings to " +
-                            $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";
-                        _farmerService.AddCreditsToFarmer(ctx.User.Id, (1000 - loanDeductions.Item1));
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000 - repaymentAmount);
                     }
                     else
                     {
@@ -74,11 +74,11 @@ namespace BumbleBot.Commands.Game
                 case 1:
                     if (hasLoan)
                     {
-                        var loanDeductions = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 500);
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 500);
                         loanString =
-                            $"{Environment.NewLine}{loanDeductions.Item1:n0} credits have been taken from your earnings to " +
-                            $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";
-                        _farmerService.AddCreditsToFarmer(ctx.User.Id, (500 - loanDeductions.Item1));
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 500 - repaymentAmount);
                     }
                     else
                     {
@@ -135,11 +135,11 @@ namespace BumbleBot.Commands.Game
                 case 9:
                     if (hasLoan)
                     {
-                        var loanDeductions = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 1000);
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 1000);
                         loanString =
-                            $"{Environment.NewLine}{loanDeductions.Item1:n0} credits have been taken from your earnings to " +
-                            $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";
-                        _farmerService.AddCreditsToFarmer(ctx.User.Id, (1000 - loanDeductions.Item1));
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000 - repaymentAmount);
                     }
                     else
                     {
@@ -155,11 +155,11 @@ namespace BumbleBot.Commands.Game
                 case 10:
                     if (hasLoan)
                     {
-                        var loanDeductions = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 500);
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 500);
                         loanString =
-                            $"{Environment.NewLine}{loanDeductions.Item1:n0} credits have been taken from your earnings to " +
-                            $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";   
-                        _farmerService.AddCreditsToFarmer(ctx.User.Id, (500 - loanDeductions.Item1));
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";   
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 500 - repaymentAmount);
                     }
                     else
                     {
@@ -226,11 +226,11 @@ namespace BumbleBot.Commands.Game
                 case 19:
                     if (hasLoan)
                     {
-                        var loanDeductions = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 1000);
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 1000);
                         loanString =
-                            $"{Environment.NewLine}{loanDeductions.Item1:n0} credits have been taken from your earnings to " +
-                            $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";   
-                        _farmerService.AddCreditsToFarmer(ctx.User.Id, (1000 - loanDeductions.Item1));
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";   
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000 - repaymentAmount);
                     }
                     else
                     {
@@ -246,11 +246,11 @@ namespace BumbleBot.Commands.Game
                 case 20:
                     if (hasLoan)
                     {
-                        var loanDeductions = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 500);
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 500);
                         loanString =
-                            $"{Environment.NewLine}{loanDeductions.Item1:n0} credits have been taken from your earnings to " +
-                            $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";   
-                        _farmerService.AddCreditsToFarmer(ctx.User.Id, (500 - loanDeductions.Item1));
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";   
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 500 - repaymentAmount);
                     }
                     else
                     {
@@ -317,11 +317,11 @@ namespace BumbleBot.Commands.Game
                 case 29:
                     if (hasLoan)
                     {
-                        var loanDeductions = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 1000);
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 1000);
                         loanString =
-                            $"{Environment.NewLine}{loanDeductions.Item1:n0} credits have been taken from your earnings to " +
-                            $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";   
-                        _farmerService.AddCreditsToFarmer(ctx.User.Id, (1000 - loanDeductions.Item1));
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";   
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 1000 - repaymentAmount);
                     }
                     else
                     {
@@ -336,11 +336,11 @@ namespace BumbleBot.Commands.Game
                 case 30:
                     if (hasLoan)
                     {
-                        var loanDeductions = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 500);
+                        var (repaymentAmount, loanAmount) = _farmerService.TakeLoanRepaymentFromEarnings(ctx.User.Id, 500);
                         loanString =
-                            $"{Environment.NewLine}{loanDeductions.Item1:n0} credits have been taken from your earnings to " +
-                            $"cover your loan. Remaining amount on your loan is {loanDeductions.Item2:n0}.";
-                        _farmerService.AddCreditsToFarmer(ctx.User.Id, (500 - loanDeductions.Item1));
+                            $"{Environment.NewLine}{repaymentAmount:n0} credits have been taken from your earnings to " +
+                            $"cover your loan. Remaining amount on your loan is {loanAmount:n0}.";
+                        _farmerService.AddCreditsToFarmer(ctx.User.Id, 500 - repaymentAmount);
                     }
                     else
                     {
@@ -394,7 +394,7 @@ namespace BumbleBot.Commands.Game
                     expToAdd = rnd.Next(60, 150) + 1;
                     _goatService.GiveGoatExp(goat, expToAdd * -1);
                     campaignMessage =
-                        $"{goat?.Name} found the noise and bustle of the show overwealming and screamed the entire time. " +
+                        $"{goat?.Name} found the noise and bustle of the show overwhelming and screamed the entire time. " +
                         $"They lost {expToAdd} XP - and their voice.";
                     break;
                 case 38:
