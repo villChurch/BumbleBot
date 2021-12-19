@@ -17,6 +17,17 @@ namespace BumbleBot.Commands.AdminCommands
     {
         private readonly DbUtils dbUtils = new DbUtils();
 
+        [Command("christmas")]
+        [Description("Enables or disables christmas specials")]
+        [OwnerOrPermission(Permissions.KickMembers)]
+        public async Task SetChristmasSpawnVariable(CommandContext ctx, bool enabled)
+        {
+            await EnableOrDisableSpecialSpwan(enabled, "christmasSpecials");
+            var enabledOrDisabled = enabled ? "enabled" : "disabled";
+            await ctx.Channel.SendMessageAsync($"Christmas spawns have been {enabledOrDisabled}.")
+                .ConfigureAwait(false);
+        }
+
         [Command("november")]
         [Description("Enables or disables november special spawns")]
         [OwnerOrPermission(Permissions.KickMembers)]
