@@ -189,21 +189,26 @@ namespace BumbleBot.Services
 
          public (Goat, string) GenerateChristmasSpecialToSpawn()
          {
-             var specialGoat = new Goat();
-             specialGoat.BaseColour = BaseColour.Special;
-             specialGoat.Breed = Breed.Christmas;
-             specialGoat.Type = Type.Kid;
-             specialGoat.LevelMulitplier = 1;
-             specialGoat.Level = RandomLevel.GetRandomLevel();
-             specialGoat.Name = "Christmas Special";
-             var christmasGoats = new List<String>()
+             var specialGoat = new Goat
+             {
+                 BaseColour = BaseColour.Special,
+                 Breed = Breed.Christmas,
+                 Type = Type.Kid,
+                 LevelMulitplier = 1,
+                 Level = RandomLevel.GetRandomLevel(),
+                 Name = "Christmas Special"
+             };
+             var christmasGoats = new List<string>()
              {
                  "/Goat_Images/Special Variations/AngelLightsKid.png",
                  "/Goat_Images/Special Variations/GrinchKid.png",
-                 "/Goat_Images/Special Variations/SantaKid.png"
+                 "/Goat_Images/Special Variations/SantaKid.png",
+                 "/Goat_Images/Special Variations/ElfKid.png",
+                 "/Goat_Images/Special Variations/LightsKid.png",
+                 "/Goat_Images/Special Variations/ReindeerKid.png"
              };
              var rnd = new Random();
-             specialGoat.FilePath = christmasGoats[rnd.Next(0,3)];
+             specialGoat.FilePath = christmasGoats[rnd.Next(0, christmasGoats.Count)];
              var filePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{specialGoat.FilePath}";
              return (specialGoat, filePath);
          }
@@ -331,7 +336,28 @@ namespace BumbleBot.Services
                  $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{goat.FilePath}";
              return (goat, filePath);
          }
-
+         public bool IsSpecialSpawnEnabled(string special)
+         {
+             var enabled = false;
+             using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+             {
+                 const string query = "select boolValue from config where paramName = ?param";
+                 var command = new MySqlCommand(query, connection);
+                 command.Parameters.AddWithValue("?param", special);
+                 connection.Open();
+                 var reader = command.ExecuteReader();
+                 if (reader.HasRows)
+                 {
+                     while (reader.Read())
+                     {
+                         enabled = reader.GetBoolean("boolValue");
+                     }
+                 }
+                 reader.Close();
+                 connection.Close();
+             }
+             return enabled;
+         }
          public (Goat, string) GenerateBotBirthdaySpecialToSpawn()
          {
              var goat = new Goat();
@@ -347,268 +373,8 @@ namespace BumbleBot.Services
                  $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{goat.FilePath}";
              return (goat, filePath);
          }
-         public bool AreBuckSpawnsEnabled()
-         {
-             var enabled = false;
-             using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-             {
-                 const string query = "select boolValue from config where paramName = ?param";
-                 var command = new MySqlCommand(query, connection);
-                 command.Parameters.AddWithValue("?param", "buckSpecials");
-                 connection.Open();
-                 var reader = command.ExecuteReader();
-                 if (reader.HasRows)
-                 {
-                     while (reader.Read())
-                     {
-                         enabled = reader.GetBoolean("boolValue");
-                     }
-                 }
-                 reader.Close();
-                 connection.Close();
-             }
-             return enabled;
-         }
 
-         public bool AreNovemberSpawnsEnabled()
-         {
-             var enabled = false;
-             using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-             {
-                 const string query = "select boolValue from config where paramName = ?param";
-                 var command = new MySqlCommand(query, connection);
-                 command.Parameters.AddWithValue("?param", "novemberSpecials");
-                 connection.Open();
-                 var reader = command.ExecuteReader();
-                 if (reader.HasRows)
-                 {
-                     while (reader.Read())
-                     {
-                         enabled = reader.GetBoolean("boolValue");
-                     }
-                 }
-                 reader.Close();
-                 connection.Close();
-             }
-             return enabled;
-         }
-         
-         public bool AreDairySpecialSpawnsEnabled()
-         {
-             var enabled = false;
-             using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-             {
-                 const string query = "select boolValue from config where paramName = ?param";
-                 var command = new MySqlCommand(query, connection);
-                 command.Parameters.AddWithValue("?param", "dairySpecials");
-                 connection.Open();
-                 var reader = command.ExecuteReader();
-                 if (reader.HasRows)
-                 {
-                     while (reader.Read())
-                     {
-                         enabled = reader.GetBoolean("boolValue");
-                     }
-                 }
-                 reader.Close();
-                 connection.Close();
-             }
-
-             return enabled;
-         }
-        public bool AreMemberSpawnsEnabled()
-        {
-            var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "select boolValue from config where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "memberSpecials";
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                {
-                    while (reader.Read())
-                    {
-                        enabled = reader.GetBoolean("boolValue");
-                    }
-                }
-                reader.Close();
-                connection.Close();
-            }
-            return enabled;
-        }
-        
-        public bool ArePaddysSpawnsEnabled()
-        {
-            var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "select boolValue from config where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "paddysSpecials";
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                        enabled = reader.GetBoolean("boolValue");
-                reader.Close();
-            }
-
-            return enabled;
-        }
-
-        public bool AreSpringSpawnsEnabled()
-        {
-            var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "select boolValue from config where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("?param", "springSpecials");
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                    {
-                        enabled = reader.GetBoolean("boolValue");
-                    }
-                reader.Close();
-            }
-
-            return enabled;
-        }
-
-        public bool AreDazzleSpawnsEnabled()
-        {
-            var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "select boolValue from config where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("?param", "bestestGoat");
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                    {
-                        enabled = reader.GetBoolean("boolValue");
-                    }
-                reader.Close();
-                connection.Close();
-            }
-
-            return enabled;
-        }
-        public bool AreValentinesSpawnsEnabled()
-        {
-            var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "select boolValue from config where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "valentinesSpecials";
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                        enabled = reader.GetBoolean("boolValue");
-                reader.Close();
-            }
-            return enabled;
-        }
-        public bool AreChristmasSpawnsEnabled()
-        {
-            var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                var query = "select boolValue from config where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "christmasSpecials";
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                        enabled = reader.GetBoolean("boolValue");
-            }
-
-            return enabled;
-        }
-        
-        public bool AreTaillessSpawnsEnabled()
-        {
-            var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                var query = "select boolValue from config where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?param", MySqlDbType.VarChar).Value = "taillessEnabled";
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                        enabled = reader.GetBoolean("boolValue");
-            }
-
-            return enabled;
-        }
-
-        public bool AreSummerSpawnsEnabled()
-        {
-            var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                var query = "select boolValue from config where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("?param", "summerEnabled");
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                        enabled = reader.GetBoolean("boolValue");
-            }
-
-            return enabled;
-        }
-
-        public bool AreBotBirthSpawnsEnabled()
-        {
-            var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                var query = "select boolValue from config where paramName = ?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("?param", "botBirthdayEnabled");
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                        enabled = reader.GetBoolean("boolValue");
-            }
-            return enabled;
-        }
-
-        public bool AreHalloweenSpawnsEnabled()
-        {
-            var enabled = false;
-            using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
-            {
-                var query = "select boolValue from config where paramName =?param";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("?param", "halloweenEnabled");
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                    {
-                        enabled = reader.GetBoolean("boolValue");
-                    }
-            }
-
-            return enabled;
-        }
-
-        public async Task SpawnGoatFromGoatObject(DiscordChannel channel, DiscordGuild guild, (Goat, string) goatObject, DiscordClient client)
+         public async Task SpawnGoatFromGoatObject(DiscordChannel channel, DiscordGuild guild, (Goat, string) goatObject, DiscordClient client)
         {
             await SpawnGoatFromGoatObject(channel, guild, goatObject.Item1, goatObject.Item2, client);
         }

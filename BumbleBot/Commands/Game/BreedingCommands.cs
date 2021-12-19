@@ -9,13 +9,11 @@ using System.Threading.Tasks;
 using BumbleBot.Attributes;
 using BumbleBot.Models;
 using BumbleBot.Services;
-using BumbleBot.Utilities;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Enums;
-using DSharpPlus.Interactivity.EventHandling;
 using DSharpPlus.Interactivity.Extensions;
 using Microsoft.Extensions.Logging;
 
@@ -27,12 +25,11 @@ namespace BumbleBot.Commands.Game
     [ModuleLifespan(ModuleLifespan.Transient)]
     public class BreedingCommands : BaseCommandModule
     {
-        private DbUtils dBUtils = new DbUtils();
-
+  
         public BreedingCommands(FarmerService farmerService, GoatService goatService)
         {
-            this.FarmerService = farmerService;
-            this.GoatService = goatService;
+            FarmerService = farmerService;
+            GoatService = goatService;
         }
 
         private FarmerService FarmerService { get; }
@@ -55,11 +52,10 @@ namespace BumbleBot.Commands.Game
                 }
                 else
                 {
-                    var result = GoatService.ReturnUsersAdultGoatIdsInKiddingPen(ctx.User.Id);
-                    var breedingIds = result.Item1; //GoatService.ReturnUsersAdultGoatIdsInKiddingPen(ctx.User.Id);
+                    var (breedingIds, dictionary) = GoatService.ReturnUsersAdultGoatIdsInKiddingPen(ctx.User.Id);
                     var breedingGoats =
                         GoatService.ReturnUsersGoats(ctx.User.Id).Where(goat => breedingIds.Contains(goat.Id)).ToList();
-                    var url = "http://williamspires.com/";
+                    const string url = "http://williamspires.com/";
                     var pages = new List<Page>();
                     var interactivity = ctx.Client.GetInteractivity();
                     foreach (var goat in breedingGoats)
@@ -70,7 +66,7 @@ namespace BumbleBot.Commands.Game
                             ImageUrl = url + goat.FilePath.Replace(" ", "%20")
                         };
                         embed.AddField("Name", goat.Name);
-                        embed.AddField("Due Date", result.Item2[goat.Id], false);
+                        embed.AddField("Due Date", dictionary[goat.Id]);
                         embed.AddField("Level", goat.Level.ToString(), true);
                         embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
                         embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
@@ -82,7 +78,7 @@ namespace BumbleBot.Commands.Game
                         pages.Add(page);
                     }
 
-                    _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages, (PaginationButtons) null,
+                    _ = Task.Run(async () =>await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages, null,
                         PaginationBehaviour.WrapAround,ButtonPaginationBehavior.Disable,CancellationToken.None).ConfigureAwait(false));
                 }
             }
@@ -128,13 +124,12 @@ namespace BumbleBot.Commands.Game
                     }
                     else
                     {
-                        // /breeding/{id}/{goatId}
                         var uri = $"http://localhost:8080/breeding/{ctx.User.Id}/{goatId}";
                         var request = (HttpWebRequest) WebRequest.Create(uri);
                         request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 
-                        using (var response = (HttpWebResponse) await request.GetResponseAsync())
-                        using (var stream = response.GetResponseStream())
+                        using var response = (HttpWebResponse) await request.GetResponseAsync();
+                        await using (var stream = response.GetResponseStream())
                         using (var reader = new StreamReader(stream))
                         {
                             var stringResponse = await reader.ReadToEndAsync();
