@@ -1,9 +1,9 @@
 using System.Data;
 using System.Threading.Tasks;
 using BumbleBot.Utilities;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Interactivity.Extensions;
+using DisCatSharp.CommandsNext;
+using DisCatSharp.CommandsNext.Attributes;
+using DisCatSharp.Interactivity.Extensions;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 

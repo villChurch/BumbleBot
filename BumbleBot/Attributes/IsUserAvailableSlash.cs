@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using BumbleBot.Utilities;
-using DSharpPlus.SlashCommands;
+using DisCatSharp.ApplicationCommands;
 using MySql.Data.MySqlClient;
 
 namespace BumbleBot.Attributes

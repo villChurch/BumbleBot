@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using System.Timers;
 using BumbleBot.Models;
 using BumbleBot.Utilities;
-using DSharpPlus;
-using DSharpPlus.Entities;
+using DisCatSharp;
+using DisCatSharp.Entities;
 using Humanizer.Localisation;
 using System.Linq;
-using DSharpPlus.Exceptions;
+using DisCatSharp.Exceptions;
 using Microsoft.Extensions.Logging;
 using MySqlConnector;
 

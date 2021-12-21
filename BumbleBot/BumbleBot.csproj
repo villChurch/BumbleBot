@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <LangVersion>preview</LangVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|anycpu' ">
     <OutputPath>bin\Debug</OutputPath>
@@ -23,11 +24,11 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Chronic" Version="0.3.2" />
-    <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00949" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00949" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="4.1.0-nightly-00949" />
+    <PackageReference Include="DisCatSharp" Version="9.8.5-nightly-00234" />
+    <PackageReference Include="DisCatSharp.ApplicationCommands" Version="9.8.5-nightly-00234" />
+    <PackageReference Include="DisCatSharp.CommandsNext" Version="9.8.5-nightly-00234" />
+    <PackageReference Include="DisCatSharp.Interactivity" Version="9.8.5-nightly-00234" />
     <PackageReference Include="Humanizer" Version="2.10.1" />
-    <PackageReference Include="IDoEverything.DSharpPlus.SlashCommands" Version="1.7.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="MySql.Data" Version="8.0.22" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />

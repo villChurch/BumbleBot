@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 using BumbleBot.Attributes;
 using BumbleBot.Models;
 using BumbleBot.Services;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
-using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Enums;
-using DSharpPlus.Interactivity.Extensions;
+using DisCatSharp.CommandsNext;
+using DisCatSharp.CommandsNext.Attributes;
+using DisCatSharp.Entities;
+using DisCatSharp.Interactivity;
+using DisCatSharp.Interactivity.Enums;
+using DisCatSharp.Interactivity.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace BumbleBot.Commands.Game

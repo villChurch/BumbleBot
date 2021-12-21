@@ -3,14 +3,14 @@ using System.Threading.Tasks;
 using BumbleBot.Attributes;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
-using DSharpPlus;
-using DSharpPlus.Entities;
-using DSharpPlus.SlashCommands;
+using DisCatSharp;
+using DisCatSharp.Entities;
+using DisCatSharp.ApplicationCommands;
 using MySql.Data.MySqlClient;
 
 namespace BumbleBot.Commands
 {
-    public class SlashHandle : SlashCommandModule
+    public class SlashHandle : ApplicationCommandsModule
     {
         private GoatService goatService = new GoatService();
         private FarmerService farmerService = new FarmerService();

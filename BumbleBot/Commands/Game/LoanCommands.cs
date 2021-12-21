@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using BumbleBot.Attributes;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
+using DisCatSharp.CommandsNext;
+using DisCatSharp.CommandsNext.Attributes;
+using DisCatSharp.Entities;
 using MySqlConnector;
 
 namespace BumbleBot.Commands.Game

@@ -1,11 +1,10 @@
 using System;
-using System.Globalization;
 using System.Threading.Tasks;
 using BumbleBot.Models;
 using BumbleBot.Services;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
+using DisCatSharp.CommandsNext;
+using DisCatSharp.CommandsNext.Attributes;
+using DisCatSharp.Entities;
 using Humanizer;
 using Humanizer.Localisation;
 

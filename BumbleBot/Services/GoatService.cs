@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BumbleBot.Models;
 using BumbleBot.Utilities;
-using DSharpPlus;
+using DisCatSharp;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Type = BumbleBot.Models.Type;
