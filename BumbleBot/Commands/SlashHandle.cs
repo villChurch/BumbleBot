@@ -122,14 +122,16 @@ namespace BumbleBot.Commands
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder().WithContent(
-                            $"You currently have {dairy.HardCheese} lbs of hard cheese."))
+                            $"You currently have {dairy.HardCheese} lbs of hard cheese.")
+                            .AsEphemeral(true))
                     .ConfigureAwait(false);
             }
             else
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder().WithContent(
-                            $"You currently have {dairy.SoftCheese} lbs of soft cheese."))
+                            $"You currently have {dairy.SoftCheese} lbs of soft cheese.")
+                            .AsEphemeral(true))
                     .ConfigureAwait(false);
             }
         }
@@ -140,7 +142,7 @@ namespace BumbleBot.Commands
         {
             var balance = farmerService.ReturnFarmerInfo(ctx.User.Id).Credits;
             await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                new DiscordInteractionResponseBuilder().WithContent($"Current balance is {balance:n0}")).ConfigureAwait(false);
+                new DiscordInteractionResponseBuilder().WithContent($"Current balance is {balance:n0}").AsEphemeral(true)).ConfigureAwait(false);
         }
 
         [IsUserAvailableSlash]
@@ -154,7 +156,8 @@ namespace BumbleBot.Commands
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                     new DiscordInteractionResponseBuilder()
-                        .WithContent("You do not have any goats.")).ConfigureAwait(false);
+                        .WithContent("You do not have any goats.")
+                        .AsEphemeral(true)).ConfigureAwait(false);
             }
             else if (goats.Find(g => g.Id == gId) != null)
             {
@@ -177,13 +180,16 @@ namespace BumbleBot.Commands
                 }
 
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
-                    new DiscordInteractionResponseBuilder().WithContent("Goat is now in hand.")).ConfigureAwait(false);
+                    new DiscordInteractionResponseBuilder().WithContent("Goat is now in hand.")
+                        .AsEphemeral(true))
+                    .ConfigureAwait(false);
             }
             else
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder()
-                            .WithContent($"Could not find a goat with id {goatId}."))
+                            .WithContent($"Could not find a goat with id {goatId}.")
+                            .AsEphemeral(true))
                     .ConfigureAwait(false);
             }
         }
