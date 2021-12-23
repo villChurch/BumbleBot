@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using BumbleBot.Attributes;
 using BumbleBot.Services;
@@ -17,6 +18,88 @@ namespace BumbleBot.Commands
         private DairyService dairyService = new DairyService();
         private DbUtils dbUtils = new DbUtils();
 
+        [SlashCommand("clear_invalid_guild_slash", "Clears invalid slash commands in the current guild")]
+        public async Task ClearInvalidGuildSlashAsync(InteractionContext ctx)
+        {
+            if (ctx.User.Id != 272151652344266762)
+            {
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder().WithContent("You are not allowed to run this command.")
+                        .AsEphemeral(true));
+            }
+            else
+            {
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder().WithContent("Running cleanup..."));
+                var cmds = ctx.ApplicationCommandsExtension.RegisteredCommands.Where(rc => rc.Key == ctx.Guild.Id);
+                var dcmds = await ctx.Client.GetGuildApplicationCommandsAsync(ctx.Guild.Id);
+                foreach (var dcmd in dcmds)
+                {
+                    var keyValuePairs = cmds.ToList();
+                    if (!keyValuePairs.Any(c =>
+                            Enumerable.Where<DiscordApplicationCommand>(c.Value, sc => sc.Id == dcmd.Id).Any()))
+                    {
+                        await ctx.Client.DeleteGuildApplicationCommandAsync(ctx.Guild.Id, dcmd.Id);
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                            $"Deleted command `{dcmd.Name} with ID `{dcmd.Id}` due to invalid state.`"));
+                    }
+                    else
+                    {
+                        await ctx.FollowUpAsync(
+                            new DiscordFollowupMessageBuilder().WithContent(
+                                $"Keeping command `{dcmd.Name} with ID `{dcmd.Id}`.`"));
+                    }
+                }
+
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Done."));
+            }
+        }
+
+        [SlashCommand("clear_invalid_slash", "Clears invalid slash commands")]
+        public async Task ClearInvalidSlashAsync(InteractionContext ctx)
+        {
+            if (ctx.User.Id != 272151652344266762)
+            {
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder().WithContent("You are not allowed to run this command.")
+                        .AsEphemeral(true));
+            }
+            else
+            {
+                await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                    new DiscordInteractionResponseBuilder().WithContent("Running cleanup..."));
+                var cmds = ctx.ApplicationCommandsExtension.RegisteredCommands.Where(rc => rc.Key == null);
+                var dcmds = await ctx.Client.GetGlobalApplicationCommandsAsync();
+                foreach (var dcmd in dcmds)
+                {
+                    if (!cmds.Where(c => c.Value.Where(sc => sc.Id == dcmd.Id).Any()).Any())
+                    {
+                        await ctx.Client.DeleteGlobalApplicationCommandAsync(dcmd.Id);
+                        await ctx.FollowUpAsync(new DiscordFollowupMessageBuilder().WithContent(
+                            $"Deleted command `{dcmd.Name} with ID `{dcmd.Id}` due to invalid state.`"));
+                    }
+                    else
+                    {
+                        await ctx.FollowUpAsync(
+                            new DiscordFollowupMessageBuilder().WithContent(
+                                $"Keeping command `{dcmd.Name} with ID `{dcmd.Id}`.`"));
+                    }
+                }
+
+                await ctx.EditResponseAsync(new DiscordWebhookBuilder().WithContent($"Done."));
+            }
+        }
+        
+        [SlashCommand("ping", "Ping pong")]
+        public async Task SlashPing(InteractionContext ctx)
+        {
+            DiscordInteractionResponseBuilder discordInteractionResponseBuilder = new();
+            discordInteractionResponseBuilder.Content = $"Pong! Webhook latency is {ctx.Client.Ping}ms";
+            discordInteractionResponseBuilder.IsEphemeral = true;
+            await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
+                discordInteractionResponseBuilder);
+        }
+        
         [IsUserAvailableSlash]
         [SlashCommand("milk", "Display how much milk you have")]
         public async Task DisplayMilk(InteractionContext ctx)
@@ -51,7 +134,7 @@ namespace BumbleBot.Commands
             }
         }
         
-        [IsUserAvailableSlash]
+        //[IsUserAvailableSlash]
         [SlashCommand("credits", "Display your balance")]
         public async Task DisplayBalance(InteractionContext ctx)
         {
@@ -63,9 +146,9 @@ namespace BumbleBot.Commands
         [IsUserAvailableSlash]
         [SlashCommand("handle", "Handles a goat")]
         public async Task HandleGoat(InteractionContext ctx, [Option("goat_to_handle", "Id of goat to handle")]
-            long goatId)
+            int goatId)
         {
-            var gId = (int) goatId;
+            var gId = goatId;
             var goats = goatService.ReturnUsersGoats(ctx.User.Id);
             if (goats.Count < 1)
             {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -124,9 +125,22 @@ namespace BumbleBot
                 DmHelp = false,
                 ServiceProvider = Services
             };
-
+            
             var slash = Client.UseApplicationCommands();
-            slash.RegisterCommands<SlashHandle>();
+            var appCommandModule = typeof(ApplicationCommandsModule);
+            var slashCommands = Assembly.GetExecutingAssembly().GetTypes().Where(t => appCommandModule.IsAssignableFrom(t) && !t.IsNested).ToList();
+            var discordServerIds = new List<ulong>
+            {
+                798239862477815819 //test server
+                //565016829131751425 live server
+            };
+            foreach (var command in slashCommands)
+            {
+                foreach (var guildId in discordServerIds)
+                {
+                    slash.RegisterCommands(command, guildId);
+                }
+            }
             slash.SlashCommandErrored += SlashOnSlashCommandErrored;
             Commands = Client.UseCommandsNext(commandsConfig);
 
