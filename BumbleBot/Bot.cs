@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using BumbleBot.Attributes;
-using BumbleBot.Commands;
 using BumbleBot.Converter;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
@@ -78,13 +77,12 @@ namespace BumbleBot
                 Token = configJson.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
-                MinimumLogLevel = LogLevel.Information,
+                MinimumLogLevel = LogLevel.Debug,
                 Intents = DiscordIntents.All
             };
             
             Client = new DiscordClient(config);
             Client.Ready += OnClientReady;
-            Client.GuildAvailable += Client_GuildAvailable;
             Client.ClientErrored += Client_ClientError;
             Client.MessageCreated += Client_MessageCreated;
 
@@ -125,23 +123,42 @@ namespace BumbleBot
                 DmHelp = false,
                 ServiceProvider = Services
             };
-            
-            var slash = Client.UseApplicationCommands();
-            var appCommandModule = typeof(ApplicationCommandsModule);
-            var slashCommands = Assembly.GetExecutingAssembly().GetTypes().Where(t => appCommandModule.IsAssignableFrom(t) && !t.IsNested).ToList();
+            var slashConfig = new ApplicationCommandsConfiguration
+            {
+                EnableDefaultHelp = true
+            };
+            var slash = Client.UseApplicationCommands(slashConfig);
+            slash.ApplicationCommandsModuleStartupFinished += Bot_ApplicationCommandsModuleStartupFinished;
             var discordServerIds = new List<ulong>
             {
                 798239862477815819 //test server
                 //565016829131751425 live server
             };
-            foreach (var command in slashCommands)
-            {
-                foreach (var guildId in discordServerIds)
-                {
-                    slash.RegisterCommands(command, guildId);
-                }
-            }
+            var appCommandModule = typeof(ApplicationCommandsModule);
+            var slashCommands = Assembly.GetExecutingAssembly().GetTypes().Where(t => appCommandModule.IsAssignableFrom(t) && !t.IsNested).ToList();
+
+           /*foreach (var command in slashCommands)
+           {
+               foreach (var guildId in discordServerIds)
+               {
+                   slash.RegisterCommands(command, guildId);
+               }
+           }*/
+            //Client.GuildAvailable +=  (client, e) => Client_GuildAvailable(client, e, slash);
+            Client.GuildDownloadCompleted += (client, e) => Client_GuildDownloadCompleted(client, e, slash); 
+            Client.GuildAvailable += Client_GuildAvailable;
             slash.SlashCommandErrored += SlashOnSlashCommandErrored;
+            slash.GlobalApplicationCommandsRegistered += async (sender, args) =>
+            {
+                sender.Client.Logger.Log(LogLevel.Debug, "Number of global commands registered {command}",
+                    sender.GlobalCommands.Count);
+            };
+            slash.GuildApplicationCommandsRegistered += async (sender, args) =>
+            {
+                sender.Client.Logger.Log(LogLevel.Debug, "Number of guild commands registered {command} in guild {guild}",
+                    sender.GuildCommands.Count,
+                    args.GuildId);
+            };
             Commands = Client.UseCommandsNext(commandsConfig);
 
             Commands.CommandExecuted += Commands_CommandExecuted;
@@ -151,10 +168,54 @@ namespace BumbleBot
             Commands.RegisterCommands(Assembly.GetExecutingAssembly());
 
             await Client.ConnectAsync();
-
             await Task.Delay(-1);
         }
 
+        private Task Client_GuildDownloadCompleted(DiscordClient sender, GuildDownloadCompletedEventArgs guildDownloadCompletedEventArgs, ApplicationCommandsExtension slash)
+        {
+            _ = Task.Run(async () =>
+            {
+
+
+      //          sender.Logger.Log(LogLevel.Debug, "Cleaning Global Commands");
+          //      await slash.CleanGlobalCommandsAsync();
+            //    sender.Logger.Log(LogLevel.Debug, "Cleaning guild commands");
+             //   await slash.CleanGuildCommandsAsync();
+               // sender.Logger.Log(LogLevel.Information, "Guild Download completed");
+                var appCommandModule = typeof(ApplicationCommandsModule);
+                var slashCommands = Assembly.GetExecutingAssembly().GetTypes()
+                    .Where(t => appCommandModule.IsAssignableFrom(t) && !t.IsNested).ToList();
+
+                sender.Logger.Log(LogLevel.Information, "Bot is in {NumberOfGuilds} guilds",
+                    guildDownloadCompletedEventArgs.Guilds.Count);
+                foreach (var command in slashCommands)
+                {
+                    foreach (var guildId in guildDownloadCompletedEventArgs.Guilds.Keys)
+                    {
+                        slash.RegisterCommands(command, guildId);
+                    }
+                }
+
+                await slash.RefreshCommandsAsync();
+            });
+            return Task.CompletedTask;
+        }
+
+        private Task Bot_ApplicationCommandsModuleStartupFinished(ApplicationCommandsExtension sender, ApplicationCommandsModuleStartupFinishedEventArgs e)
+        {
+            Console.WriteLine($"Application commands module has finished the startup.");
+            var guild_cmd_count = 0;
+            foreach (var cmd in e.RegisteredGuildCommands)
+            {
+                guild_cmd_count += cmd.Value.Select(x => x.Name).Distinct().Count();
+            }
+            Console.WriteLine($"Stats: \n" +
+                              $" - Found {e.GuildsWithoutScope.Count} guilds without the applications.commands scope\n" +
+                              $" - Registered {e.RegisteredGlobalCommands.Count} global commands\n" +
+                              $" - Registered {guild_cmd_count} commands on {e.RegisteredGuildCommands.Count} guilds."
+            );
+            return Task.CompletedTask;
+        }
         
         private async Task SlashOnSlashCommandErrored(ApplicationCommandsExtension sender, SlashCommandErrorEventArgs e)
         {

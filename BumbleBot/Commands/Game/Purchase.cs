@@ -8,7 +8,6 @@ using DisCatSharp.CommandsNext;
 using DisCatSharp.CommandsNext.Attributes;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
-using Org.BouncyCastle.Crypto.Tls;
 
 namespace BumbleBot.Commands.Game
 {

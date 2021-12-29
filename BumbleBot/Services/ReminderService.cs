@@ -6,11 +6,10 @@ using BumbleBot.Models;
 using BumbleBot.Utilities;
 using DisCatSharp;
 using DisCatSharp.Entities;
-using Humanizer.Localisation;
 using System.Linq;
 using DisCatSharp.Exceptions;
 using Microsoft.Extensions.Logging;
-using MySqlConnector;
+using MySql.Data.MySqlClient;
 
 namespace BumbleBot.Services
 {

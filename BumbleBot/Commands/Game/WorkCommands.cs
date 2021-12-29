@@ -7,7 +7,7 @@ using DisCatSharp;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.CommandsNext.Attributes;
 using DisCatSharp.Entities;
-using MySqlConnector;
+using MySql.Data.MySqlClient;
 
 namespace BumbleBot.Commands.Game
 {
