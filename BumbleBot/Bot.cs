@@ -131,8 +131,8 @@ namespace BumbleBot
             var slashCommands = Assembly.GetExecutingAssembly().GetTypes().Where(t => appCommandModule.IsAssignableFrom(t) && !t.IsNested).ToList();
             var discordServerIds = new List<ulong>
             {
-                798239862477815819 //test server
-                //565016829131751425 live server
+                //798239862477815819 //test server
+                565016829131751425 // live server
             };
             foreach (var command in slashCommands)
             {
