@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using DSharpPlus;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
+using DisCatSharp;
+using DisCatSharp.ApplicationCommands;
+using DisCatSharp.CommandsNext;
+using DisCatSharp.CommandsNext.Attributes;
+using DisCatSharp.Entities;
 
 namespace BumbleBot.Commands.AdminCommands
 {
@@ -24,16 +26,7 @@ namespace BumbleBot.Commands.AdminCommands
                 .WithContent($"{ctx.Client.Ping}ms")
                 .SendAsync(ctx.Channel);
         }
-
-        [Command("fslashcommands")]
-        [Description("Fixes when slash commands register twice")]
-        [RequirePermissions(Permissions.KickMembers)]
-        public async Task FSlashCommands(CommandContext ctx)
-        {
-            await ctx.Client.BulkOverwriteGuildApplicationCommandsAsync(ctx.Guild.Id,
-                new List<DiscordApplicationCommand>());
-            await ctx.Channel.SendMessageAsync("Duplicate slash commands should now be removed.");
-        }
+        
         [Command("info")]
         [Description("Return information about the bot")]
         [Hidden]
@@ -64,7 +57,7 @@ namespace BumbleBot.Commands.AdminCommands
                 }
             };
             embed.AddField("Bot Version", Formatter.Bold(ccv), true);
-            embed.AddField("DSharpPlus Version", Formatter.Bold(dsv), true);
+            embed.AddField("DisCatSharp Version", Formatter.Bold(dsv), true);
             embed.AddField("Net Core version", Formatter.Bold(ncv), true);
             embed.AddField("Net Core full version name", Formatter.Bold(runTimeVer), true);
             embed.AddField("System version", Formatter.Bold(rtv), true);

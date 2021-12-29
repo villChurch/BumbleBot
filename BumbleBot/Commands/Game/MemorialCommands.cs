@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using BumbleBot.Services;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
+using DisCatSharp.CommandsNext;
+using DisCatSharp.CommandsNext.Attributes;
 using System.Linq;
 using BumbleBot.Attributes;
 using BumbleBot.Utilities;

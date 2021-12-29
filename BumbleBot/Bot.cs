@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -10,18 +11,18 @@ using BumbleBot.Commands;
 using BumbleBot.Converter;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
-using DSharpPlus;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.CommandsNext.Exceptions;
-using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
-using DSharpPlus.Interactivity;
-using DSharpPlus.Interactivity.Enums;
-using DSharpPlus.Interactivity.EventHandling;
-using DSharpPlus.Interactivity.Extensions;
-using DSharpPlus.SlashCommands;
-using DSharpPlus.SlashCommands.EventArgs;
+using DisCatSharp;
+using DisCatSharp.CommandsNext;
+using DisCatSharp.CommandsNext.Attributes;
+using DisCatSharp.CommandsNext.Exceptions;
+using DisCatSharp.Entities;
+using DisCatSharp.EventArgs;
+using DisCatSharp.Interactivity;
+using DisCatSharp.Interactivity.Enums;
+using DisCatSharp.Interactivity.EventHandling;
+using DisCatSharp.Interactivity.Extensions;
+using DisCatSharp.ApplicationCommands;
+using DisCatSharp.ApplicationCommands.EventArgs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
@@ -122,11 +123,24 @@ namespace BumbleBot
                 EnableMentionPrefix = true,
                 EnableDms = true,
                 DmHelp = false,
-                Services = Services
+                ServiceProvider = Services
             };
-
-            var slash = Client.UseSlashCommands();
-            slash.RegisterCommands<SlashHandle>();
+            
+            var slash = Client.UseApplicationCommands();
+            var appCommandModule = typeof(ApplicationCommandsModule);
+            var slashCommands = Assembly.GetExecutingAssembly().GetTypes().Where(t => appCommandModule.IsAssignableFrom(t) && !t.IsNested).ToList();
+            var discordServerIds = new List<ulong>
+            {
+                //798239862477815819 //test server
+                565016829131751425 // live server
+            };
+            foreach (var command in slashCommands)
+            {
+                foreach (var guildId in discordServerIds)
+                {
+                    slash.RegisterCommands(command, guildId);
+                }
+            }
             slash.SlashCommandErrored += SlashOnSlashCommandErrored;
             Commands = Client.UseCommandsNext(commandsConfig);
 
@@ -142,7 +156,7 @@ namespace BumbleBot
         }
 
         
-        private async Task SlashOnSlashCommandErrored(SlashCommandsExtension sender, SlashCommandErrorEventArgs e)
+        private async Task SlashOnSlashCommandErrored(ApplicationCommandsExtension sender, SlashCommandErrorEventArgs e)
         {
             if (e.Exception is not SlashExecutionChecksFailedException)
             {

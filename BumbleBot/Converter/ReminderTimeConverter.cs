@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using BumbleBot.Models;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Converters;
-using DSharpPlus.Entities;
+using DisCatSharp.CommandsNext;
+using DisCatSharp.CommandsNext.Converters;
+using DisCatSharp.Entities;
 
 namespace BumbleBot.Converter
 {

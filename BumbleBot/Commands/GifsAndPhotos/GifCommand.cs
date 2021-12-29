@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 using BumbleBot.Attributes;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
-using DSharpPlus;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
-using DSharpPlus.Interactivity.Enums;
-using DSharpPlus.Interactivity.EventHandling;
-using DSharpPlus.Interactivity.Extensions;
+using DisCatSharp;
+using DisCatSharp.CommandsNext;
+using DisCatSharp.CommandsNext.Attributes;
+using DisCatSharp.Entities;
+using DisCatSharp.Interactivity.Enums;
+using DisCatSharp.Interactivity.EventHandling;
+using DisCatSharp.Interactivity.Extensions;
 using MySql.Data.MySqlClient;
 
 namespace BumbleBot.Commands.GifsAndPhotos

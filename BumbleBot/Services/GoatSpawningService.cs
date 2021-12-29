@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using BumbleBot.Models;
 using BumbleBot.Utilities;
-using DSharpPlus;
-using DSharpPlus.Entities;
-using DSharpPlus.Interactivity.Extensions;
+using DisCatSharp;
+using DisCatSharp.Entities;
+using DisCatSharp.Enums;
+using DisCatSharp.Interactivity.Extensions;
 using MySql.Data.MySqlClient;
 using Type = BumbleBot.Models.Type;
 
