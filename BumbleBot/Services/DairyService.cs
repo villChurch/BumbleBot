@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using BumbleBot.Models;
 using BumbleBot.Utilities;
+using Dapper;
 using MySql.Data.MySqlClient;
 
 namespace BumbleBot.Services
@@ -72,26 +75,23 @@ namespace BumbleBot.Services
 
         public bool HasDairy(ulong userId)
         {
-            var hasDairy = false;
-            using (var conneciton = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            List<Dairy> dairyList;
+            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
             {
-                var query = "select * from dairy where ownerId = ?userId";
-                var command = new MySqlCommand(query, conneciton);
-                command.Parameters.Add("?userId", MySqlDbType.VarChar).Value = userId;
-                conneciton.Open();
-                var reader = command.ExecuteReader();
-                hasDairy = reader.HasRows;
+                connection.Open();
+                dairyList = connection
+                    .Query<Dairy>("select * from dairy where ownerId = ?ownerId", new { ownerId = userId }).ToList();
             }
 
-            return hasDairy;
+            return dairyList.Count == 1;
         }
 
         public bool CanMilkFitInDairy(ulong userId, int milkAmount)
         {
             var dairy = GetUsersDairy(userId);
-            if (dairy.Slots < 1) return false;
-            var milkCapacity = dairy.Slots * 1000;
-            return dairy.Milk + milkAmount <= milkCapacity;
+            if (dairy.slots < 1) return false;
+            var milkCapacity = dairy.slots * 1000;
+            return dairy.milk + milkAmount <= milkCapacity;
         }
 
         public Cave GetUsersCave(ulong userId)
@@ -119,27 +119,10 @@ namespace BumbleBot.Services
 
         public Dairy GetUsersDairy(ulong userId)
         {
-            var dairy = new Dairy();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
-            {
-                var query = "select * from dairy where ownerID = ?userId";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?userId", MySqlDbType.VarChar).Value = userId;
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                    {
-                        dairy.Milk = reader.GetDecimal("milk");
-                        dairy.Slots = reader.GetInt32("slots");
-                        dairy.SoftCheese = reader.GetDecimal("softcheese");
-                        dairy.HardCheese = reader.GetDecimal("hardcheese");
-                    }
-
-                reader.Close();
-            }
-
-            return dairy;
+            using var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString());
+            connection.Open();
+            var dairy = connection.QueryFirst<Dairy>("select * from dairy where ownerID =@ownerID", new {ownerID = userId});
+            return dairy ?? new Dairy();
         }
 
         public void IncreaseCapcityOfDairy(ulong userId, int currentCapacity, int increaseBy)
@@ -171,7 +154,7 @@ namespace BumbleBot.Services
             else
             {
                 Console.Out.WriteLine($"Soft cheese amount was not null it was {softCheese}");
-                var currentSoftCheese = GetUsersDairy(userId).SoftCheese;
+                var currentSoftCheese = GetUsersDairy(userId).softcheese;
                 var newSoftCheese = currentSoftCheese - softCheese;
                 using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
                 {

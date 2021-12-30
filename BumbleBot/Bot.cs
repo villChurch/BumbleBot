@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -7,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using BumbleBot.Attributes;
-using BumbleBot.Commands;
 using BumbleBot.Converter;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
@@ -73,16 +71,16 @@ namespace BumbleBot
             var configJson = JsonConvert.DeserializeObject<ConfigJson>(json);
 
 
-            var config = new DiscordConfiguration
+            var discordConfiguration = new DiscordConfiguration
             {
                 Token = configJson.Token,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
-                MinimumLogLevel = LogLevel.Information,
+                MinimumLogLevel = LogLevel.Debug,
                 Intents = DiscordIntents.All
             };
             
-            Client = new DiscordClient(config);
+            Client = new DiscordClient(discordConfiguration);
             Client.Ready += OnClientReady;
             Client.GuildAvailable += Client_GuildAvailable;
             Client.ClientErrored += Client_ClientError;
@@ -98,6 +96,7 @@ namespace BumbleBot
                 .AddSingleton<ReminderService>()
                 .AddSingleton<MaintenanceService>()
                 .AddSingleton<PerkService>()
+               // .AddHangfire(config => config.UseStorage(storage))
                 .BuildServiceProvider(true);
 
 #pragma warning disable IDE0058 // Expression value is never used
@@ -129,10 +128,10 @@ namespace BumbleBot
             var slash = Client.UseApplicationCommands();
             var appCommandModule = typeof(ApplicationCommandsModule);
             var slashCommands = Assembly.GetExecutingAssembly().GetTypes().Where(t => appCommandModule.IsAssignableFrom(t) && !t.IsNested).ToList();
-            var discordServerIds = new List<ulong>
+            /*var discordServerIds = new List<ulong>
             {
-                //798239862477815819 //test server
-                565016829131751425 // live server
+                798239862477815819 //test server
+                //565016829131751425 // live server
             };
             foreach (var command in slashCommands)
             {
@@ -140,7 +139,7 @@ namespace BumbleBot
                 {
                     slash.RegisterCommands(command, guildId);
                 }
-            }
+            }*/
             slash.SlashCommandErrored += SlashOnSlashCommandErrored;
             Commands = Client.UseCommandsNext(commandsConfig);
 

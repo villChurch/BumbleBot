@@ -47,7 +47,7 @@ namespace BumbleBot.Commands.Game
                         "Here are the available upgrade options for your dairy. To upgrade run `dairy upgrade {item} {price}`"
                 };
                 var dairy = DairyService.GetUsersDairy(ctx.User.Id);
-                var price = dairy.Slots * 5000;
+                var price = dairy.slots * 5000;
                 if (usersPerks.Any(perk => perk.id == 14))
                 {
                     caveCost = (int) Math.Ceiling(caveCost * 0.9);
@@ -82,7 +82,7 @@ namespace BumbleBot.Commands.Game
                 {
                     case "capacity":
                     {
-                        var upgradePrice = dairy.Slots * 5000;
+                        var upgradePrice = dairy.slots * 5000;
                         if (usersPerks.Any(perk => perk.id == 14))
                         {
                             upgradePrice = (int) Math.Ceiling(upgradePrice * 0.9);
@@ -90,9 +90,9 @@ namespace BumbleBot.Commands.Game
                         if (price == upgradePrice)
                         {
                             FarmerService.DeductCreditsFromFarmer(ctx.User.Id, price);
-                            DairyService.IncreaseCapcityOfDairy(ctx.User.Id, dairy.Slots, 1);
+                            DairyService.IncreaseCapcityOfDairy(ctx.User.Id, dairy.slots, 1);
                             await ctx.Channel
-                                .SendMessageAsync($"Your dairy can now hold {(dairy.Slots + 1) * 1000} lbs of milk")
+                                .SendMessageAsync($"Your dairy can now hold {(dairy.slots + 1) * 1000} lbs of milk")
                                 .ConfigureAwait(false);
                         }
                         else
@@ -154,10 +154,10 @@ namespace BumbleBot.Commands.Game
                     Title = $"{ctx.User.Username}'s Dairy",
                     Color = DiscordColor.Aquamarine
                 };
-                embed.AddField("Milk", $"{dairy.Milk} lbs", true);
-                embed.AddField("Soft Cheese", $"{dairy.SoftCheese} lbs", true);
-                embed.AddField("Hard Cheese", $"{dairy.HardCheese} lbs", true);
-                embed.AddField("Milk capacity", $"{dairy.Slots * 1000} lbs", true);
+                embed.AddField("Milk", $"{dairy.milk} lbs", true);
+                embed.AddField("Soft Cheese", $"{dairy.softcheese} lbs", true);
+                embed.AddField("Hard Cheese", $"{dairy.hardcheese} lbs", true);
+                embed.AddField("Milk capacity", $"{dairy.slots * 1000} lbs", true);
                 if (DairyService.DoesDairyHaveACave(ctx.User.Id))
                 {
                     var cave = DairyService.GetUsersCave(ctx.User.Id);
@@ -181,7 +181,7 @@ namespace BumbleBot.Commands.Game
             else
             {
                 var dairy = DairyService.GetUsersDairy(ctx.User.Id);
-                if (dairy.SoftCheese <= 0 && dairy.HardCheese <= 0)
+                if (dairy.softcheese <= 0 && dairy.hardcheese <= 0)
                 {
                     await ctx.Channel.SendMessageAsync("You don't have anything in your dairy that can be sold.")
                         .ConfigureAwait(false);
@@ -189,7 +189,7 @@ namespace BumbleBot.Commands.Game
                 else
                 {
                     var sellAmount = 0;
-                    sellAmount += (int) Math.Ceiling(dairy.SoftCheese * 45);
+                    sellAmount += (int) Math.Ceiling(dairy.softcheese * 45);
                     var loanString = "";
                     if (FarmerService.DoesFarmerHaveALoan(ctx.User.Id))
                     {
@@ -217,7 +217,7 @@ namespace BumbleBot.Commands.Game
         {
             if (milk % 10 != 0)
             {
-                await ctx.Channel.SendMessageAsync("Milk has to be added to the dairy in a ratio of 10:1 " +
+                await ctx.Channel.SendMessageAsync("milk has to be added to the dairy in a ratio of 10:1 " +
                                                    "therefore the amount must be divisible by 10.")
                     .ConfigureAwait(false);
             }

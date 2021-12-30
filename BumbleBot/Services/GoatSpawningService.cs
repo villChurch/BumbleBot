@@ -227,7 +227,6 @@ namespace BumbleBot.Services
              randomGoat.Level = RandomLevel.GetRandomLevel();
              randomGoat.LevelMulitplier = 1;
              randomGoat.Name = "Unregistered Goat";
-             randomGoat.Special = false;
              randomGoat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, randomGoat.Level - 1));
              randomGoat.FilePath = $"/Goat_Images/Kids/{GetKidImage(randomGoat.Breed, randomGoat.BaseColour)}";
              var filePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{randomGoat.FilePath}";

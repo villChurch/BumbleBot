@@ -111,7 +111,7 @@ namespace BumbleBot.Commands.Game
             else
             {
                 var dairy = DairyService.GetUsersDairy(ctx.User.Id);
-                var saleAmount = (int)Math.Ceiling(dairy.HardCheese * 475);
+                var saleAmount = (int)Math.Ceiling(dairy.hardcheese * 475);
                 var loanString = "";
                 if (FarmerService.DoesFarmerHaveALoan(ctx.User.Id))
                 {
@@ -127,7 +127,7 @@ namespace BumbleBot.Commands.Game
                 }
                 DairyService.DeductAllHardCheeseFromDairy(ctx.User.Id);
                 await ctx.Channel
-                    .SendMessageAsync($"You have sold {dairy.HardCheese} lbs of hard cheese for {saleAmount:n0} credits. {loanString}")
+                    .SendMessageAsync($"You have sold {dairy.hardcheese} lbs of hard cheese for {saleAmount:n0} credits. {loanString}")
                     .ConfigureAwait(false);
             }
         } 
@@ -151,11 +151,11 @@ namespace BumbleBot.Commands.Game
                                                        "therefore the amount must be divisible by 10")
                         .ConfigureAwait(false);
                 }
-                else if (dairy.SoftCheese < amount)
+                else if (dairy.softcheese < amount)
                 {
                     await ctx.Channel
                         .SendMessageAsync(
-                            $"You only have {dairy.SoftCheese} lbs of soft cheese which is less than the {amount} lbs you tried to add")
+                            $"You only have {dairy.softcheese} lbs of soft cheese which is less than the {amount} lbs you tried to add")
                         .ConfigureAwait(false);
                 }
                 else if ((cave.SoftCheese + amount) > (cave.Slots * 500))

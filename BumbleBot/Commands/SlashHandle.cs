@@ -122,7 +122,7 @@ namespace BumbleBot.Commands
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder().WithContent(
-                            $"You currently have {dairy.HardCheese} lbs of hard cheese.")
+                            $"You currently have {dairy.hardcheese} lbs of hard cheese.")
                             .AsEphemeral(true))
                     .ConfigureAwait(false);
             }
@@ -130,7 +130,7 @@ namespace BumbleBot.Commands
             {
                 await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder().WithContent(
-                            $"You currently have {dairy.SoftCheese} lbs of soft cheese.")
+                            $"You currently have {dairy.softcheese} lbs of soft cheese.")
                             .AsEphemeral(true))
                     .ConfigureAwait(false);
             }

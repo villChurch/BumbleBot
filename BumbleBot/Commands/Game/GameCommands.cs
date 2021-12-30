@@ -457,7 +457,7 @@ namespace BumbleBot.Commands.Game
                                     BaseColour = (BaseColour) Enum.Parse(typeof(BaseColour),
                                         reader.GetString("baseColour")),
                                     LevelMulitplier = reader.GetDecimal("levelMultiplier"),
-                                    Equiped = reader.GetBoolean("equipped"),
+                                    Equipped = reader.GetBoolean("equipped"),
                                     Experience = reader.GetDecimal("experience"),
                                     FilePath = reader.GetString("imageLink")
                                 };
