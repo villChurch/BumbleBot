@@ -6,13 +6,13 @@ using DisCatSharp.Entities;
 
 namespace BumbleBot.Commands;
 
-[SlashCommandGroup("top_level", "top level group")]
+[SlashCommandGroup("top_level_command", "top level group")]
 public class MySlashCommandGroups : ApplicationCommandsModule
 {
     [SlashCommandGroup("mid_level", "mid level group")]
     public class MidLevelGroup : ApplicationCommandsModule
     {
-        [SlashCommand("test_command", "test command")]
+        [SlashCommand("test_command", "test commands")]
         public async Task TestCommand(InteractionContext ctx,
             [Option("repeat_this", "repeats the text")] string repeatMe)
         {

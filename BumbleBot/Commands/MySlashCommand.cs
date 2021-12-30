@@ -30,7 +30,7 @@ public class MySlashCommand : ApplicationCommandsModule
     {
         [SlashCommand("first", "This is decription of the command.")]
         public async Task MySlashCommand(InteractionContext context,
-            [Option("test", "test")] string test, [Choice("optional", "optional")] [Option("optional", "optional")] string? optional)
+            [Option("test", "test")] string test, [Choice("optional", "optional")] [Option("optional", "optional")] string optional = null)
         {
             await context.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder()
             {

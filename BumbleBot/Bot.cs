@@ -125,7 +125,8 @@ namespace BumbleBot
             };
             var slashConfig = new ApplicationCommandsConfiguration
             {
-                EnableDefaultHelp = true
+                EnableDefaultHelp = true,
+                DebugStartup = true
             };
             var slash = Client.UseApplicationCommands(slashConfig);
             slash.ApplicationCommandsModuleStartupFinished += Bot_ApplicationCommandsModuleStartupFinished;
@@ -175,17 +176,11 @@ namespace BumbleBot
         {
             _ = Task.Run(async () =>
             {
-
-
-      //          sender.Logger.Log(LogLevel.Debug, "Cleaning Global Commands");
-          //      await slash.CleanGlobalCommandsAsync();
-            //    sender.Logger.Log(LogLevel.Debug, "Cleaning guild commands");
-             //   await slash.CleanGuildCommandsAsync();
-               // sender.Logger.Log(LogLevel.Information, "Guild Download completed");
                 var appCommandModule = typeof(ApplicationCommandsModule);
                 var slashCommands = Assembly.GetExecutingAssembly().GetTypes()
                     .Where(t => appCommandModule.IsAssignableFrom(t) && !t.IsNested).ToList();
-
+                // slashCommands.RemoveAll(sc =>
+                //     sc.Name.EndsWith("MySlashCommandGroups", StringComparison.OrdinalIgnoreCase));
                 sender.Logger.Log(LogLevel.Information, "Bot is in {NumberOfGuilds} guilds",
                     guildDownloadCompletedEventArgs.Guilds.Count);
                 foreach (var command in slashCommands)
