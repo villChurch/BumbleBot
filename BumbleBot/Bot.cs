@@ -212,9 +212,13 @@ namespace BumbleBot
         
         private Task OnClientReady(DiscordClient client, ReadyEventArgs e)
         {
-            client.Logger.Log(LogLevel.Information, "Client is ready to process events");
-            StartTimer(); // start timer
-            ReminderService.StartReminderTimer(client);
+            _ = Task.Run(() =>
+            {
+                client.Logger.Log(LogLevel.Information, "Client is ready to process events");
+                StartTimer(); // start timer
+                ReminderService.StartReminderTimer(client);
+            }
+            );
             return Task.CompletedTask;
         }
 
