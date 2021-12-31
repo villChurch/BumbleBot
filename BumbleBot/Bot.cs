@@ -98,6 +98,7 @@ namespace BumbleBot
                 .AddSingleton<ReminderService>()
                 .AddSingleton<MaintenanceService>()
                 .AddSingleton<PerkService>()
+                .AddSingleton<AuditService>()
                 .BuildServiceProvider(true);
 
 #pragma warning disable IDE0058 // Expression value is never used
@@ -142,6 +143,7 @@ namespace BumbleBot
                 }
             }
             slash.SlashCommandErrored += SlashOnSlashCommandErrored;
+            slash.SlashCommandExecuted += SlashOnSlashCommandExecuted;
             Commands = Client.UseCommandsNext(commandsConfig);
 
             Commands.CommandExecuted += Commands_CommandExecuted;
@@ -155,7 +157,17 @@ namespace BumbleBot
             await Task.Delay(-1);
         }
 
-        
+        private Task SlashOnSlashCommandExecuted(ApplicationCommandsExtension sender, SlashCommandExecutedEventArgs e)
+        {
+            AuditService auditService = new();
+            auditService.HandleCommandExecution(e);
+            e.Context.Client.Logger.Log(LogLevel.Information,
+                "{Username} successfully executed '{Command}'", e.Context.User.Username, e.Context.CommandName);
+
+            return Task.CompletedTask;
+        }
+
+
         private async Task SlashOnSlashCommandErrored(ApplicationCommandsExtension sender, SlashCommandErrorEventArgs e)
         {
             if (e.Exception is not SlashExecutionChecksFailedException)
@@ -429,6 +441,8 @@ namespace BumbleBot
 
         private Task Commands_CommandExecuted(CommandsNextExtension sender, CommandExecutionEventArgs e)
         {
+            AuditService auditService = new();
+            auditService.HandleCommandExecution(e);
             e.Context.Client.Logger.Log(LogLevel.Information,
                 "{Username} successfully executed '{Command}'", e.Context.User.Username, e.Command.QualifiedName);
 
