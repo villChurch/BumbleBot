@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Services;
 using DisCatSharp;
 using DisCatSharp.ApplicationCommands;
@@ -17,7 +18,8 @@ public class CampaignSlashCommands : ApplicationCommandsModule
         _farmerService = farmerService;
         _goatService = goatService;
     }
-    [SlashCommand("campaign", "Run the campaign command for a chance to level a goat")]
+    [SlashCommand("campaign", "Run the campaign command for a chance to level a goat")] 
+    [IsUserAvailableSlash]
     public async Task CampaignCommand(InteractionContext ctx,
         [Option("goatId", "Id of the goat to run campaign with")]
         int goatId, [Option("bet", "price of campaign, defaults to 1000")] int bet = 1000)

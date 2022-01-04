@@ -19,6 +19,7 @@ namespace BumbleBot.Commands
         private DbUtils dbUtils = new DbUtils();
 
         [SlashCommand("clear_invalid_guild_slash", "Clears invalid slash commands in the current guild")]
+        [OwnerOrPermissionSlash(Permissions.KickMembers)]
         public async Task ClearInvalidGuildSlashAsync(InteractionContext ctx)
         {
             if (ctx.User.Id != 272151652344266762)
@@ -56,6 +57,7 @@ namespace BumbleBot.Commands
         }
 
         [SlashCommand("clear_invalid_slash", "Clears invalid slash commands")]
+        [OwnerOrPermissionSlash(Permissions.KickMembers)]
         public async Task ClearInvalidSlashAsync(InteractionContext ctx)
         {
             if (ctx.User.Id != 272151652344266762)
@@ -91,6 +93,7 @@ namespace BumbleBot.Commands
         }
         
         [SlashCommand("ping", "Ping pong")]
+        [OwnerOrPermissionSlash(Permissions.KickMembers)]
         public async Task SlashPing(InteractionContext ctx)
         {
             DiscordInteractionResponseBuilder discordInteractionResponseBuilder = new();

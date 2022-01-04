@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
@@ -29,6 +30,7 @@ public class TradingSlashCommands : ApplicationCommandsModule
     }
 
     [SlashCommand("trade", "trade a goat to another player")]
+    [IsUserAvailableSlash]
     public async Task TradeGoat(InteractionContext ctx, [Option("goatId", "id of the goat you want to trade")] int goatId,
         [Option("recipient", "member you want to trade the goat with")] DiscordUser recipient)
     {

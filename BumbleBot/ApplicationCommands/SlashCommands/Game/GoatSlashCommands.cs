@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
@@ -36,6 +37,7 @@ public class GoatSlashCommands : ApplicationCommandsModule
     }
 
     [SlashCommand("prefix", "Give all your goats a prefix")]
+    [IsUserAvailableSlash]
     public async Task PrefixGoats(InteractionContext ctx, [Option("_prefix", "prefix to add")] string herdName)
     {
         await ctx.CreateResponseAsync(InteractionResponseType.DeferredChannelMessageWithSource);
@@ -44,7 +46,7 @@ public class GoatSlashCommands : ApplicationCommandsModule
     }
 
     [SlashCommand("rprefix", "Remove a prefix from all of your goats")]
-    [Description("Removes prefix/herd name from goats")]
+    [IsUserAvailableSlash]
     public async Task RemovePrefixFromGoats(InteractionContext ctx,
         [Option("_prefix", "prefix to remove")] string prefix)
     {
@@ -73,6 +75,7 @@ public class GoatSlashCommands : ApplicationCommandsModule
     }
 
     [SlashCommand("refresh", "Update goat images and type for goats that haven't grown")]
+    [IsUserAvailableSlash]
     public async Task RefreshGoats(InteractionContext ctx)
     {
         goatService.UpdateGoatImagesForKidsThatAreAdults(ctx.User.Id);
@@ -82,6 +85,7 @@ public class GoatSlashCommands : ApplicationCommandsModule
     }
 
     [SlashCommand("stats", "show statistics relating to goats you own")]
+    [IsUserAvailableSlash]
     public async Task ShowGoatStatistics(InteractionContext ctx)
     {
         var goats = goatService.ReturnUsersGoats(ctx.User.Id);
@@ -129,6 +133,7 @@ public class GoatSlashCommands : ApplicationCommandsModule
     }
 
     [SlashCommand("ordered", "Shows your goats ordered by a parameter")]
+    [IsUserAvailableSlash]
     public async Task ShowGoatsOrdered(InteractionContext ctx,
         [Option("orderBy", "how to order your goats")] OrderedChoices orderChoice)
     {
@@ -247,6 +252,7 @@ public class GoatSlashCommands : ApplicationCommandsModule
     }
 
     [SlashCommand("show", "show your goats")]
+    [IsUserAvailableSlash]
     public async Task ShowGoats(InteractionContext ctx)
     {
         try
@@ -290,6 +296,7 @@ public class GoatSlashCommands : ApplicationCommandsModule
     }
 
     [SlashCommand("rename", "renames a goat")]
+    [IsUserAvailableSlash]
     public async Task RenameGoat(InteractionContext ctx, [Option("goatId", "id of goat to rename")] int goatId,
         [Option("new_name", "New name for your goat")] string newName)
     {
@@ -341,6 +348,7 @@ public class GoatSlashCommands : ApplicationCommandsModule
     }
 
     [SlashCommand("sell", "sell a goat")]
+    [IsUserAvailableSlash]
     public async Task SellGoat(InteractionContext ctx, [Option ("goat_id", "id of goat to sell")] int goatId)
     {
         try
@@ -389,6 +397,7 @@ public class GoatSlashCommands : ApplicationCommandsModule
     }
 
     [SlashCommand("memorial", "See all your past goats")]
+    [IsUserAvailableSlash]
     public async Task SeeDeadGoats(InteractionContext ctx)
     {
         try

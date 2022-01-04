@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using BumbleBot.ApplicationCommands.SlashCommands.AutoCompletes;
+using BumbleBot.Attributes;
 using BumbleBot.Models;
 using BumbleBot.Services;
 using DisCatSharp;
@@ -33,6 +34,7 @@ public class BreedingSlashCommands : ApplicationCommandsModule
     private GoatService GoatService { get; }
     
         [SlashCommand("show", "show current goats that have been sent to breed")]
+        [IsUserAvailableSlash]
         public async Task ShowGoatsInKiddingPenToBreed(InteractionContext ctx)
         {
             try
@@ -89,6 +91,7 @@ public class BreedingSlashCommands : ApplicationCommandsModule
         }
 
         [SlashCommand("add", "Move a goat to the shelter")]
+        [IsUserAvailableSlash]
         public async Task MoveGoatToKiddingPen(InteractionContext ctx, 
             [Option("goatId", "id of goat to move to the shelter")] int goatId)
         {

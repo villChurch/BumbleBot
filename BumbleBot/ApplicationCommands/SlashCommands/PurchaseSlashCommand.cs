@@ -6,7 +6,6 @@ using BumbleBot.Services;
 using BumbleBot.Utilities;
 using DisCatSharp;
 using DisCatSharp.ApplicationCommands;
-using DisCatSharp.CommandsNext.Attributes;
 using DisCatSharp.Entities;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
@@ -27,6 +26,7 @@ public class PurchaseSlashCommand : ApplicationCommandsModule
     }
     
         [SlashCommand("dairy", "purchase yourself a dairy")]
+        [IsUserAvailableSlash]
         public async Task BuyDairy(InteractionContext ctx, [Option("cost", "cost of update")] int upgradePrice)
         {
             int dairyPrice = 10000;
@@ -78,6 +78,7 @@ public class PurchaseSlashCommand : ApplicationCommandsModule
         }
 
         [SlashCommand("shelter", "purchase a shelter")]
+        [IsUserAvailableSlash]
         public async Task BuyKiddingBarn(InteractionContext ctx, [Option("cost", "cost of update")] int upgradePrice)
         {
             int shelterPrice = 5000;
@@ -127,6 +128,7 @@ public class PurchaseSlashCommand : ApplicationCommandsModule
         }
 
         [SlashCommand("barn", "purchase more barn space")]
+        [IsUserAvailableSlash]
         public async Task UpgradeBarn(InteractionContext ctx, [Option("cost", "cost of update")] int upgradePrice)
         {
             var farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
@@ -191,6 +193,7 @@ public class PurchaseSlashCommand : ApplicationCommandsModule
         }
 
         [SlashCommand("pasture", "purchase more pasture space")]
+        [IsUserAvailableSlash]
         public async Task UpgradeGrazing(InteractionContext ctx, [Option("cost", "cost of update")] int upgradePrice)
         {
             var farmer = farmerService.ReturnFarmerInfo(ctx.User.Id);
@@ -255,6 +258,7 @@ public class PurchaseSlashCommand : ApplicationCommandsModule
         }
 
         [SlashCommand("alfalfa", "purchase some alfalfa")]
+        [IsUserAvailableSlash]
         public async Task PurchaseAlfalfa(InteractionContext ctx, [Option("cost", "cost of update")] int cost)
         {
             var alfalfaCost = 500;
@@ -300,6 +304,7 @@ public class PurchaseSlashCommand : ApplicationCommandsModule
         }
 
         [SlashCommand("dust", "purchase some dust")]
+        [IsUserAvailableSlash]
         public async Task PurchaseDust(InteractionContext ctx, [Option("cost", "cost of update")] int cost)
         {
             var dustCost = 1000;
@@ -341,6 +346,7 @@ public class PurchaseSlashCommand : ApplicationCommandsModule
         }
         
         [SlashCommand("oats", "purchase some oats")]
+        [IsUserAvailableSlash]
         public async Task PurchaseOats(InteractionContext ctx, [Option("cost", "cost of update")] int cost)
         {
             try

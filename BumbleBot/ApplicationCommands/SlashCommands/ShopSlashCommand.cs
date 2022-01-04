@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using BumbleBot.Attributes;
 using BumbleBot.Services;
 using DisCatSharp;
 using DisCatSharp.ApplicationCommands;
@@ -18,6 +19,7 @@ public class ShopSlashCommand : ApplicationCommandsModule
         this.perkService = perkService;
     }
     [SlashCommand("shop", "Shows items you may buy from the shop")]
+    [IsUserAvailableSlash]
     public async Task ShowShopItems(InteractionContext ctx)
     {
         var embed = new DiscordEmbedBuilder
