@@ -17,7 +17,7 @@ namespace BumbleBot.Services
         private readonly DbUtils dBUtils = new();
         private readonly string deathPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
-        public void GiveGoatExp(Goat goat, decimal expToAdd)
+        public void GiveGoatExp(Goat? goat, decimal expToAdd)
         {
             var startingExp = goat.Experience;
             var newLevel =

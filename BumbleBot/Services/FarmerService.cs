@@ -430,5 +430,11 @@ namespace BumbleBot.Services
                 Console.Out.WriteLine(ex.StackTrace);
             }
         }
+
+        public bool HasEnoughCredits(ulong farmerId, int purchasePrice)
+        {
+            var balance = ReturnFarmerInfo(farmerId).Credits;
+            return balance >= purchasePrice;
+        }
     }
 }
