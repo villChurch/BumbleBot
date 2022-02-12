@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -7,8 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using BumbleBot.Attributes;
-using BumbleBot.Commands;
-using BumbleBot.Converter;
 using BumbleBot.Services;
 using BumbleBot.Utilities;
 using DisCatSharp;
@@ -95,7 +92,6 @@ namespace BumbleBot
                 .AddTransient<FarmerService>()
                 .AddTransient<DairyService>()
                 .AddTransient<GoatSpawningService>()
-                .AddSingleton<ReminderService>()
                 .AddSingleton<MaintenanceService>()
                 .AddSingleton<PerkService>()
                 .BuildServiceProvider(true);
@@ -152,8 +148,7 @@ namespace BumbleBot
 
             Commands.CommandExecuted += Commands_CommandExecuted;
             Commands.CommandErrored += Commands_CommandErrored;
-
-            Commands.RegisterConverter(new ReminderTimeConverter());
+            
             Commands.RegisterCommands(Assembly.GetExecutingAssembly());
 
             await Client.ConnectAsync();
@@ -257,7 +252,6 @@ namespace BumbleBot
         {
             client.Logger.Log(LogLevel.Information, "Client is ready to process events");
             StartTimer(); // start timer
-            ReminderService.StartReminderTimer(client);
             return Task.CompletedTask;
         }
 

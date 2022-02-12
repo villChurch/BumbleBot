@@ -803,12 +803,18 @@ namespace BumbleBot.Services
             }
             else if (IsValentinesGoat(goat.Id))
             {
-                if (goat.FilePath.Contains("Heart"))
+                if (goat.FilePath.EndsWith("HeartKid.png"))
                     return "Valentine_Special_Variations/HeartAdult.png";
                 if (goat.FilePath.Contains("Cupid"))
                     return "Valentine_Special_Variations/CupidAdult.png";
                 if (goat.FilePath.Contains("Roses"))
                     return "Valentine_Special_Variations/RosesAdult.png";
+                if (goat.FilePath.Contains("Balloon"))
+                    return "Valentine_Special_Variations/BalloonAdult.png";
+                if (goat.FilePath.EndsWith("CandyHeartKid.png"))
+                    return "Valentine_Special_Variations/CandyHeartAdult.png";
+                if (goat.FilePath.Contains("Strawberry"))
+                    return "Valentine_Special_Variations/StrawberryAdult.png";
             }
             else if (IsShamrockGoat(goat.Id))
             {
@@ -1009,12 +1015,18 @@ namespace BumbleBot.Services
             }
             else if (IsValentinesGoat(goat.Id))
             {
-                if (goat.FilePath.Contains("Heart"))
+                if (goat.FilePath.EndsWith("HeartKid.png"))
                     return "Valentine_Special_Variations/HeartAdult.png";
                 if (goat.FilePath.Contains("Cupid"))
                     return "Valentine_Special_Variations/CupidAdult.png";
                 if (goat.FilePath.Contains("Roses"))
                     return "Valentine_Special_Variations/RosesAdult.png";
+                if (goat.FilePath.Contains("Balloon"))
+                    return "Valentine_Special_Variations/BalloonAdult.png";
+                if (goat.FilePath.EndsWith("CandyHeartKid.png"))
+                    return "Valentine_Special_Variations/CandyHeartAdult.png";
+                if (goat.FilePath.Contains("Strawberry"))
+                    return "Valentine_Special_Variations/StrawberryAdult.png";
             }
             else if (IsShamrockGoat(goat.Id))
             {
