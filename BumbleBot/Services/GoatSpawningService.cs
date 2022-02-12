@@ -180,7 +180,10 @@ namespace BumbleBot.Services
              {
                  "/Goat_Images/Valentine_Special_Variations/CupidKid.png",
                  "/Goat_Images/Valentine_Special_Variations/HeartKid.png",
-                 "/Goat_Images/Valentine_Special_Variations/RosesKid.png"  
+                 "/Goat_Images/Valentine_Special_Variations/RosesKid.png",
+                 "Goat_Images/Valentine_Special_Variations/BalloonKid.png",
+                 "Goat_Images/Valentine_Special_Variations/CandyHeartKid.png",
+                 "Goat_Images/Valentine_Special_Variations/StrawberryKid.png"
              };
              var rnd = new Random();
              specialGoat.FilePath = valentineGoats[rnd.Next(0,3)];

@@ -50,4 +50,7 @@
   <ItemGroup>
     <EmbeddedResource Remove="DB\**" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Converter" />
+  </ItemGroup>
 </Project>
