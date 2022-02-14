@@ -186,7 +186,7 @@ namespace BumbleBot.Services
                  "Goat_Images/Valentine_Special_Variations/StrawberryKid.png"
              };
              var rnd = new Random();
-             specialGoat.FilePath = valentineGoats[rnd.Next(0,3)];
+             specialGoat.FilePath = valentineGoats[rnd.Next(0,valentineGoats.Count)];
              var filePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{specialGoat.FilePath}";
              return (specialGoat, filePath);
          }
