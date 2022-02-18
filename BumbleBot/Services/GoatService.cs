@@ -803,6 +803,8 @@ namespace BumbleBot.Services
             }
             else if (IsValentinesGoat(goat.Id))
             {
+                if (goat.FilePath.EndsWith("CandyHeartKid.png"))
+                    return "Valentine_Special_Variations/CandyHeartAdult.png";
                 if (goat.FilePath.EndsWith("HeartKid.png"))
                     return "Valentine_Special_Variations/HeartAdult.png";
                 if (goat.FilePath.Contains("Cupid"))
@@ -811,8 +813,6 @@ namespace BumbleBot.Services
                     return "Valentine_Special_Variations/RosesAdult.png";
                 if (goat.FilePath.Contains("Balloon"))
                     return "Valentine_Special_Variations/BalloonAdult.png";
-                if (goat.FilePath.EndsWith("CandyHeartKid.png"))
-                    return "Valentine_Special_Variations/CandyHeartAdult.png";
                 if (goat.FilePath.Contains("Strawberry"))
                     return "Valentine_Special_Variations/StrawberryAdult.png";
             }
@@ -1015,6 +1015,8 @@ namespace BumbleBot.Services
             }
             else if (IsValentinesGoat(goat.Id))
             {
+                if (goat.FilePath.EndsWith("CandyHeartKid.png"))
+                    return "Valentine_Special_Variations/CandyHeartAdult.png";
                 if (goat.FilePath.EndsWith("HeartKid.png"))
                     return "Valentine_Special_Variations/HeartAdult.png";
                 if (goat.FilePath.Contains("Cupid"))
@@ -1023,8 +1025,6 @@ namespace BumbleBot.Services
                     return "Valentine_Special_Variations/RosesAdult.png";
                 if (goat.FilePath.Contains("Balloon"))
                     return "Valentine_Special_Variations/BalloonAdult.png";
-                if (goat.FilePath.EndsWith("CandyHeartKid.png"))
-                    return "Valentine_Special_Variations/CandyHeartAdult.png";
                 if (goat.FilePath.Contains("Strawberry"))
                     return "Valentine_Special_Variations/StrawberryAdult.png";
             }
