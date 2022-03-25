@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using BumbleBot.Models;
 using BumbleBot.Utilities;
+using Dapper;
 using DisCatSharp;
 using DisCatSharp.Entities;
 using DisCatSharp.Enums;
@@ -376,6 +378,34 @@ namespace BumbleBot.Services
              var filePath =
                  $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{goat.FilePath}";
              return (goat, filePath);
+         }
+
+         public (Goat, string) GenerateSpecialGoatToSpawnNew()
+         {
+             List<SpecialGoats> variations;
+             using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+             {
+                 connection.Open();
+                 variations = connection.Query<SpecialGoats>("select * from specialgoats where enabled = 1 group by variation").ToList();
+             }
+             if (variations.Count < 1)
+             {
+                 return GenerateNormalGoatToSpawn();
+             }
+             var chosenSpecialGoat = variations[new Random().Next(variations.Count)];
+             return GenerateSpecialGoatToSpawn(chosenSpecialGoat.kidFileLink, chosenSpecialGoat.variation);
+         }
+         public (Goat, string) GenerateSpecialGoatToSpawn(string goatFilePath, string variation)
+         {
+             var specialGoat = new Goat();
+             specialGoat.Breed = (Breed) Enum.Parse(typeof(Breed), variation);
+             specialGoat.BaseColour = BaseColour.Special;
+             specialGoat.Level = new Random().Next(76, 100);
+             specialGoat.Experience = (int) Math.Ceiling(10 * Math.Pow(1.05, specialGoat.Level - 1));
+             specialGoat.Name = $"{variation} Goat";
+             specialGoat.FilePath = goatFilePath;
+             var filePath = $"{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}{specialGoat.FilePath}";
+             return (specialGoat, filePath);
          }
 
          public async Task SpawnGoatFromGoatObject(DiscordChannel channel, DiscordGuild guild, (Goat, string) goatObject, DiscordClient client)
