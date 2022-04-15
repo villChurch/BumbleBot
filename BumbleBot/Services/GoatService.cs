@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using BumbleBot.Models;
 using BumbleBot.Utilities;
+using Dapper;
 using DisCatSharp;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
@@ -14,8 +15,8 @@ namespace BumbleBot.Services
 {
     public class GoatService
     {
-        private readonly DbUtils dBUtils = new();
-        private readonly string deathPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+        private readonly DbUtils _dBUtils = new();
+        private readonly string _deathPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
         public void GiveGoatExp(Goat? goat, decimal expToAdd)
         {
@@ -23,7 +24,7 @@ namespace BumbleBot.Services
             var newLevel =
                 (int) Math.Floor(Math.Log((double) ((startingExp + expToAdd) / 10)) / Math.Log(1.05));
             var newExp = startingExp + expToAdd;
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query =
                     "Update goats Set level = ?level, experience = ?experience where id = ?goatId";
@@ -70,7 +71,7 @@ namespace BumbleBot.Services
         private bool IsSpecialGoat(ulong userId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where ownerID = ?userId and equipped = 1";
                 var command = new MySqlCommand(query, connection);
@@ -96,10 +97,10 @@ namespace BumbleBot.Services
             return goat.BaseColour == BaseColour.Special;
         }
 
-        public bool IsSpecialGoat(int goatId)
+        private bool IsSpecialGoat(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -127,7 +128,7 @@ namespace BumbleBot.Services
         public bool IsGoatMinxByGoatId(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -156,7 +157,7 @@ namespace BumbleBot.Services
         public bool IsGoatJulietById(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -178,7 +179,7 @@ namespace BumbleBot.Services
         public bool IsGoatPercyById(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -200,7 +201,7 @@ namespace BumbleBot.Services
         public bool IsGoatSevenById(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -222,7 +223,7 @@ namespace BumbleBot.Services
         public bool IsGoatBumbleByGoatId(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -251,7 +252,7 @@ namespace BumbleBot.Services
         public bool IsGoatTaillessByGoatId(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -280,7 +281,7 @@ namespace BumbleBot.Services
         public bool IsGoatZenByGoatId(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -309,7 +310,7 @@ namespace BumbleBot.Services
         public bool IsBestGoatByGoatId(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -330,7 +331,7 @@ namespace BumbleBot.Services
         public bool IsDairySpecialByGoatId(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -353,7 +354,7 @@ namespace BumbleBot.Services
         public bool IsMemberSpecialByGoatId(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -372,190 +373,10 @@ namespace BumbleBot.Services
             return goat.Breed == Breed.MemberSpecial;
         }
 
-        private bool IsShamrockGoat(int goatId)
-        {
-            var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "select * from goats where id = ?id";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?id", MySqlDbType.VarChar).Value = goatId;
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                    {
-                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
-                    }
-                reader.Close();
-            }
-
-            return goat.Breed == Breed.Shamrock;
-        }
-
-        private bool IsSpringGoat(int goatId)
-        {
-            var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "select * from goats where id = ?id";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?id", MySqlDbType.VarChar).Value = goatId;
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                    {
-                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
-                    }
-                reader.Close();
-            }
-
-            return goat.Breed == Breed.Spring;
-        }
-
-        private bool IsChristmasGoat(int goatId)
-        {
-            var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
-            {
-                var query = "select * from goats where id = ?id";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?id", MySqlDbType.VarChar).Value = goatId;
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                    {
-                        goat.Name = reader.GetString("name");
-                        goat.Id = reader.GetInt32("id");
-                        goat.Level = reader.GetInt32("level");
-                        goat.LevelMulitplier = reader.GetDecimal("levelMultiplier");
-                        goat.Experience = reader.GetDecimal("experience");
-                        goat.FilePath = reader.GetString("imageLink");
-                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
-                        goat.BaseColour = (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
-                    }
-
-                reader.Close();
-            }
-
-            return goat.Breed == Breed.Christmas;
-        }
-
-        private bool IsValentinesGoat(int goatId)
-        {
-            var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "select * from goats where id = ?id";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.Add("?id", MySqlDbType.Int32).Value = goatId;
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                {
-                    while (reader.Read())
-                    {
-                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
-                    }
-                }
-
-                reader.Close();
-            }
-
-            return goat.Breed == Breed.Valentines;
-        }
-
-        private bool IsHalloweenGoat(int goatId)
-        {
-            var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "select * from goats where id = ?id";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("?id", goatId);
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                {
-                    while (reader.Read())
-                    {
-                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
-                    }
-                }
-                reader.Close();
-            }
-
-            return goat.Breed == Breed.Halloween;
-        }
-
-        private bool IsSummerGoat(int goatId)
-        {
-            var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "select * from goats where id = ?id";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("?id", goatId);
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
-                reader.Close();
-            }
-
-            return goat.Breed == Breed.SummerSpecial;
-        }
-
-        private bool IsBotBirthdayGoat(int goatId)
-        {
-            var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "select * from goats where id = ?id";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("?id", goatId);
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                    while (reader.Read())
-                    {
-                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
-                    }
-            }
-
-            return goat.Breed == Breed.BotAnniversarySpecial;
-        }
-
-        private bool IsNovemberGoat(int goatId)
-        {
-            var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
-            {
-                const string query = "select * from goats where id = ?id";
-                var command = new MySqlCommand(query, connection);
-                command.Parameters.AddWithValue("?id", goatId);
-                connection.Open();
-                var reader = command.ExecuteReader();
-                if (reader.HasRows)
-                {
-                    while (reader.Read())
-                    {
-                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
-                    }
-                }
-                reader.Close();
-                connection.Close();
-            }
-
-            return goat.Breed == Breed.November;
-        }
         private bool IsBuck(int goatId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 const string query = "select * from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -578,7 +399,7 @@ namespace BumbleBot.Services
         private string KillGoat(ulong userId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where ownerID = ?userId and equipped = 1";
                 var command = new MySqlCommand(query, connection);
@@ -601,7 +422,7 @@ namespace BumbleBot.Services
                 reader.Close();
             }
 
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "insert into deadgoats (goatid, baseColour, breed, level, name, ownerID, imageLink) " +
                             "values (?goatid, ?baseColour, ?breed, ?level, ?name, ?ownerID, ?imageLink)";
@@ -619,7 +440,7 @@ namespace BumbleBot.Services
             }
 
             DeleteGoat(goat.Id);
-            var lines = File.ReadLines(deathPath + "/deaths.txt").ToList();
+            var lines = File.ReadLines(_deathPath + "/deaths.txt").ToList();
             var rnd = new Random();
             var msg =
                 $"Oh no! Your goat has unfortunately died from {lines.ElementAt(rnd.Next(0, lines.Count))} - rest in peace {goat.Name}";
@@ -628,7 +449,7 @@ namespace BumbleBot.Services
 
         private string KillGoat(Goat goat, ulong userId)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "insert into deadgoats (goatid, baseColour, breed, level, name, ownerID, imageLink) " +
                             "values (?goatid, ?baseColour, ?breed, ?level, ?name, ?ownerID, ?imageLink)";
@@ -646,7 +467,7 @@ namespace BumbleBot.Services
             }
 
             DeleteGoat(goat.Id);
-            var lines = File.ReadLines(deathPath + "/deaths.txt").ToList();
+            var lines = File.ReadLines(_deathPath + "/deaths.txt").ToList();
             var rnd = new Random();
             var msg =
                 $"Oh no! Your goat has unfortunately died from {lines.ElementAt(rnd.Next(0, lines.Count))} - rest in peace {goat.Name}";
@@ -656,7 +477,7 @@ namespace BumbleBot.Services
         {
             var goatsLevel = 0;
             decimal goatsExperience = 0;
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "Select level, experience from goats Where ownerID = ?ownerId and equipped = 1";
                 var command = new MySqlCommand(query, connection);
@@ -679,7 +500,7 @@ namespace BumbleBot.Services
         public void UpdateGoatImagesForKidsThatAreAdults(ulong userId)
         {
             var goats = new List<Goat>();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "Select * from goats where ownerID = ?ownerId and type = ?type and level > ?level";
                 var command = new MySqlCommand(query, connection);
@@ -691,12 +512,14 @@ namespace BumbleBot.Services
                 if (reader.HasRows)
                     while (reader.Read())
                     {
-                        var goat = new Goat();
-                        goat.Id = reader.GetInt32("id");
-                        goat.Experience = reader.GetDecimal("experience");
-                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
-                        goat.BaseColour = (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
-                        goat.FilePath = reader.GetString("imageLink");
+                        var goat = new Goat
+                        {
+                            Id = reader.GetInt32("id"),
+                            Experience = reader.GetDecimal("experience"),
+                            Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed")),
+                            BaseColour = (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour")),
+                            FilePath = reader.GetString("imageLink")
+                        };
                         goats.Add(goat);
                     }
 
@@ -716,7 +539,7 @@ namespace BumbleBot.Services
                 goat.Experience = 0;
                 if (IsSpecialGoat(goatId))
                 {
-                    using (var conn = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+                    using (var conn = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
                     {
                         const string query = "update goats set level = ?level, experience = ?exp where id = ?id";
                         var command = new MySqlCommand(query, conn);
@@ -738,7 +561,7 @@ namespace BumbleBot.Services
         }
         private void UpdateGoatImage(Goat goat)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "Update goats Set imageLink = ?imageLink, type = ?type Where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -754,7 +577,7 @@ namespace BumbleBot.Services
         private string UpdateGoatLevelAndExperience(int oldLevel, int level, decimal experience, ulong userId)
         {
             if (level >= 100 && oldLevel < 100)
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+                using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query = "Update goats Set level = ?level, experience = ?experience, type = ?type, " +
                                 "imageLink = ?imageLink where ownerID = ?ownerId and equipped = 1";
@@ -769,7 +592,7 @@ namespace BumbleBot.Services
                     command.ExecuteNonQuery();
                 }
             else
-                using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+                using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
                 {
                     var query =
                         "Update goats Set level = ?level, experience = ?experience where ownerID = ?ownerId and equipped = 1";
@@ -784,126 +607,33 @@ namespace BumbleBot.Services
             return "Congrats your current goat has just gained a level";
         }
 
+        private bool IsSpecialGoatByGoatId(int id)
+        {
+            var baseColour = BaseColour.Gold;
+            var breed = Breed.Nubian;
+            using (var conn = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
+            {
+                var cmd = new MySqlCommand("select * from goats where id = ?goatId", conn);
+                cmd.Parameters.AddWithValue("?goatId", id);
+                conn.Open();
+                var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    baseColour = (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
+                    breed = (Breed)Enum.Parse(typeof(Breed), reader.GetString("breed"));
+                }
+                reader.Close();
+                conn.Close();
+            }
+            return baseColour == BaseColour.Special && breed != Breed.Buck;
+        }
         private string GetAdultGoatImageUrlFromGoatObject(Goat goat)
         {
-            if (IsChristmasGoat(goat.Id))
+            if (IsSpecialGoatByGoatId(goat.Id))
             {
-                if (goat.FilePath.EndsWith("SantaKid.png"))
-                    return "Special Variations/SantaAdult.png";
-                if (goat.FilePath.EndsWith("AngelLightsKid.png"))
-                    return "Special Variations/AngelLightsAdult.png";
-                if (goat.FilePath.EndsWith("GrinchKid.png")) 
-                    return "Special Variations/GrinchAdult.png";
-                if (goat.FilePath.EndsWith("ElfKid.png"))
-                    return "Special Variations/ElfAdult.png";
-                if (goat.FilePath.EndsWith("LightsKid.png"))
-                    return "Special Variations/LightsAdult.png";
-                if (goat.FilePath.EndsWith("ReindeerKid.png"))
-                    return "Special Variations/ReindeerAdult.png";
+                return ReturnSpecialGoatImage(goat).Replace("Goat_Images/", "", StringComparison.OrdinalIgnoreCase);
             }
-            else if (IsValentinesGoat(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("CandyHeartKid.png"))
-                    return "Valentine_Special_Variations/CandyHeartAdult.png";
-                if (goat.FilePath.EndsWith("HeartKid.png"))
-                    return "Valentine_Special_Variations/HeartAdult.png";
-                if (goat.FilePath.Contains("Cupid"))
-                    return "Valentine_Special_Variations/CupidAdult.png";
-                if (goat.FilePath.Contains("Roses"))
-                    return "Valentine_Special_Variations/RosesAdult.png";
-                if (goat.FilePath.Contains("Balloon"))
-                    return "Valentine_Special_Variations/BalloonAdult.png";
-                if (goat.FilePath.Contains("Strawberry"))
-                    return "Valentine_Special_Variations/StrawberryAdult.png";
-            }
-            else if (IsShamrockGoat(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("ShamrockKid.png"))
-                    return "Shamrock_Special_Variations/ShamrockAdult.png";
-                if (goat.FilePath.Contains("Leprechaun"))
-                    return "Shamrock_Special_Variations/LeprechaunAdult.png";
-                if (goat.FilePath.Contains("KissMe"))
-                    return "Shamrock_Special_Variations/KissMeAdult.png";
-            }
-            else if (IsSpringGoat(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("SpringNubianKid.png"))
-                    return "SpringNubianAdult.png";
-                if (goat.FilePath.EndsWith("GardenKid.png"))
-                    return "GardenAdult.png";
-                if (goat.FilePath.EndsWith("SpringKiddingKid.png"))
-                    return "SpringKiddingAdult.png";
-            }
-            else if (IsGoatBumbleByGoatId(goat.Id))
-            {
-                return "Special Variations/BumbleAdult.png";
-            }
-            else if (IsGoatMinxByGoatId(goat.Id))
-            {
-                return "Special Variations/MinxAdult.png";
-            }
-            else if (IsGoatZenByGoatId(goat.Id))
-            {
-                return "Special Variations/ZenyattaAdult.png";
-            }
-            else if (IsGoatJulietById(goat.Id))
-            {
-                return "Special Variations/JulietAdult.png";
-            }
-            else if (IsGoatPercyById(goat.Id))
-            {
-                return "Special Variations/PercyAdult.png";
-            }
-            else if (IsGoatSevenById(goat.Id))
-            {
-                return "Special Variations/SevenAdult.png";
-            }
-            else if (IsGoatTaillessByGoatId(goat.Id))
-            {
-                return "Special Variations/taillessadult.png";
-            }
-            else if (IsBestGoatByGoatId(goat.Id))
-            {
-                return "Special Variations/DazzleSpecialAdult.png";
-            }
-            else if (IsMemberSpecialByGoatId(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("MemberSpecialKimdolKid.png"))
-                    return "MemberSpecialKimdolAdult.png";
-                if (goat.FilePath.EndsWith("MemberSpecialGiuhKid.png"))
-                    return "MemberSpecialGiuhAdult.png";
-                if (goat.FilePath.EndsWith("MemberSpecialEponaKid.png"))
-                    return "MemberSpecialEponaAdult.png";
-                if (goat.FilePath.EndsWith("MemberSpecialVenKid.png"))
-                    return "MemberSpecialVenAdult.png";
-                if (goat.FilePath.EndsWith("MemberSpecialMinxKid.png"))
-                    return "MemberSpecialMinxAdult.png";
-                if (goat.FilePath.EndsWith("MemberSpecialKateKid.png"))
-                    return "MemberSpecialKateAdult.png";
-            }
-            else if (IsDairySpecialByGoatId(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("CheeseKid.png"))
-                    return "CheeseAdult.png";
-                if (goat.FilePath.EndsWith("MilkerKid.png"))
-                    return "MilkerAdult.png";
-                if (goat.FilePath.EndsWith("MilkshakeKid.png"))
-                    return "MilkshakeAdult.png";
-            }
-            else if (IsSummerGoat(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("WatermelonKid.png"))
-                    return "Summer Specials/WatermelonAdult.png";
-                if (goat.FilePath.EndsWith("FireworkKid.png"))
-                    return "Summer Specials/FireworkAdult.png";
-                if (goat.FilePath.EndsWith("BeachKid.png"))
-                    return "Summer Specials/BeachAdult.png";
-            }
-            else if (IsBotBirthdayGoat(goat.Id))
-            {
-                return "Special Variations/BirthdayBumble/FirstBirthdayBumble.png";
-            }
-            else if (IsBuck(goat.Id))
+            if (IsBuck(goat.Id))
             {
                 var buckNumber = new Random().Next(5);
                 var buckImages = new List<string>()
@@ -915,36 +645,6 @@ namespace BumbleBot.Services
                     "Buck_Specials/BuckAdult6.png"
                 };
                 return buckImages[buckNumber];
-            }
-            else if (IsHalloweenGoat(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("CandyCornKid.png"))
-                {
-                    return "Halloween Specials/CandyCornAdult.png";
-                }
-                if (goat.FilePath.EndsWith("PinkyKid.png"))
-                {
-                    return "Halloween Specials/PinkyAdult.png";
-                }
-                if (goat.FilePath.EndsWith("SkeletonKid.png"))
-                {
-                    return "Halloween Specials/SkeletonAdult.png";
-                }
-            }
-            else if (IsNovemberGoat(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("LingerieKid.png"))
-                {
-                    return "November/LingerieAdult.png";
-                }
-                if (goat.FilePath.EndsWith("BlueAngelKid.png"))
-                {
-                    return "November/BlueAngelAdult.png";
-                }
-                if (goat.FilePath.EndsWith("BBQKid.png"))
-                {
-                    return "November/BBQAdult.png";
-                }
             }
 
             var goatColour = "";
@@ -979,7 +679,7 @@ namespace BumbleBot.Services
         private string GetAdultGoatImageUrl(ulong userId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "Select * from goats where equipped = 1 and ownerID = ?discordId";
                 var command = new MySqlCommand(query, connection);
@@ -997,125 +697,11 @@ namespace BumbleBot.Services
                         goat.FilePath = reader.GetString("imageLink");
                     }
             }
-
-            if (IsChristmasGoat(goat.Id))
+            if (IsSpecialGoatByGoatId(goat.Id))
             {
-                if (goat.FilePath.EndsWith("SantaKid.png"))
-                    return "Special Variations/SantaAdult.png";
-                if (goat.FilePath.EndsWith("AngelLightsKid.png"))
-                    return "Special Variations/AngelLightsAdult.png";
-                if (goat.FilePath.EndsWith("GrinchKid.png"))
-                    return "Special Variations/GrinchAdult.png";
-                if (goat.FilePath.EndsWith("ElfKid.png")) 
-                    return "Special Variations/ElfAdult.png";
-                if (goat.FilePath.EndsWith("LightsKid.png"))
-                    return "Special Variations/LightsAdult.png";
-                if (goat.FilePath.EndsWith("ReindeerKid.png"))
-                    return "Special Variations/ReindeerAdult.png";
+                return ReturnSpecialGoatImage(goat).Replace("Goat_Images/", "", StringComparison.OrdinalIgnoreCase);
             }
-            else if (IsValentinesGoat(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("CandyHeartKid.png"))
-                    return "Valentine_Special_Variations/CandyHeartAdult.png";
-                if (goat.FilePath.EndsWith("HeartKid.png"))
-                    return "Valentine_Special_Variations/HeartAdult.png";
-                if (goat.FilePath.Contains("Cupid"))
-                    return "Valentine_Special_Variations/CupidAdult.png";
-                if (goat.FilePath.Contains("Roses"))
-                    return "Valentine_Special_Variations/RosesAdult.png";
-                if (goat.FilePath.Contains("Balloon"))
-                    return "Valentine_Special_Variations/BalloonAdult.png";
-                if (goat.FilePath.Contains("Strawberry"))
-                    return "Valentine_Special_Variations/StrawberryAdult.png";
-            }
-            else if (IsShamrockGoat(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("ShamrockKid.png"))
-                    return "Shamrock_Special_Variations/ShamrockAdult.png";
-                if (goat.FilePath.Contains("Leprechaun"))
-                    return "Shamrock_Special_Variations/LeprechaunAdult.png";
-                if (goat.FilePath.Contains("KissMe"))
-                    return "Shamrock_Special_Variations/KissMeAdult.png";
-            }
-            else if (IsSpringGoat(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("SpringNubianKid.png"))
-                    return "SpringNubianAdult.png";
-                if (goat.FilePath.EndsWith("GardenKid.png"))
-                    return "GardenAdult.png";
-                if (goat.FilePath.EndsWith("SpringKiddingKid.png"))
-                    return "SpringKiddingAdult.png";
-            }
-            else if (IsGoatBumbleByGoatId(goat.Id))
-            {
-                return "Special Variations/BumbleAdult.png";
-            }
-            else if (IsGoatMinxByGoatId(goat.Id))
-            {
-                return "Special Variations/MinxAdult.png";
-            }
-            else if (IsGoatZenByGoatId(goat.Id))
-            {
-                return "Special Variations/ZenyattaAdult.png";
-            }
-            else if (IsGoatJulietById(goat.Id))
-            {
-                return "Special Variations/JulietAdult.png";
-            }
-            else if (IsGoatPercyById(goat.Id))
-            {
-                return "Special Variations/PercyAdult.png";
-            }
-            else if (IsGoatSevenById(goat.Id))
-            {
-                return "Special Variations/SevenAdult.png";
-            }
-            else if (IsGoatTaillessByGoatId(goat.Id))
-            {
-                return "Special Variations/taillessadult.png";
-            }
-            else if (IsBestGoatByGoatId(goat.Id))
-            {
-                return "Special Variations/DazzleSpecialAdult.png";
-            }
-            else if (IsMemberSpecialByGoatId(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("MemberSpecialKimdolKid.png"))
-                    return "MemberSpecialKimdolAdult.png";
-                if (goat.FilePath.EndsWith("MemberSpecialGiuhKid.png"))
-                    return "MemberSpecialGiuhAdult.png";
-                if (goat.FilePath.EndsWith("MemberSpecialEponaKid.png"))
-                    return "MemberSpecialEponaAdult.png";
-                if (goat.FilePath.EndsWith("MemberSpecialVenKid.png"))
-                    return "MemberSpecialVenAdult.png";
-                if (goat.FilePath.EndsWith("MemberSpecialMinxKid.png"))
-                    return "MemberSpecialMinxAdult.png";
-                if (goat.FilePath.EndsWith("MemberSpecialKateKid.png"))
-                    return "MemberSpecialKateAdult.png";
-            }
-            else if (IsDairySpecialByGoatId(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("CheeseKid.png"))
-                    return "CheeseAdult.png";
-                if (goat.FilePath.EndsWith("MilkerKid.png"))
-                    return "MilkerAdult.png";
-                if (goat.FilePath.EndsWith("MilkshakeKid.png"))
-                    return "MilkshakeAdult.png";
-            }
-            else if (IsSummerGoat(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("WatermelonKid.png"))
-                    return "Summer Specials/WatermelonAdult.png";
-                if (goat.FilePath.EndsWith("FireworkKid.png"))
-                    return "Summer Specials/FireworkAdult.png";
-                if (goat.FilePath.EndsWith("BeachKid.png"))
-                    return "Summer Specials/BeachAdult.png";
-            }
-            else if (IsBotBirthdayGoat(goat.Id))
-            {
-                return "Special Variations/BirthdayBumble/FirstBirthdayBumble.png";
-            }
-            else if (IsBuck(goat.Id))
+            if (IsBuck(goat.Id))
             {
                 var buckNumber = new Random().Next(5);
                 var buckImages = new List<string>()
@@ -1128,37 +714,7 @@ namespace BumbleBot.Services
                 };
                 return buckImages[buckNumber];
             }
-            else if (IsHalloweenGoat(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("CandyCornKid.png"))
-                {
-                    return "Halloween Specials/CandyCornAdult.png";
-                }
-                if (goat.FilePath.EndsWith("PinkyKid.png"))
-                {
-                    return "Halloween Specials/PinkyAdult.png";
-                }
-                if (goat.FilePath.EndsWith("SkeletonKid.png"))
-                {
-                    return "Halloween Specials/SkeletonAdult.png";
-                }
-            }
-            else if (IsNovemberGoat(goat.Id))
-            {
-                if (goat.FilePath.EndsWith("LingerieKid.png"))
-                {
-                    return "November/LingerieAdult.png";
-                }
-                if (goat.FilePath.EndsWith("BlueAngelKid.png"))
-                {
-                    return "November/BlueAngelAdult.png";
-                }
-                if (goat.FilePath.EndsWith("BBQKid.png"))
-                {
-                    return "November/BBQAdult.png";
-                }
-            }
-
+            
             var goatColour = "";
 
             string goatName;
@@ -1188,6 +744,18 @@ namespace BumbleBot.Services
             return $"{goatName} {FirstCharToUpper(goatColour)}/{goatName}adult{goatColour}{randomNumber}.png";
         }
 
+        private string ReturnSpecialGoatImage(Goat goat)
+        {
+            SpecialGoats foundGoat;
+            
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
+            {
+                connection.Open();
+                foundGoat = connection.Query<SpecialGoats>("select * from specialgoats where KidFileLink = ?kidFileLink LIMIT 1", new {kidFileLink = goat.FilePath}).First();
+            }
+
+            return foundGoat.adultFileLink;
+        }
 
         private string FirstCharToUpper(string input)
         {
@@ -1203,7 +771,7 @@ namespace BumbleBot.Services
         {
             var barnSize = 10;
             var numberOfGoats = 0;
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "Select barnsize from farmers where DiscordID = ?discordId";
                 var command = new MySqlCommand(query, connection);
@@ -1216,7 +784,7 @@ namespace BumbleBot.Services
                 reader.Close();
             }
 
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "SELECT COUNT(*) as numberOfGoats FROM goats WHERE ownerID = ?discordId";
                 var command = new MySqlCommand(query, connection);
@@ -1240,7 +808,7 @@ namespace BumbleBot.Services
         public List<Goat> ReturnUsersGoats(ulong userId)
         {
             var goats = new List<Goat>();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where ownerID = ?ownerId";
                 var command = new MySqlCommand(query, connection);
@@ -1250,16 +818,18 @@ namespace BumbleBot.Services
                 if (reader.HasRows)
                     while (reader.Read())
                     {
-                        var goat = new Goat();
-                        goat.Name = reader.GetString("name");
-                        goat.Id = reader.GetInt32("id");
-                        goat.Level = reader.GetInt32("level");
-                        goat.LevelMulitplier = reader.GetDecimal("levelMultiplier");
-                        goat.Experience = reader.GetDecimal("experience");
-                        goat.FilePath = reader.GetString("imageLink");
-                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
-                        goat.BaseColour = (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
-                        goat.Type = (Type) Enum.Parse(typeof(Type), reader.GetString("type"));
+                        var goat = new Goat
+                        {
+                            Name = reader.GetString("name"),
+                            Id = reader.GetInt32("id"),
+                            Level = reader.GetInt32("level"),
+                            LevelMulitplier = reader.GetDecimal("levelMultiplier"),
+                            Experience = reader.GetDecimal("experience"),
+                            FilePath = reader.GetString("imageLink"),
+                            Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed")),
+                            BaseColour = (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour")),
+                            Type = (Type) Enum.Parse(typeof(Type), reader.GetString("type"))
+                        };
                         goats.Add(goat);
                     }
             }
@@ -1270,7 +840,7 @@ namespace BumbleBot.Services
         public List<Goat> ReturnUsersDeadGoats(ulong userId)
         {
             var goats = new List<Goat>();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from deadgoats where ownerID = ?ownerId";
                 var command = new MySqlCommand(query, connection);
@@ -1299,7 +869,7 @@ namespace BumbleBot.Services
             var goatIds = new List<int>();
             var dictionary = new Dictionary<int, string>();
             var ownedGoats = ReturnUsersGoats(userId);
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select goatId, dueDate from cookingdoes where ready = 0";
                 var command = new MySqlCommand(query, connection);
@@ -1322,7 +892,7 @@ namespace BumbleBot.Services
         public List<Goat> ReturnUsersKidsInKiddingPen(ulong userId)
         {
             var kids = new List<Goat>();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from newbornkids where ownerID = ?ownerId";
                 var command = new MySqlCommand(query, connection);
@@ -1348,7 +918,7 @@ namespace BumbleBot.Services
         public Goat GetEquippedGoat(ulong userId)
         {
             var goat = new Goat();
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select * from goats where ownerID = ?ownerID and equipped = 1";
                 var command = new MySqlCommand(query, connection);
@@ -1375,7 +945,7 @@ namespace BumbleBot.Services
         public bool CanFarmerAffordGoat(int buyPrice, ulong userId)
         {
             var credits = 0;
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "select credits from farmers where DiscordID = ?userId";
                 var command = new MySqlCommand(query, connection);
@@ -1393,7 +963,7 @@ namespace BumbleBot.Services
 
         public void DeleteKidFromKiddingPen(int id)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "delete from newbornkids where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -1405,7 +975,7 @@ namespace BumbleBot.Services
 
         public void MoveKidIntoGoatPen(Goat goat, ulong userId)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query =
                     "insert into goats (level, name, type, breed, baseColour, ownerID, experience, imageLink) " +
@@ -1430,7 +1000,7 @@ namespace BumbleBot.Services
 
         public void DeleteGoat(int id)
         {
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "delete from goats where id = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -1439,7 +1009,7 @@ namespace BumbleBot.Services
                 command.ExecuteNonQuery();
             }
 
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "delete from grazing where goatId = ?id";
                 var command = new MySqlCommand(query, connection);
@@ -1453,7 +1023,7 @@ namespace BumbleBot.Services
         {
             var cooking = false;
 
-            using (var connection = new MySqlConnection(dBUtils.ReturnPopulatedConnectionString()))
+            using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
             {
                 var query = "Select * from cookingdoes where goatId = ?goatId";
                 var command = new MySqlCommand(query, connection);

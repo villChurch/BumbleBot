@@ -33,7 +33,9 @@ namespace BumbleBot.Models
         Percy,
         Seven,
         Halloween,
-        November
+        November,
+        Frog,
+        AprilFools
     }
 
     public enum BaseColour
