@@ -97,7 +97,7 @@ namespace BumbleBot.Services
             return goat.BaseColour == BaseColour.Special;
         }
 
-        public bool IsSpecialGoat(int goatId)
+        private bool IsSpecialGoat(int goatId)
         {
             var goat = new Goat();
             using (var connection = new MySqlConnection(_dBUtils.ReturnPopulatedConnectionString()))
@@ -512,12 +512,14 @@ namespace BumbleBot.Services
                 if (reader.HasRows)
                     while (reader.Read())
                     {
-                        var goat = new Goat();
-                        goat.Id = reader.GetInt32("id");
-                        goat.Experience = reader.GetDecimal("experience");
-                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
-                        goat.BaseColour = (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
-                        goat.FilePath = reader.GetString("imageLink");
+                        var goat = new Goat
+                        {
+                            Id = reader.GetInt32("id"),
+                            Experience = reader.GetDecimal("experience"),
+                            Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed")),
+                            BaseColour = (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour")),
+                            FilePath = reader.GetString("imageLink")
+                        };
                         goats.Add(goat);
                     }
 
@@ -816,16 +818,18 @@ namespace BumbleBot.Services
                 if (reader.HasRows)
                     while (reader.Read())
                     {
-                        var goat = new Goat();
-                        goat.Name = reader.GetString("name");
-                        goat.Id = reader.GetInt32("id");
-                        goat.Level = reader.GetInt32("level");
-                        goat.LevelMulitplier = reader.GetDecimal("levelMultiplier");
-                        goat.Experience = reader.GetDecimal("experience");
-                        goat.FilePath = reader.GetString("imageLink");
-                        goat.Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed"));
-                        goat.BaseColour = (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour"));
-                        goat.Type = (Type) Enum.Parse(typeof(Type), reader.GetString("type"));
+                        var goat = new Goat
+                        {
+                            Name = reader.GetString("name"),
+                            Id = reader.GetInt32("id"),
+                            Level = reader.GetInt32("level"),
+                            LevelMulitplier = reader.GetDecimal("levelMultiplier"),
+                            Experience = reader.GetDecimal("experience"),
+                            FilePath = reader.GetString("imageLink"),
+                            Breed = (Breed) Enum.Parse(typeof(Breed), reader.GetString("breed")),
+                            BaseColour = (BaseColour) Enum.Parse(typeof(BaseColour), reader.GetString("baseColour")),
+                            Type = (Type) Enum.Parse(typeof(Type), reader.GetString("type"))
+                        };
                         goats.Add(goat);
                     }
             }

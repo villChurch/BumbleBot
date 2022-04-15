@@ -170,7 +170,7 @@ namespace BumbleBot
                 {
                     foreach (var guildId in e.Guilds.Keys)
                     {
-                        applicationCommands.RegisterCommands(command, guildId);
+                        applicationCommands.RegisterGuildCommands(command, guildId);
                     }
                 }
 
