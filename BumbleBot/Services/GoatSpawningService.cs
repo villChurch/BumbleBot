@@ -187,11 +187,13 @@ namespace BumbleBot.Services
                     Color = DiscordColor.Aquamarine,
                     ImageUrl = url + Uri.EscapeUriString(goatToSpawn.FilePath) //.Replace(" ", "%20")
                 };
-                embed.AddField("Cost", (goatToSpawn.Level - 1).ToString());
-                embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goatToSpawn.BaseColour));
-                embed.AddField("Breed", Enum.GetName(typeof(Breed), goatToSpawn.Breed)?.Replace("_", " "), true);
-                embed.AddField("Level", (goatToSpawn.Level - 1).ToString(), true);
-                
+                embed.AddFields(new List<DiscordEmbedField>()
+                {
+                    new("Cost", (goatToSpawn.Level - 1).ToString()),
+                    new("Colour", Enum.GetName(typeof(BaseColour), goatToSpawn.BaseColour)),
+                    new("Breed", Enum.GetName(typeof(Breed), goatToSpawn.Breed)?.Replace("_", " "), true),
+                    new("Level", (goatToSpawn.Level - 1).ToString(), true)
+                });
                 var interactivity = client.GetInteractivity();
                 var sellEmoji = DiscordEmoji.FromName(client, ":dollar:");
                 var purchaseButton = new DiscordButtonComponent(ButtonStyle.Success, "purchase", "Purchase", 

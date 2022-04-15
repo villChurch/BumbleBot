@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.CommandsNext.Attributes;
@@ -113,9 +114,12 @@ namespace BumbleBot.Commands.QuizCommands
                         Text = $"Created by {ctx.Member.DisplayName}"
                     }
                 };
-                questionEmbed.AddField(DiscordEmoji.FromName(ctx.Client, ":regional_indicator_a:"), answerOne);
-                questionEmbed.AddField(DiscordEmoji.FromName(ctx.Client, ":regional_indicator_b:"), answerTwo);
-                questionEmbed.AddField(DiscordEmoji.FromName(ctx.Client, ":regional_indicator_c:"), answerThree);
+                questionEmbed.AddFields(new List<DiscordEmbedField>()
+                {
+                    new(DiscordEmoji.FromName(ctx.Client, ":regional_indicator_a:"), answerOne),
+                    new(DiscordEmoji.FromName(ctx.Client, ":regional_indicator_b:"), answerTwo),
+                    new(DiscordEmoji.FromName(ctx.Client, ":regional_indicator_c:"), answerThree)
+                });
 
                 var questionEmbedMsg = await channel.SendMessageAsync(embed: questionEmbed).ConfigureAwait(false);
                 await questionEmbedMsg.CreateReactionAsync(a).ConfigureAwait(false);

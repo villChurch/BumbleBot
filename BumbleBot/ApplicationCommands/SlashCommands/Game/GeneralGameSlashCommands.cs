@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -429,20 +430,26 @@ public class GeneralGameSlashCommands : ApplicationCommandsModule
                     grazingSize = (int) Math.Ceiling(grazingSize * 1.1);
                 }
 
-                embed.AddField("Level", level.ToString(), true);
-                embed.AddField("Credits", credits.ToString(), true);
-                embed.AddField("Perk Points", perkPoints.ToString(), true);
-                embed.AddField("Herd Size", numberOfGoats.ToString());
-                embed.AddField("Barn Space", barnSize.ToString(), true);
-                embed.AddField("Pasture Available", $"Space For {grazingSize} Goats", true);
-                embed.AddField("Milk in Storage", $"{milkAmount} lbs", true);
+                embed.AddFields(new List<DiscordEmbedField>()
+                {
+                    new("Level", level.ToString(), true),
+                    new("Credits", credits.ToString(), true),
+                    new("Perk Points", perkPoints.ToString(), true),
+                    new("Herd Size", numberOfGoats.ToString()),
+                    new("Barn Space", barnSize.ToString(), true),
+                    new("Pasture Available", $"Space For {grazingSize} Goats", true),
+                    new("Milk in Storage", $"{milkAmount} lbs", true)
+                });
                 if (goat.Name != null)
                 {
                     var url = "https://williamspires.com/";
-                    embed.AddField("Goat in hand", goat.Name);
-                    embed.AddField("Goats level", goat.Level.ToString(), true);
-                    embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
-                    embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
+                    embed.AddFields(new List<DiscordEmbedField>()
+                    {
+                        new("Goat in hand", goat.Name),
+                        new("Goats level", goat.Level.ToString(), true),
+                        new("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true),
+                        new("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true)
+                    });
                     embed.ImageUrl = url + Uri.EscapeUriString(goat.FilePath); //.Replace(" ", "%20");
                 }
 

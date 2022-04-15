@@ -106,7 +106,8 @@ namespace BumbleBot.Services
                     var character = Convert.ToChar(charCounter + 65);
                     if (count == correctAnswer)
                     {
-                        embed.AddField(character.ToString(), questions.Questions[questionNumber].CorrectAnswer);
+                        embed.AddField(new DiscordEmbedField(character.ToString(),
+                            questions.Questions[questionNumber].CorrectAnswer));
                         answers--;
                         correctAnswer = -1;
                     }
@@ -115,7 +116,7 @@ namespace BumbleBot.Services
                         var answerString = questions.Questions[questionNumber].IncorrectAnswers[count].Bool == null
                             ? questions.Questions[questionNumber].IncorrectAnswers[count].String
                             : questions.Questions[questionNumber].IncorrectAnswers[count].Bool.ToString();
-                        embed.AddField(character.ToString(), answerString);
+                        embed.AddField(new DiscordEmbedField(character.ToString(), answerString));
                         count++;
                     }
 

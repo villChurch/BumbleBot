@@ -53,9 +53,12 @@ namespace BumbleBot.Commands.Game
                     caveCost = (int) Math.Ceiling(caveCost * 0.9);
                     price = (int) Math.Ceiling(price * 0.9);
                 }
-                embed.AddField("Capacity", $"{price} credits will increase milk capacity by 1,000 lbs");
+
+                embed.AddField(new DiscordEmbedField("Capacity",
+                    $"{price} credits will increase milk capacity by 1,000 lbs"));
                 if (!DairyService.DoesDairyHaveACave(ctx.User.Id))
-                    embed.AddField("Cave", $"{caveCost} credits will add a cave to your dairy to produce hard cheese");
+                    embed.AddField(new DiscordEmbedField("Cave",
+                        $"{caveCost} credits will add a cave to your dairy to produce hard cheese"));
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
         }
@@ -154,16 +157,22 @@ namespace BumbleBot.Commands.Game
                     Title = $"{ctx.User.Username}'s Dairy",
                     Color = DiscordColor.Aquamarine
                 };
-                embed.AddField("Milk", $"{dairy.Milk} lbs", true);
-                embed.AddField("Soft Cheese", $"{dairy.SoftCheese} lbs", true);
-                embed.AddField("Hard Cheese", $"{dairy.HardCheese} lbs", true);
-                embed.AddField("Milk capacity", $"{dairy.Slots * 1000} lbs", true);
+                embed.AddFields(new List<DiscordEmbedField>()
+                {
+                    new("Milk", $"{dairy.Milk} lbs", true),
+                    new("Soft Cheese", $"{dairy.SoftCheese} lbs", true),
+                    new("Hard Cheese", $"{dairy.HardCheese} lbs", true),
+                    new("Milk capacity", $"{dairy.Slots * 1000} lbs", true)
+                });
                 if (DairyService.DoesDairyHaveACave(ctx.User.Id))
                 {
                     var cave = DairyService.GetUsersCave(ctx.User.Id);
-                    embed.AddField("Cave", "Dairy Cave information below");
-                    embed.AddField("Soft Cheese", $"{cave.SoftCheese} lbs", true);
-                    embed.AddField("Soft Cheese capacity", $"{cave.Slots * 500} lbs", true);
+                    embed.AddFields(new List<DiscordEmbedField>()
+                    {
+                        new("Cave", "Dairy Cave information below"),
+                        new("Soft Cheese", $"{cave.SoftCheese} lbs", true),
+                        new("Soft Cheese capacity", $"{cave.Slots * 500} lbs", true)
+                    });
                 }
 
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);

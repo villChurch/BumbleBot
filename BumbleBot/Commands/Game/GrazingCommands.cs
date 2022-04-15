@@ -76,11 +76,14 @@ namespace BumbleBot.Commands.Game
                             Title = $"{goat.Id}",
                             ImageUrl = url + goat.FilePath.Replace(" ", "%20")
                         };
-                        embed.AddField("Name", goat.Name);
-                        embed.AddField("Level", goat.Level.ToString(), true);
-                        embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
-                        embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
-                        embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
+                        embed.AddFields(new List<DiscordEmbedField>()
+                        {
+                            new("Name", goat.Name),
+                            new("Level", goat.Level.ToString(), true),
+                            new("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true),
+                            new("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true),
+                            new("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true)
+                        });
                         var page = new Page
                         {
                             Embed = embed

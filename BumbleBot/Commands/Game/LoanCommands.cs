@@ -36,15 +36,17 @@ namespace BumbleBot.Commands.Game
                 Description = "Here you will find information about your loans and loan status",
                 Color = DiscordColor.Aquamarine
             };
-            embed.AddField("Loan Status", hasLoan ? "You currently have a loan" : "You currently don't have a loan");
+            embed.AddField(new DiscordEmbedField("Loan Status",
+                hasLoan ? "You currently have a loan" : "You currently don't have a loan"));
             if (!hasLoan)
             {
-                embed.AddField("Max loan", $"The maximum you can currently borrow is {maxBorrowAmount:n0}");
+                embed.AddField(new DiscordEmbedField("Max loan",
+                    $"The maximum you can currently borrow is {maxBorrowAmount:n0}"));
             }
             else
             {
-                embed.AddField("Left to repay", $"You currently have " +
-                                                $"{farmerService.AmountLeftOnLoan(ctx.User.Id):n0} left to repay on your loan");
+                embed.AddField(new DiscordEmbedField("Left to repay", $"You currently have " +
+                                                                      $"{farmerService.AmountLeftOnLoan(ctx.User.Id):n0} left to repay on your loan"));
             }
             await ctx.Channel.SendMessageAsync(embed).ConfigureAwait(false);
         }

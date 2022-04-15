@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using DisCatSharp;
-using DisCatSharp.ApplicationCommands;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.CommandsNext.Attributes;
 using DisCatSharp.Entities;
@@ -34,8 +33,7 @@ namespace BumbleBot.Commands.AdminCommands
         {
             var ccv = typeof(Bot)
                           .GetTypeInfo()
-                          .Assembly
-                          ?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                          .Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                           ?.InformationalVersion ??
                       typeof(Bot)
                           .GetTypeInfo()
@@ -44,10 +42,10 @@ namespace BumbleBot.Commands.AdminCommands
                           .Version?.ToString(3);
 
             var dsv = ctx.Client.VersionString;
-            var ncv = System.Environment.Version.ToString();
-            var runTimeVer = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
-            var rtv = System.Runtime.InteropServices.RuntimeEnvironment.GetSystemVersion();
-            var embed = new DiscordEmbedBuilder()
+            var ncv = Environment.Version.ToString();
+            var runTimeVer = RuntimeInformation.FrameworkDescription;
+            var rtv = RuntimeEnvironment.GetSystemVersion();
+            var embed = new DiscordEmbedBuilder
             {
                 Title = "About Bumblebot",
                 Color = DiscordColor.Aquamarine,
@@ -56,19 +54,29 @@ namespace BumbleBot.Commands.AdminCommands
                    Text = "Bumblebot is made by VillChurch#2599 (<@!272151652344266762>) and Epona142#6828 (<@!243807523554066433>)"
                 }
             };
-            embed.AddField("Bot Version", Formatter.Bold(ccv), true);
-            embed.AddField("DisCatSharp Version", Formatter.Bold(dsv), true);
-            embed.AddField("Net Core version", Formatter.Bold(ncv), true);
-            embed.AddField("Net Core full version name", Formatter.Bold(runTimeVer), true);
-            embed.AddField("System version", Formatter.Bold(rtv), true);
-            
+            var versionField = new DiscordEmbedField("Bot Version", Formatter.Bold(ccv), true);
+            var dcsVersionField = new DiscordEmbedField("DisCatSharp Version", Formatter.Bold(dsv), true);
+            var ncVersionField = new DiscordEmbedField("Net Core version", Formatter.Bold(ncv), true);
+            var ncVersionFullField =
+                new DiscordEmbedField("Net Core full version name", Formatter.Bold(runTimeVer), true);
+            var systemVersionField = new DiscordEmbedField("System version", Formatter.Bold(rtv), true);
+
             var upt = DateTime.Now - Process.GetCurrentProcess().StartTime;
             string ups;
             if (upt.Days > 0)
                 ups = $@"{upt:%d} days, {upt:hh\:mm\:ss}";
             else ups = upt.ToString(@"hh\:mm\:ss");
 
-            embed.AddField("Uptime", Formatter.InlineCode(ups), true);
+            var upTimeField = new DiscordEmbedField("Uptime", Formatter.InlineCode(ups), true);
+            embed.AddFields(new List<DiscordEmbedField>
+            {
+                versionField,
+                dcsVersionField,
+                ncVersionField,
+                ncVersionFullField,
+                systemVersionField,
+                upTimeField
+            });
             await ctx.Channel.SendMessageAsync(embed).ConfigureAwait(false);
         }
     }

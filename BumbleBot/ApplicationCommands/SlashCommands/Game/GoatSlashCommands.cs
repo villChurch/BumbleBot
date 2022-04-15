@@ -97,29 +97,31 @@ public class GoatSlashCommands : ApplicationCommandsModule
             Title = $"{((DiscordMember)ctx.User).DisplayName}'s Goat statistics",
             Color = DiscordColor.Aquamarine
         };
-        embed.AddField("Number of goats owned", goats.Count.ToString(), true);
-        embed.AddField("Number of adults", goats.FindAll(goat => goat.Type == Type.Adult).Count.ToString(), true);
-        embed.AddField("Number of kids", goats.FindAll(goat => goat.Type == Type.Kid).Count.ToString(), true);
-        embed.AddField("Number of Nubian goats", goats.FindAll(goat => goat.Breed == Breed.Nubian).Count.ToString(),
-            true);
-        embed.AddField("Number of La Mancha goats",
-            goats.FindAll(goat => goat.Breed == Breed.La_Mancha).Count.ToString(), true);
-        embed.AddField("Number of Nigerian Dwarf goats",
-            goats.FindAll(goat => goat.Breed == Breed.Nigerian_Dwarf).Count.ToString(), true);
-        embed.AddField("Number of Special goats",
-            goats.FindAll(goat => goat.BaseColour == BaseColour.Special).Count.ToString(), true);
-        embed.AddField("Number of Chocolate goats",
-            goats.FindAll(goat => goat.BaseColour == BaseColour.Chocolate).Count.ToString(), true);
-        embed.AddField("Number of Black goats",
-            goats.FindAll(goat => goat.BaseColour == BaseColour.Black).Count.ToString(), true);
-        embed.AddField("Number of White goats",
-            goats.FindAll(goat => goat.BaseColour == BaseColour.White).Count.ToString(), true);
-        embed.AddField("Number of Gold goats",
-            goats.FindAll(goat => goat.BaseColour == BaseColour.Gold).Count.ToString(), true);
-        embed.AddField("Number of Red goats",
-            goats.FindAll(goat => goat.BaseColour == BaseColour.Red).Count.ToString(), true);
-        embed.AddField("Number of kids in shelter", kidsInPen.Count.ToString(), true);
-        embed.AddField("Number of goats in memorial", deadGoats.Count.ToString(), true);
+        embed.AddFields(new List<DiscordEmbedField>()
+        {
+            new("Number of goats owned", goats.Count.ToString(), true),
+            new("Number of adults", goats.FindAll(goat => goat.Type == Type.Adult).Count.ToString(), true),
+            new("Number of kids", goats.FindAll(goat => goat.Type == Type.Kid).Count.ToString(), true),
+            new("Number of Nubian goats", goats.FindAll(goat => goat.Breed == Breed.Nubian).Count.ToString(), true),
+            new("Number of La Mancha goats",
+            goats.FindAll(goat => goat.Breed == Breed.La_Mancha).Count.ToString(), true),
+            new("Number of Nigerian Dwarf goats",
+            goats.FindAll(goat => goat.Breed == Breed.Nigerian_Dwarf).Count.ToString(), true),
+            new("Number of Special goats",
+            goats.FindAll(goat => goat.BaseColour == BaseColour.Special).Count.ToString(), true),
+            new("Number of Chocolate goats",
+            goats.FindAll(goat => goat.BaseColour == BaseColour.Chocolate).Count.ToString(), true),
+            new("Number of Black goats",
+            goats.FindAll(goat => goat.BaseColour == BaseColour.Black).Count.ToString(), true),
+            new("Number of White goats",
+            goats.FindAll(goat => goat.BaseColour == BaseColour.White).Count.ToString(), true),
+            new("Number of Gold goats",
+            goats.FindAll(goat => goat.BaseColour == BaseColour.Gold).Count.ToString(), true),
+            new("Number of Red goats",
+            goats.FindAll(goat => goat.BaseColour == BaseColour.Red).Count.ToString(), true),
+            new("Number of kids in shelter", kidsInPen.Count.ToString(), true),
+            new("Number of goats in memorial", deadGoats.Count.ToString(), true)
+        });
         await ctx.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
             new DiscordInteractionResponseBuilder()
                 .AddEmbed(embed));
@@ -154,11 +156,14 @@ public class GoatSlashCommands : ApplicationCommandsModule
                             Title = $"{goat.Id}",
                             ImageUrl = url + Uri.EscapeUriString(goat.FilePath) //.Replace(" ", "%20")
                         };
-                        embed.AddField("Name", goat.Name);
-                        embed.AddField("Level", goat.Level.ToString(), true);
-                        embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
-                        embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
-                        embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
+                        embed.AddFields(new List<DiscordEmbedField>()
+                        {
+                            new("Name", goat.Name),
+                            new("Level", goat.Level.ToString(), true),
+                            new("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true),
+                            new("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true),
+                            new("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true)
+                        });
                         var page = new Page
                         {
                             Embed = embed
@@ -187,11 +192,14 @@ public class GoatSlashCommands : ApplicationCommandsModule
                             Title = $"{goat.Id}",
                             ImageUrl = url + Uri.EscapeUriString(goat.FilePath) //.Replace(" ", "%20")
                         };
-                        embed.AddField("Name", goat.Name);
-                        embed.AddField("Level", goat.Level.ToString(), true);
-                        embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
-                        embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
-                        embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
+                        embed.AddFields(new List<DiscordEmbedField>()
+                        {
+                            new("Name", goat.Name),
+                            new("Level", goat.Level.ToString(), true),
+                            new("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true),
+                            new("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true),
+                            new("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true)
+                        });
                         var page = new Page
                         {
                             Embed = embed
@@ -220,11 +228,14 @@ public class GoatSlashCommands : ApplicationCommandsModule
                             Title = $"{goat.Id}",
                             ImageUrl = url + Uri.EscapeUriString(goat.FilePath) //.Replace(" ", "%20")
                         };
-                        embed.AddField("Name", goat.Name);
-                        embed.AddField("Level", goat.Level.ToString(), true);
-                        embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
-                        embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
-                        embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
+                        embed.AddFields(new List<DiscordEmbedField>()
+                        {
+                            new("Name", goat.Name),
+                            new("Level", goat.Level.ToString(), true),
+                            new("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true),
+                            new("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true),
+                            new("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true)
+                        });
                         var page = new Page
                         {
                             Embed = embed
@@ -269,11 +280,14 @@ public class GoatSlashCommands : ApplicationCommandsModule
                     Title = $"{goat.Id}",
                     ImageUrl = url + Uri.EscapeUriString(goat.FilePath) //.Replace(" ", "%20")
                 };
-                embed.AddField("Name", goat.Name);
-                embed.AddField("Level", goat.Level.ToString(), true);
-                embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
-                embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
-                embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
+                embed.AddFields(new List<DiscordEmbedField>()
+                {
+                    new("Name", goat.Name),
+                    new("Level", goat.Level.ToString(), true),
+                    new("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true),
+                    new("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true),
+                    new("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true)
+                });
                 var page = new Page
                 {
                     Embed = embed
@@ -414,11 +428,14 @@ public class GoatSlashCommands : ApplicationCommandsModule
                     Title = $"{goat.Id}",
                     ImageUrl = url + goat.FilePath.Replace(" ", "%20")
                 };
-                embed.AddField("Name", goat.Name);
-                embed.AddField("Level", goat.Level.ToString(), true);
-                embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
-                embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
-                embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
+                embed.AddFields(new List<DiscordEmbedField>()
+                {
+                    new("Name", goat.Name),
+                    new("Level", goat.Level.ToString(), true),
+                    new("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true),
+                    new("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true),
+                    new("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true)
+                });
                 var page = new Page
                 {
                     Embed = embed

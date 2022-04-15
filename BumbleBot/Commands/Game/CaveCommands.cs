@@ -51,9 +51,9 @@ namespace BumbleBot.Commands.Game
                     Title = "Cave upgrade options",
                     Color =  DiscordColor.Aquamarine
                 };
-                embed.AddField("Capacity",
+                embed.AddField(new DiscordEmbedField("Capacity",
                     $"{slotUpgradePrice} credits. Upgrades soft cheese cave capacity to {(cave.Slots + 1) * 500} " +
-                    $"lbs by using command {Formatter.InlineCode($"cave upgrade capacity {slotUpgradePrice}")}");
+                    $"lbs by using command {Formatter.InlineCode($"cave upgrade capacity {slotUpgradePrice}")}"));
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
         }

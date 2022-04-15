@@ -126,9 +126,10 @@ namespace BumbleBot.Commands.ButtonCommands
                                 Title = $"{goat.Id}",
                                 ImageUrl = url + goat.FilePath.Replace(" ", "%20")
                             };
-                            embed.AddField("Name", goat.Name, true);
-                            embed.AddField("Level", goat.Level.ToString(), true);
-                            embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
+                            embed.AddField(new DiscordEmbedField("Name", goat.Name, true));
+                            embed.AddField(new DiscordEmbedField("Level", goat.Level.ToString(), true));
+                            embed.AddField(
+                                new DiscordEmbedField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true));
                             var page = new Page
                             {
                                 Embed = embed

@@ -210,20 +210,26 @@ namespace BumbleBot.Commands.Game
                 {
                     grazingSize = (int) Math.Ceiling(grazingSize * 1.1);
                 }
-                
-                embed.AddField("Credits", credits.ToString(), true);
-                embed.AddField("Perk Points", perkPoints.ToString(), true);
-                embed.AddField("Herd Size", numberOfGoats.ToString());
-                embed.AddField("Barn Space", barnSize.ToString(), true);
-                embed.AddField("Pasture Available", $"Space For {grazingSize} Goats", true);
-                embed.AddField("Milk in Storage", $"{milkAmount} lbs", true);
+
+                embed.AddFields(new List<DiscordEmbedField>()
+                {
+                    new("Credits", credits.ToString(), true),
+                    new("Perk Points", perkPoints.ToString(), true),
+                    new("Herd Size", numberOfGoats.ToString()),
+                    new("Barn Space", barnSize.ToString(), true),
+                    new("Pasture Available", $"Space For {grazingSize} Goats", true),
+                    new("Milk in Storage", $"{milkAmount} lbs", true)
+                });
                 if (goat.Name != null)
                 {
                     var url = "https://williamspires.com/";
-                    embed.AddField("Goat in hand", goat.Name);
-                    embed.AddField("Goats level", goat.Level.ToString(), true);
-                    embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
-                    embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
+                    embed.AddFields(new List<DiscordEmbedField>()
+                    {
+                        new("Goat in hand", goat.Name),
+                        new("Goats level", goat.Level.ToString(), true),
+                        new("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true),
+                        new("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true)
+                    });
                     embed.ImageUrl = url + Uri.EscapeUriString(goat.FilePath); //.Replace(" ", "%20");
                 }
 
@@ -297,9 +303,12 @@ namespace BumbleBot.Commands.Game
                                 Title = $"{goat.Id}",
                                 ImageUrl = url + goat.FilePath.Replace(" ", "%20")
                             };
-                            embed.AddField("Name", goat.Name, true);
-                            embed.AddField("Level", goat.Level.ToString(), true);
-                            embed.AddField("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true);
+                            embed.AddFields(new List<DiscordEmbedField>()
+                            {
+                                new("Name", goat.Name, true),
+                                new("Level", goat.Level.ToString(), true),
+                                new("Experience", goat.Experience.ToString(CultureInfo.CurrentCulture), true)
+                            });
                             var page = new Page
                             {
                                 Embed = embed

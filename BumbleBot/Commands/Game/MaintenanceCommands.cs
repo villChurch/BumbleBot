@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using BumbleBot.Attributes;
 using BumbleBot.Services;
@@ -32,18 +33,19 @@ namespace BumbleBot.Commands.Game
                 Title = $"{((DiscordMember) ctx.User).DisplayName}'s Maintenance Report",
                 Color = DiscordColor.Aquamarine
             };
-            embed.AddField("Maintenance Status",
-                farmersMaintenance.needsMaintenance
-                    ? $"Maintenance is needed and will cost {maintenanceCost} credits."
-                    : "Maintenance is not needed at the moment.");
-
-            embed.AddField("Milking Boost", farmersMaintenance.milkingBoost
-                ? "The next time you milk you will get a 10% boost because of good maintenance."
-                : "There is currently no milking boost from maintenance.");
-
-            embed.AddField("Daily Boost", farmersMaintenance.dailyBoost
-                ? "The next time you run daily you will get a 10% boost because of good maintenance."
-                : "There is currently no daily boost from maintenance.");
+            embed.AddFields(new List<DiscordEmbedField>()
+            {
+                new("Maintenance Status",
+                    farmersMaintenance.needsMaintenance
+                        ? $"Maintenance is needed and will cost {maintenanceCost} credits."
+                        : "Maintenance is not needed at the moment."),
+                new("Milking Boost", farmersMaintenance.milkingBoost
+                    ? "The next time you milk you will get a 10% boost because of good maintenance."
+                    : "There is currently no milking boost from maintenance."),
+                new("Daily Boost", farmersMaintenance.dailyBoost
+                    ? "The next time you run daily you will get a 10% boost because of good maintenance."
+                    : "There is currently no daily boost from maintenance.")
+            });
 
             await ctx.Channel.SendMessageAsync(embed).ConfigureAwait(false);
         }

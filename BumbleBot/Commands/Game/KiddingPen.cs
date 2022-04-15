@@ -49,7 +49,7 @@ namespace BumbleBot.Commands.Game
             {
                 price = (int) Math.Ceiling(price * 0.9);
             }
-            embed.AddField("Capacity", $"{price} credits will increase capacity by 1");
+            embed.AddField(new DiscordEmbedField("Capacity", $"{price} credits will increase capacity by 1"));
             await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
         }
 
@@ -64,13 +64,16 @@ namespace BumbleBot.Commands.Game
                     Title = $"{ctx.User.Username}'s shelter",
                     Color = DiscordColor.Aquamarine
                 };
-                embed.AddField("Capacity", FarmerService.GetKiddingPenCapacity(ctx.User.Id).ToString(), true);
-                embed.AddField("In use",
+                embed.AddFields(new List<DiscordEmbedField>()
+                {
+                    new("Capacity", FarmerService.GetKiddingPenCapacity(ctx.User.Id).ToString(), true),
+                    new("In use",
                     FarmerService.DoesFarmerHaveAdultsInKiddingPen(GoatService.ReturnUsersGoats(ctx.User.Id))
                         ? "Yes"
-                        : "False", true);
-                embed.AddField("Kids in shelter",
-                    FarmerService.DoesFarmerHaveKidsInKiddingPen(ctx.User.Id) ? "Yes" : "False", true);
+                        : "False", true),
+                    new("Kids in shelter",
+                    FarmerService.DoesFarmerHaveKidsInKiddingPen(ctx.User.Id) ? "Yes" : "False", true)
+                });
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
             else
@@ -318,10 +321,13 @@ namespace BumbleBot.Commands.Game
                             Title = $"{goat.Id}",
                             ImageUrl = url + goat.FilePath.Replace(" ", "%20")
                         };
-                        embed.AddField("Name", goat.Name);
-                        embed.AddField("Level", goat.Level.ToString(), true);
-                        embed.AddField("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true);
-                        embed.AddField("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true);
+                        embed.AddFields(new List<DiscordEmbedField>()
+                        {
+                            new("Name", goat.Name),
+                            new("Level", goat.Level.ToString(), true),
+                            new("Breed", Enum.GetName(typeof(Breed), goat.Breed)?.Replace("_", " "), true),
+                            new("Colour", Enum.GetName(typeof(BaseColour), goat.BaseColour), true)
+                        });
                         var page = new Page
                         {
                             Embed = embed

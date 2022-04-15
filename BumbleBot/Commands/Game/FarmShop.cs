@@ -82,20 +82,21 @@ namespace BumbleBot.Commands.Game
                     dustCost = (int) Math.Ceiling(dustCost * 0.9);
                 }
 
-                embed.AddField("Barn", $"Cost {barnCost} - Will provide 10 extra stalls");
-                embed.AddField("Pasture", $"Cost {grazeCost} - Will provide 10 extra pasture space");
+                embed.AddField(new DiscordEmbedField("Barn", $"Cost {barnCost} - Will provide 10 extra stalls"));
+                embed.AddField(new DiscordEmbedField("Pasture",
+                    $"Cost {grazeCost} - Will provide 10 extra pasture space"));
                 if (!farmerService.DoesFarmerHaveAKiddingPen(ctx.User.Id))
-                    embed.AddField("Shelter",
-                        $"Cost {shelterCost} - Purchases a Kidding Pen which adds the ability to breed goats");
+                    embed.AddField(new DiscordEmbedField("Shelter",
+                        $"Cost {shelterCost} - Purchases a Kidding Pen which adds the ability to breed goats"));
                 if (!farmerService.DoesFarmerHaveDairy(ctx.User.Id))
-                    embed.AddField("Dairy",
-                        $"Cost {dairyCost} - Purchases a Dairy which can be used to make products from milk");
-                embed.AddField("Oats",
-                    $"Cost {oatsCost} - Will provide a boost to your goats milk output next time they're milked");
-                embed.AddField("Alfalfa",
-                    $"Cost {alfalfaCost} - Will give goats an exp boost when daily is used");
-                embed.AddField("Dust",
-                    $"Cost {dustCost} - Combined feed that offers both a boost to milk output and daily XP");
+                    embed.AddField(new DiscordEmbedField("Dairy",
+                        $"Cost {dairyCost} - Purchases a Dairy which can be used to make products from milk"));
+                embed.AddField(new DiscordEmbedField("Oats",
+                    $"Cost {oatsCost} - Will provide a boost to your goats milk output next time they're milked"));
+                embed.AddField(new DiscordEmbedField("Alfalfa",
+                    $"Cost {alfalfaCost} - Will give goats an exp boost when daily is used"));
+                embed.AddField(new DiscordEmbedField("Dust",
+                    $"Cost {dustCost} - Combined feed that offers both a boost to milk output and daily XP"));
                 await ctx.Channel.SendMessageAsync(embed: embed).ConfigureAwait(false);
             }
         }

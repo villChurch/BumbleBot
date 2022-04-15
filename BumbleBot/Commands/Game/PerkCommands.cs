@@ -42,12 +42,16 @@ namespace BumbleBot.Commands.Game
                     Title = $"{perk.perkName}",
                     Color = DiscordColor.Aquamarine
                 };
-                embed.AddField("Description", perk.perkBonusText);
-                embed.AddField("Perk Point Cost", perk.perkCost.ToString());
-                embed.AddField("Level Unlocked", perk.levelUnlocked.ToString());
+                embed.AddFields(new List<DiscordEmbedField>()
+                {
+                    new("Description", perk.perkBonusText),
+                    new("Perk Point Cost", perk.perkCost.ToString()),
+                    new("Level Unlocked", perk.levelUnlocked.ToString())
+                });
                 if (perk.requires != 0)
                 {
-                    embed.AddField("Requires Perk", allPerks.Find(p => p.id == perk.requires)?.perkName);
+                    embed.AddField(new DiscordEmbedField("Requires Perk",
+                        allPerks.Find(p => p.id == perk.requires)?.perkName));
                 }
                 var page = new Page {Embed = embed};
                 pages.Add(page);
@@ -145,9 +149,12 @@ namespace BumbleBot.Commands.Game
                         Title = $"{perk.perkName}",
                         Color = DiscordColor.Aquamarine
                     };
-                    embed.AddField("Description", perk.perkBonusText);
-                    embed.AddField("Perk Point Cost", perk.perkCost.ToString());
-                    embed.AddField("Level Unlocked", perk.levelUnlocked.ToString());
+                    embed.AddFields(new List<DiscordEmbedField>()
+                    {
+                        new("Description", perk.perkBonusText),
+                        new("Perk Point Cost", perk.perkCost.ToString()),
+                        new("Level Unlocked", perk.levelUnlocked.ToString())
+                    });
                     var page = new Page {Embed = embed};
                     pages.Add(page);
                 }
