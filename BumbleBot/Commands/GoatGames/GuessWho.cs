@@ -1,21 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using BumbleBot.Models;
+using BumbleBot.Utilities;
+using Dapper;
 using DisCatSharp;
 using DisCatSharp.CommandsNext;
 using DisCatSharp.CommandsNext.Attributes;
 using DisCatSharp.Entities;
 using DisCatSharp.Enums;
 using DisCatSharp.Interactivity.Extensions;
+using MySqlConnector;
 
 namespace BumbleBot.Commands.GoatGames
 {
+    [Group("gw")]
     public class GuessWho : BaseCommandModule
     {
-        [Command("guesswho")]
-        [Aliases("gw")]
+        [GroupCommand]
         public async Task GuessWhoCommand(CommandContext ctx)
         {
             List<String> goats = new List<string>()
@@ -138,6 +143,16 @@ namespace BumbleBot.Commands.GoatGames
 
             if (guessWhoReaction.Result.Id == selectedGoat)
             {
+                var dbUtils = new DbUtils();
+                using (var con = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+                {
+                    const string query = "insert into guesswhoLeaderboard(discordID) values(?discordID)";
+                    con.Open();
+                    var command = new MySqlCommand(query, con);
+                    command.Parameters.AddWithValue("?discordID", guessWhoReaction.Result.User.Id);
+                    command.ExecuteNonQuery();
+                    con.Close();
+                }
                 await guessWhoReaction.Result.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource,
                         new DiscordInteractionResponseBuilder()
                             .WithContent(
@@ -156,6 +171,33 @@ namespace BumbleBot.Commands.GoatGames
                                 $"{selectedGoat.ToUpperInvariant()}"))
                     .ConfigureAwait(false);
             }
+        }
+
+        [Command("leaderboard")]
+        public async Task GuessWhoLeaderBoard(CommandContext ctx)
+        {
+            var dbUtils = new DbUtils();
+            var results = new Dictionary<string, int>();
+            using (var con = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
+            {
+                const string query = "select discordID, COUNT(discordID) as points from guesswhoLeaderboard GROUP BY discordID order by points desc limit 5";
+                con.Open();
+                results = con.Query(query).ToDictionary(
+                    row => (string)row.discordID,
+                    row => (int)row.points);
+                con.Close();
+            }
+            var embed = new DiscordEmbedBuilder
+            {
+                Title = "Guess Who Leaderboard"
+            };
+            foreach (var key in results.Keys)
+            {
+                var usr = await ctx.Guild.GetMemberAsync(Convert.ToUInt64(key));
+                embed.AddField(new DiscordEmbedField(usr.DisplayName, $"{results[key].ToString()} points"));
+            }
+
+            await ctx.RespondAsync(embed);
         }
     }
 }
