@@ -150,7 +150,7 @@ namespace BumbleBot.Services
              using (var connection = new MySqlConnection(dbUtils.ReturnPopulatedConnectionString()))
              {
                  connection.Open();
-                 variations = connection.Query<SpecialGoats>("select * from specialgoats where enabled = 1 group by variation").ToList();
+                 variations = connection.Query<SpecialGoats>("select * from specialgoats where enabled = 1").ToList();
              }
              if (variations.Count < 1)
              {
