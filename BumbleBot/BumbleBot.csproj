@@ -5,14 +5,15 @@
     <LangVersion>preview</LangVersion>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Nullable>enable</Nullable>
+    <Platforms>anycpu</Platforms>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|anycpu' ">
-    <OutputPath>bin\Debug</OutputPath>
+    <OutputPath>bin\Debug\net6.0</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <ExternalConsole>true</ExternalConsole>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|anycpu' ">
-    <OutputPath>bin\Release</OutputPath>
+    <OutputPath>bin\Release\net6.0</OutputPath>
     <ExternalConsole>true</ExternalConsole>
   </PropertyGroup>
   <ItemGroup>
