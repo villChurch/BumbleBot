@@ -92,10 +92,21 @@ namespace BumbleBot.Commands.AdminCommands
                     .WithContent($"No info value for {name}"));
             }
             else
-            {
+            { 
                 var info = infos.Where(i => i.Name.Equals(name, StringComparison.CurrentCultureIgnoreCase));
-                await ctx.EditResponseAsync(new DisCatSharp.Entities.DiscordWebhookBuilder()
-                    .WithContent(info.First().Value));
+                if (info.First().Value.Length > 2000)
+                {
+                    var interactivity = ctx.Client.GetInteractivity();
+                    await ctx.EditResponseAsync(new DisCatSharp.Entities.DiscordWebhookBuilder()
+                        .WithContent(name));
+                    var pages = interactivity.GeneratePagesInContent(info.First().Value);
+                    await interactivity.SendPaginatedMessageAsync(ctx.Channel,ctx.User, pages);
+                }
+                else
+                {
+                    await ctx.EditResponseAsync(new DisCatSharp.Entities.DiscordWebhookBuilder()
+                        .WithContent(info.First().Value));
+                }
             }
         }
 
