@@ -9,6 +9,7 @@ using BumbleBot.Services;
 using BumbleBot.Utilities;
 using Dapper;
 using DisCatSharp;
+using DisCatSharp.Enums;
 using DisCatSharp.ApplicationCommands;
 using DisCatSharp.ApplicationCommands.Attributes;
 using DisCatSharp.Entities;
