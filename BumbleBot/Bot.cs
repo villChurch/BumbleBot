@@ -145,6 +145,7 @@ namespace BumbleBot
             };
             applicationCommands.SlashCommandErrored += SlashOnSlashCommandErrored;
             Client.GuildDownloadCompleted += (client, gdcEventArgs) => ClientOnGuildDownloadCompleted(client, gdcEventArgs, applicationCommands);
+            Client.GuildMemberAdded += ClientGuildMemberAdded;
             Commands = Client.UseCommandsNext(commandsConfig);
 
             Commands.CommandExecuted += Commands_CommandExecuted;
@@ -155,6 +156,22 @@ namespace BumbleBot
             await Client.ConnectAsync();
 
             await Task.Delay(-1);
+        }
+
+        private Task ClientGuildMemberAdded(DiscordClient sender, GuildMemberAddEventArgs e)
+        {
+            _ = Task.Run(async () =>
+            {
+                var guild = e.Guild;
+                var welcomeUtilities = new WelcomeUtilities();
+                if (welcomeUtilities.HasWelcomeMessage(guild))
+                {
+                    var channelId = welcomeUtilities.ReturnChannelId(guild);
+                    var channel = await sender.GetChannelAsync(Convert.ToUInt64(channelId));
+                    await channel.SendMessageAsync(welcomeUtilities.ReturnCompletedWelcomeMessage(guild, e.Member));
+                }
+            });
+            return Task.CompletedTask;
         }
 
         private Task ClientOnGuildDownloadCompleted(DiscordClient sender, GuildDownloadCompletedEventArgs e, ApplicationCommandsExtension applicationCommands)
